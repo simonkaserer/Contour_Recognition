@@ -4,3 +4,4 @@ BT for finding the contour of tools with a single button operation to cut drawer
 ## Hardware
 Raspberry Pi 4 4GB
 OAK-D Camera
+Test
