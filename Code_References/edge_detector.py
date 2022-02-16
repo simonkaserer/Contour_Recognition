@@ -98,4 +98,4 @@ with dai.Device(pipeline) as device:
             sobelHorizontalKernel = [[3, 0, -3], [10, 0, -10], [3, 0, -3]]
             sobelVerticalKernel = [[3, 10, 3], [0, 0, 0], [-3, -10, -3]]
             cfg.setSobelFilterKernels(sobelHorizontalKernel, sobelVerticalKernel)
-            edgeCfgQueue.send(cfg)
+            edgeCfgQueue.send(cfg) 
