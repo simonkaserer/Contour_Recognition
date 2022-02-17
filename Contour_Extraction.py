@@ -100,12 +100,15 @@ with dai.Device(pipeline) as device:
         edgeLeftFrame = edgeLeft.getFrame()
         edgeRightFrame = edgeRight.getFrame()
         edgeRgbFrame = edgeRgb.getFrame()
+        
+        
 
         # Show the frame
         cv2.imshow(edgeLeftStr, edgeLeftFrame)
-        cv2.imshow(edgeRightStr, edgeRightFrame)
-        cv2.imshow(edgeRgbStr, edgeRgbFrame)
-        
+        #cv2.imshow(edgeRightStr, edgeRightFrame)
+        #cv2.imshow(edgeRgbStr, edgeRgbFrame)
+       
+
         
             
             
