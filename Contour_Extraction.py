@@ -156,8 +156,8 @@ with dai.Device(pipeline) as device:
                     print(len(approx))
                     
 
-                    #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-                    cont_tool=cv2.drawContours(cropped_image,[approx],-1,(0,255,0),3)
+                    inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),3)
 
                     cv2.imshow("tool-curve",cont_tool)
 
