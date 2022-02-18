@@ -92,6 +92,7 @@ with dai.Device(pipeline) as device:
     # start the timer
     t.start()
     factor=0.0005
+    thresh_val=170
 
     while(True):
         edgeLeft = edgeLeftQueue.get()
@@ -111,17 +112,18 @@ with dai.Device(pipeline) as device:
        
         # add the contour extraction here:
         #gray=cv2.cvtColor(edgeLeftFrame,cv2.COLOR_BGR2GRAY)
-        ret,thresh=cv2.threshold(edgeLeftFrame,200,255,0)
+        ret,thresh=cv2.threshold(edgeLeftFrame,thresh_val,255,0)
         contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         #find max area contour
         if len(contours) > 0:
             cnt = sorted(contours,key=cv2.contourArea)[-1]
             (x,y),(w,h),a=cv2.minAreaRect(cnt)
-            print("Turning angle:")
-            print(a)
+            #print("Turning angle:")
+            #print(a)
             rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
-            rotated_image=cv2.warpAffine(thresh,rot_mat,(int(w+x),int(h+y)))
-        
+            #rotated_image=cv2.warpAffine(thresh,rot_mat,(int(w+x),int(h+y)))
+            #for testing
+            rotated_image=thresh
             # Find the max-area contour of the outer line:
             cnts,hierarchy=cv2.findContours(rotated_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -134,26 +136,26 @@ with dai.Device(pipeline) as device:
                 x,y,w,h=cv2.boundingRect(approx)
                 
                 # some pixel get cut away to reach the inner side of the contour
-                offset=12
+                offset=20
                 # this offset can be smaller if the outer contour is straight and only 1 px 
-                print("width")
-                print(w-(2*offset))
-                print("height")
-                print(h-(2*offset))
+                #print("width")
+                #print(w-(2*offset))
+                #print("height")
+                #print(h-(2*offset))
                 cropped_image=rotated_image[y+offset:y+h-offset,x+offset:x+w-offset]
 
 
-                cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+                cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_KCOS)
 
                 #pic=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
 
                 if len(cnts)>0:
                     cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                    epsilon=0.0005*cv2.arcLength(cnt,True)
+                    epsilon=factor*cv2.arcLength(cnt,True)
                     #   use the Douglas-Peucker algorithm for approximating a rectangle shape
                     approx=cv2.approxPolyDP(cnt,epsilon,True)
-                    print("Number of appr. points:")
-                    print(len(approx))
+                    #print("Number of appr. points:")
+                    #print(len(approx))
                     
 
                     inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
@@ -193,19 +195,30 @@ with dai.Device(pipeline) as device:
             print('Saving images with key')
 
         if key==ord('4'):
-            factor=0.0005
-        if key==ord('5'):
-            factor=0.001
+            factor+=0.0001
+            print("Factor:")
+            print(factor)
+        if key==ord('5') and factor>0.0001:
+            factor-=0.0001
+            print("Factor:")
+            print(factor)
         if key==ord('6'):
-            factor=0.0015
-        if key==ord('7'):
-            factor=0.0025
+            factor+=0.001
+            print("Factor:")
+            print(factor)
+        if key==ord('7') and factor > 0.001:
+            factor-=0.001
+            print("Factor:")
+            print(factor)
         if key==ord('8'):
-            factor=0.005
-        if key==ord('9'):
-            factor=0.01
-        if key==ord('0'):
-            factor=0.02
+            thresh_val+=10
+            print("Threshold:")
+            print(thresh_val)
+        if key==ord('9') and thresh_val > 10:
+            thresh_val-=10
+            print("Threshold:")
+            print(thresh_val)
+        
             
 
 
