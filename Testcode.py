@@ -94,11 +94,11 @@ if len(contours) > 0:
         #cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_KCOS)
         #for testing:
         pic=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-        testcont=cv2.drawContours(pic,cnts,-1,(0,255,0),3)
-        print("Number of contour points:")
-        print(len(cnts))
-        cv2.imshow("testcontour",testcont)
-        cv2.waitKey(0)
+        #testcont=cv2.drawContours(pic,cnts,-1,(0,255,0),3)
+        #print("Number of contour points:")
+        #print(len(cnts))
+        #cv2.imshow("testcontour",testcont)
+        #cv2.waitKey(0)
         if len(cnts)>0:
             cnt=sorted(cnts,key=cv2.contourArea)[-1]
             epsilon=0.0005*cv2.arcLength(cnt,True)
