@@ -91,6 +91,7 @@ with dai.Device(pipeline) as device:
     t = Timer(interval=7.0, function=saveimg)
     # start the timer
     t.start()
+    factor=0.0005
 
     while(True):
         edgeLeft = edgeLeftQueue.get()
@@ -108,13 +109,63 @@ with dai.Device(pipeline) as device:
         #cv2.imshow(edgeRightStr, edgeRightFrame)
         #cv2.imshow(edgeRgbStr, edgeRgbFrame)
        
-
+        # add the contour extraction here:
+        #gray=cv2.cvtColor(edgeLeftFrame,cv2.COLOR_BGR2GRAY)
+        ret,thresh=cv2.threshold(edgeLeftFrame,200,255,0)
+        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        #find max area contour
+        if len(contours) > 0:
+            cnt = sorted(contours,key=cv2.contourArea)[-1]
+            (x,y),(w,h),a=cv2.minAreaRect(cnt)
+            print("Turning angle:")
+            print(a)
+            rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
+            rotated_image=cv2.warpAffine(thresh,rot_mat,(int(w+x),int(h+y)))
         
+            # Find the max-area contour of the outer line:
+            cnts,hierarchy=cv2.findContours(rotated_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+            if len(cnts)>0:
+                cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                epsilon=0.1*cv2.arcLength(cnt,True)
+                # use the Douglas-Peucker algorithm for approximating a rectangle shape
+                approx=cv2.approxPolyDP(cnt,epsilon,True)
+                #find a straight bounding rectangle inside the approximated one
+                x,y,w,h=cv2.boundingRect(approx)
+                
+                # some pixel get cut away to reach the inner side of the contour
+                offset=12
+                # this offset can be smaller if the outer contour is straight and only 1 px 
+                print("width")
+                print(w-(2*offset))
+                print("height")
+                print(h-(2*offset))
+                cropped_image=rotated_image[y+offset:y+h-offset,x+offset:x+w-offset]
+
+
+                cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+
+                #pic=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+
+                if len(cnts)>0:
+                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                    epsilon=0.0005*cv2.arcLength(cnt,True)
+                    #   use the Douglas-Peucker algorithm for approximating a rectangle shape
+                    approx=cv2.approxPolyDP(cnt,epsilon,True)
+                    print("Number of appr. points:")
+                    print(len(approx))
+                    
+
+                    #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    cont_tool=cv2.drawContours(cropped_image,[approx],-1,(0,255,0),3)
+
+                    cv2.imshow("tool-curve",cont_tool)
+
             
             
         
 
-        key = cv2.waitKey(100)
+        key = cv2.waitKey(2000)
         if key == ord('q'):
             break
 
@@ -140,6 +191,21 @@ with dai.Device(pipeline) as device:
             cv2.imwrite(os.path.join(path,'testRightkey.jpg'),edgeRightFrame)
             cv2.imwrite(os.path.join(path,'testRgbkey.jpg'),edgeRgbFrame)
             print('Saving images with key')
+
+        if key==ord('4'):
+            factor=0.0005
+        if key==ord('5'):
+            factor=0.001
+        if key==ord('6'):
+            factor=0.0015
+        if key==ord('7'):
+            factor=0.0025
+        if key==ord('8'):
+            factor=0.005
+        if key==ord('9'):
+            factor=0.01
+        if key==ord('0'):
+            factor=0.02
             
 
 
