@@ -7,7 +7,7 @@ import depthai as dai
 import numpy as np
 # added
 import os
-from threading import Timer
+#from threading import Timer
 
 def saveimg():
     print ("Saving images!")
@@ -88,7 +88,7 @@ with dai.Device(pipeline) as device:
     
     path='/home/pi/Desktop'
      #Set the timer to save a picture of each cam after 5 sec
-    t = Timer(interval=10.0, function=saveimg)
+    #t = Timer(interval=10.0, function=saveimg)
     # start the timer
     #t.start()
     factor=0.0005
