@@ -90,7 +90,7 @@ with dai.Device(pipeline) as device:
      #Set the timer to save a picture of each cam after 5 sec
     t = Timer(interval=10.0, function=saveimg)
     # start the timer
-    t.start()
+    #t.start()
     factor=0.0005
     thresh_val=170
 
@@ -108,61 +108,73 @@ with dai.Device(pipeline) as device:
         # Show the frame
         #cv2.imshow(edgeLeftStr, edgeLeftFrame)
         #cv2.imshow(edgeRightStr, edgeRightFrame)
-        cv2.imshow(edgeRgbStr, edgeRgbFrame)
+        #cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
        
         # add the contour extraction here:
         #gray=cv2.cvtColor(edgeRgb,cv2.COLOR_BGR2GRAY)
         ret,thresh=cv2.threshold(edgeRgbFrame,thresh_val,255,0)
-        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        #find max area contour
+        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+
+        # Find the max-area contour of the outer line:
         if len(contours) > 0:
             cnt = sorted(contours,key=cv2.contourArea)[-1]
-            (x,y),(w,h),a=cv2.minAreaRect(cnt)
-            #print("Turning angle:")
-            #print(a)
-            rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
-            #rotated_image=cv2.warpAffine(thresh,rot_mat,(int(w+x),int(h+y)))
-            #for testing
-            rotated_image=thresh
-            # Find the max-area contour of the outer line:
-            cnts,hierarchy=cv2.findContours(rotated_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            #Test: Show the found contour:
+            pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
+            edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
+            cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
+            # warp the contour into a straight rectangle:
+                # find the cornerpoints of the square
+            epsilon=0.01*cv2.arcLength(cnt,True)
+                # use the Douglas-Peucker algorithm for approximating a rectangle shape
+            outer_square=cv2.approxPolyDP(cnt,epsilon,True)
+                # save the points in seperate variables
+            pt_A=outer_square[0]
+            pt_B=outer_square[1]
+            pt_C=outer_square[2]
+            pt_D=outer_square[3]
+                #calculate the lengt and the width of the square
+            width1=int(np.sqrt(((pt_A[0][0]-pt_D[0][0])**2)+(pt_A[0][1]-pt_D[0][1])**2))
+            height1=int(np.sqrt(((pt_A[0][0]-pt_B[0][0])**2)+(pt_A[0][1]-pt_B[0][1])**2))
+            width2=int(np.sqrt(((pt_B[0][0]-pt_C[0][0])**2)+(pt_B[0][1]-pt_C[0][1])**2))
+            height2=int(np.sqrt(((pt_C[0][0]-pt_D[0][0])**2)+(pt_C[0][1]-pt_D[0][1])**2))
+            width=max(width1,width2)
+            height=max(height1,height2)
+            print("width, height")
+            print(width,height)
+            input_pts=np.float32([pt_A,pt_B,pt_C,pt_D])
+            output_pts=np.float32([[0,0],[0,height],[width,height],[width,0]])
+            transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
+            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
+                # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
+            offset=2
+            warped_image=warped_image[0+offset:width-offset,0+offset:height-offset]
 
+            # #resize the image to display properly
+            # cv2.imshow("warpedtest",cv2.resize(warped_image,(600,600)))
+            # key=cv2.waitKey(0)
+            # if key==ord('q'):
+            #     quit()
+            
+
+
+
+            cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+            #cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_KCOS)
+
+        
             if len(cnts)>0:
                 cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                epsilon=0.1*cv2.arcLength(cnt,True)
-                # use the Douglas-Peucker algorithm for approximating a rectangle shape
+                epsilon=0.0005*cv2.arcLength(cnt,True)
+                #   use the Douglas-Peucker algorithm for approximating a rectangle shape
                 approx=cv2.approxPolyDP(cnt,epsilon,True)
-                #find a straight bounding rectangle inside the approximated one
-                x,y,w,h=cv2.boundingRect(approx)
+                print("Number of appr. points:")
+                print(len(approx))
                 
-                # some pixel get cut away to reach the inner side of the contour
-                offset=20
-                # this offset can be smaller if the outer contour is straight and only 1 px 
-                #print("width")
-                #print(w-(2*offset))
-                #print("height")
-                #print(h-(2*offset))
-                cropped_image=rotated_image[y+offset:y+h-offset,x+offset:x+w-offset]
 
+                inv=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
+                cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),3)
 
-                cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_KCOS)
-
-                #pic=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-
-                if len(cnts)>0:
-                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                    epsilon=factor*cv2.arcLength(cnt,True)
-                    #   use the Douglas-Peucker algorithm for approximating a rectangle shape
-                    approx=cv2.approxPolyDP(cnt,epsilon,True)
-                    #print("Number of appr. points:")
-                    #print(len(approx))
-                    
-
-                    inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-                    cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),2)
-
-                    cv2.imshow("tool-curve",cont_tool)
-
+                cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
             
             
         
