@@ -3,7 +3,7 @@ import depthai as dai
 import numpy as np
 import os
 
-def extraction_polyDP(img,factor_epsilon,threshold_value,printsize,printpoints):
+def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize,printpoints):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -40,8 +40,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,printsize,printpoints):
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
-            offset=2
-            warped_image=warped_image[0+offset:width-offset,0+offset:height-offset]
+            warped_image=warped_image[0+border_offset:width-border_offset,0+border_offset:height-border_offset]
 
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -51,20 +50,21 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,printsize,printpoints):
                 cnt=sorted(cnts,key=cv2.contourArea)[-1]
                 epsilon=factor_epsilon*cv2.arcLength(cnt,True)
                 #   use the Douglas-Peucker algorithm for approximating a rectangle shape
-                approx=cv2.approxPolyDP(cnt,epsilon,True)
+                tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
                 if printpoints:
                     print("Number of appr. points:")
-                    print(len(approx))
+                    print(len(tool_contour))
                 
 
                 inv=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
-                cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),3)
+                cont_tool=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),3)
 
                 cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
         else:
             print("Outer square not found!")
+    return tool_contour
 
-def extraction_convexHull(img,threshold_value):
+def extraction_convexHull(img,threshold_value,border_offset):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -99,21 +99,20 @@ def extraction_convexHull(img,threshold_value):
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
-            offset=2
-            warped_image=warped_image[0+offset:width-offset,0+offset:height-offset]
+            warped_image=warped_image[0+border_offset:width-border_offset,0+border_offset:height-border_offset]
 
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
 
-        
             if len(cnts)>0:
                 cnt=sorted(cnts,key=cv2.contourArea)[-1]
                 
-                hull=cv2.convexHull(cnt)
+                tool_hull=cv2.convexHull(cnt)
                 
                 inv=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
-                cont_tool=cv2.drawContours(inv,[hull],-1,(0,255,0),3)
+                cont_tool=cv2.drawContours(inv,[tool_hull],-1,(0,255,0),3)
 
                 cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
         else:
             print("Outer square not found!")
+    return tool_hull 
