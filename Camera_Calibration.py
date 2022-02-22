@@ -53,9 +53,13 @@ with dai.Device(pipeline) as device:
         inRight=qRight.get()
         inRgb=qRgb.get()
 
-        cv2.imshow(LeftStr,inLeft.getFrame())
-        cv2.imshow(RightStr,inRight.getFrame())
-        cv2.imshow(RgbStr,inRgb.getCvFrame())
+        LeftFrame=inLeft.getFrame()
+        RightFrame=inRight.getFrame()
+        RgbFrame=inRgb.getCvFrame()
+
+        cv2.imshow(LeftStr,LeftFrame)
+        cv2.imshow(RightStr,RightFrame)
+        cv2.imshow(RgbStr,RgbFrame)
 
         if cv2.waitKey(1) == ord('q'):
             break
