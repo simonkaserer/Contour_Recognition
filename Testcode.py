@@ -37,15 +37,16 @@ if len(contours) > 0:
     height2=int(np.sqrt(((pt_C[0][0]-pt_D[0][0])**2)+(pt_C[0][1]-pt_D[0][1])**2))
     width=max(width1,width2)
     height=max(height1,height2)
-    #print("width, height")
-    #print(width,height)
+    print("width, height")
+    print(width,height)
     input_pts=np.float32([pt_A,pt_B,pt_C,pt_D])
     output_pts=np.float32([[0,0],[0,height],[width,height],[width,0]])
     transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
     warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
         # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
-    offset=5
+    offset=2
     warped_image=warped_image[0+offset:width-offset,0+offset:height-offset]
+
     # #resize the image to display properly
     # cv2.imshow("warpedtest",cv2.resize(warped_image,(600,600)))
     # key=cv2.waitKey(0)
