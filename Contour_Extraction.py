@@ -114,8 +114,9 @@ with dai.Device(pipeline) as device:
         #cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
        
         # add the contour extraction here:
-        fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,False,False)
         
+        #fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,False,False)
+        fct.extraction_convexHull(edgeRgbFrame,thresh_val)
             
             
         
