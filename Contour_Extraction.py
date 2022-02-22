@@ -44,7 +44,7 @@ xinEdgeCfg.setStreamName(edgeCfgStr)
 
 # Properties
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
-camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 #camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 #camRgb.setVideoSize(1280,768)
 
@@ -88,7 +88,7 @@ with dai.Device(pipeline) as device:
     
     path='/home/pi/Desktop'
      #Set the timer to save a picture of each cam after 5 sec
-    t = Timer(interval=7.0, function=saveimg)
+    t = Timer(interval=10.0, function=saveimg)
     # start the timer
     t.start()
     factor=0.0005
@@ -106,13 +106,13 @@ with dai.Device(pipeline) as device:
         
 
         # Show the frame
-        cv2.imshow(edgeLeftStr, edgeLeftFrame)
+        #cv2.imshow(edgeLeftStr, edgeLeftFrame)
         #cv2.imshow(edgeRightStr, edgeRightFrame)
-        #cv2.imshow(edgeRgbStr, edgeRgbFrame)
+        cv2.imshow(edgeRgbStr, edgeRgbFrame)
        
         # add the contour extraction here:
-        #gray=cv2.cvtColor(edgeLeftFrame,cv2.COLOR_BGR2GRAY)
-        ret,thresh=cv2.threshold(edgeLeftFrame,thresh_val,255,0)
+        #gray=cv2.cvtColor(edgeRgb,cv2.COLOR_BGR2GRAY)
+        ret,thresh=cv2.threshold(edgeRgbFrame,thresh_val,255,0)
         contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         #find max area contour
         if len(contours) > 0:
@@ -159,7 +159,7 @@ with dai.Device(pipeline) as device:
                     
 
                     inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-                    cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),3)
+                    cont_tool=cv2.drawContours(inv,[approx],-1,(0,255,0),2)
 
                     cv2.imshow("tool-curve",cont_tool)
 
