@@ -3,6 +3,7 @@
 #!/usr/bin/env python3
 
 import cv2
+import depthai as dai
 
 # Create pipeline
 pipeline = dai.Pipeline()
@@ -12,32 +13,49 @@ camRgb = pipeline.create(dai.node.ColorCamera)
 monoLeft = pipeline.create(dai.node.MonoCamera)
 monoRight = pipeline.create(dai.node.MonoCamera)
 
-cameraLeft = pipeline.create(dai.node.???)
-cameraRight = pipeline.create(dai.node.???)
-cameraRgb = pipeline.create(dai.node.???)
+xoutLeft = pipeline.create(dai.node.XLinkOut)
+xoutRight = pipeline.create(dai.node.XLinkOut)
+xoutRgb = pipeline.create(dai.node.XLinkOut)
 
-xoutEdgeLeft = pipeline.create(dai.node.XLinkOut)
-xoutEdgeRight = pipeline.create(dai.node.XLinkOut)
-xoutEdgeRgb = pipeline.create(dai.node.XLinkOut)
-xinEdgeCfg = pipeline.create(dai.node.XLinkIn)
+LeftStr = "left"
+RightStr = "right"
+RgbStr = "rgb"
+CfgStr = "cfg"
 
-edgeLeftStr = "edge left"
-edgeRightStr = "edge right"
-edgeRgbStr = "edge rgb"
-edgeCfgStr = "edge cfg"
-
-xoutEdgeLeft.setStreamName(edgeLeftStr)
-xoutEdgeRight.setStreamName(edgeRightStr)
-xoutEdgeRgb.setStreamName(edgeRgbStr)
-xinEdgeCfg.setStreamName(edgeCfgStr)
+xoutLeft.setStreamName(LeftStr)
+xoutRight.setStreamName(RightStr)
+xoutRgb.setStreamName(RgbStr)
 
 # Properties
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-
+camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-#monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
 monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-#monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+
+# Linking
+camRgb.video.link(xoutRgb.input)
+monoLeft.out.link(xoutLeft.input)
+monoRight.out.link(xoutRight.input)
+
+# Connect to device
+with dai.Device(pipeline) as device:
+
+     # Output/input queues
+    qLeft=device.getOutputQueue(LeftStr,4,False)
+    qRight=device.getOutputQueue(RightStr,4,False)
+    qRgb=device.getOutputQueue(RgbStr,4,False)
+
+    while True:
+        inLeft=qLeft.get()
+        inRight=qRight.get()
+        inRgb=qRgb.get()
+
+        cv2.imshow(LeftStr,inLeft.getFrame())
+        cv2.imshow(RightStr,inRight.getFrame())
+        cv2.imshow(RgbStr,inRgb.getCvFrame())
+
+        if cv2.waitKey(1) == ord('q'):
+            break
