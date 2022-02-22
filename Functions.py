@@ -60,9 +60,12 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
                 cont_tool=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),3)
 
                 cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
+                return tool_contour
+            else:
+                print("Tool not found")
         else:
             print("Outer square not found!")
-    return tool_contour
+            
 
 def extraction_convexHull(img,threshold_value,border_offset):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
@@ -113,6 +116,9 @@ def extraction_convexHull(img,threshold_value,border_offset):
                 cont_tool=cv2.drawContours(inv,[tool_hull],-1,(0,255,0),3)
 
                 cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
+                return tool_hull 
+            else:
+                print("Tool not found")
         else:
             print("Outer square not found!")
-    return tool_hull 
+    
