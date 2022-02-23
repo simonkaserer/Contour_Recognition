@@ -5,7 +5,20 @@
 import cv2
 import numpy as np
 import os
+import ezdxf as dxf
 
+def dxf_exporter(contour,path_and_name):
+    file=dxf.new('R2000')
+    msp=file.modelspace()
+    points=[]
+    #convert the contour to a list:
+    cnt=contour.tolist()
+    #add the first entry of the contour to the end for a closed contour in dxf
+    cnt.append(cnt[0])
+    for point in cnt:
+        points.append((point[0][0],point[0][1]))
+    msp.add_lwpolyline(points)
+    file.saveas(path_and_name)
 
 #open a picture from the desktop:
 path= '/home/pi/Desktop/'
@@ -74,6 +87,9 @@ if len(contours) > 0:
 
         cv2.imshow("tool-curve",cv2.resize(cont_tool,(600,600)))
         cv2.waitKey(0)
+
+
+        dxf_exporter(cont_tool,path+'test.dxf')
 
 
 
