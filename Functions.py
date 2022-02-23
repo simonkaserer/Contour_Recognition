@@ -123,7 +123,7 @@ def extraction_convexHull(img,threshold_value,border_offset):
             print("Outer square not found!")
     
 
-def dxf_exporter(contour,path_and_name):
+def dxf_exporter(contour,path_and_name): 
     file=dxf.new('R2000')
     msp=file.modelspace()
     points=[]
