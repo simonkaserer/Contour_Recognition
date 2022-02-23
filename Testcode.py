@@ -17,12 +17,13 @@ def dxf_exporter(contour,path_and_name):
     cnt.append(cnt[0])
     for point in cnt:
         points.append((point[0][0],point[0][1]))
+        print(point)
     msp.add_lwpolyline(points)
     file.saveas(path_and_name)
 
 #open a picture from the desktop:
 path= '/home/pi/Desktop/'
-picture = cv2.imread('/home/pi/Desktop/testRgb.jpg')
+picture = cv2.imread('/home/pi/Desktop/testRightkey.jpg')
 
 
 gray=cv2.cvtColor(picture,cv2.COLOR_BGR2GRAY)
@@ -89,7 +90,7 @@ if len(contours) > 0:
         cv2.waitKey(0)
 
 
-        dxf_exporter(cont_tool,path+'test.dxf')
+        dxf_exporter(approx,path+'test.dxf')
 
 
 
