@@ -5,18 +5,8 @@
 import cv2
 import depthai as dai
 import numpy as np
-# added
 import os
 import Functions as fct
-#from threading import Timer
-
-def saveimg():
-    print ("Saving images!")
-    cv2.imwrite(os.path.join(path,'testLeft.jpg'),edgeLeftFrame)
-    cv2.imwrite(os.path.join(path,'testRight.jpg'),edgeRightFrame)
-    cv2.imwrite(os.path.join(path,'testRgb.jpg'),edgeRgbFrame)
-
-
 
 # Create pipeline
 pipeline = dai.Pipeline()
@@ -48,19 +38,10 @@ xinEdgeCfg.setStreamName(edgeCfgStr)
 # Properties
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-#camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-#camRgb.setVideoSize(1280,768)
-
-
-
 monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-#monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
 monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-#monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
-
-
 edgeDetectorRgb.setMaxOutputFrameSize(camRgb.getVideoWidth() * camRgb.getVideoHeight())
 
 # Linking
@@ -87,13 +68,7 @@ with dai.Device(pipeline) as device:
 
     print("Switch between sobel filter kernels using keys '1' and '2'\nTo save the images press '3'")
     
-    #added
-    
     path='/home/pi/Desktop'
-     #Set the timer to save a picture of each cam after 5 sec
-    #t = Timer(interval=10.0, function=saveimg)
-    # start the timer
-    #t.start()
     factor=0.0005
     thresh_val=170
 
@@ -106,8 +81,6 @@ with dai.Device(pipeline) as device:
         edgeRightFrame = edgeRight.getFrame()
         edgeRgbFrame = edgeRgb.getFrame()
         
-        
-
         # Show the frame
         #cv2.imshow(edgeLeftStr, edgeLeftFrame)
         #cv2.imshow(edgeRightStr, edgeRightFrame)
@@ -115,10 +88,10 @@ with dai.Device(pipeline) as device:
        
         # add the contour extraction here:
 
-        #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
+        edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
         #print(edge)
 
-        hull=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0)
+        #hull=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0)
         #print(hull)
             
         
@@ -145,10 +118,8 @@ with dai.Device(pipeline) as device:
             
         #added
         if key==ord('3'):
-            cv2.imwrite(os.path.join(path,'testLeftkey.jpg'),edgeLeftFrame)
-            cv2.imwrite(os.path.join(path,'testRightkey.jpg'),edgeRightFrame)
-            cv2.imwrite(os.path.join(path,'testRgbkey.jpg'),edgeRgbFrame)
-            print('Saving images with key')
+            print('Saving contour to dxf...')
+            fct.dxf_exporter(edge,path.append('testcontour.dxf'))
 
         if key==ord('4'):
             factor+=0.0001
