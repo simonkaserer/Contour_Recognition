@@ -2,6 +2,7 @@ import cv2
 import depthai as dai
 import numpy as np
 import os
+import ezdxf as dxf
 
 def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize,printpoints):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
@@ -44,7 +45,6 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
 
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-            #cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_KCOS)
         
             if len(cnts)>0:
                 cnt=sorted(cnts,key=cv2.contourArea)[-1]
@@ -121,4 +121,19 @@ def extraction_convexHull(img,threshold_value,border_offset):
                 print("Tool not found")
         else:
             print("Outer square not found!")
+    
+
+def dxf_exporter(contour,filename):
+    file=dxf.new('R2000')
+    msp=file.modelspace()
+    points=[]
+    #add the first entry of the contour to the end for a closed contour in dxf
+    contour.append(contour[0])
+    for point in contour:
+        points.append(point[0][0],point[0][1])
+    msp.add_lwpolyline(points)
+    file.saveas(filename)
+
+
+
     
