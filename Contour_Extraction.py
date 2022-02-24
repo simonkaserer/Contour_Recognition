@@ -94,12 +94,12 @@ with dai.Device(pipeline) as device:
         #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
         #print(edge)
         
-        if fct.check_for_square(edgeRgbFrame,thresh_val):
-            counter+=1
-            if counter>3:
-                #edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-                edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-                cv2.imshow("tool-curve",img_edge)
+        #if fct.check_for_square(edgeRgbFrame,thresh_val):
+        #    counter+=1
+        #    if counter>3:
+        #        #edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+        #        edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+        #        cv2.imshow("tool-curve",img_edge)
         #print(hull)
 
         #
@@ -114,50 +114,111 @@ with dai.Device(pipeline) as device:
             break
 
         if key == ord('1'):
-            print("Switching sobel filter kernel.")
-            cfg = dai.EdgeDetectorConfig()
-            sobelHorizontalKernel = [[1, 0, -1], [2, 0, -2], [1, 0, -1]]
-            sobelVerticalKernel = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
-            cfg.setSobelFilterKernels(sobelHorizontalKernel, sobelVerticalKernel)
-            edgeCfgQueue.send(cfg)
+            #print("Switching sobel filter kernel.")
+            #cfg = dai.EdgeDetectorConfig()
+            #sobelHorizontalKernel = [[1, 0, -1], [2, 0, -2], [1, 0, -1]]
+            #sobelVerticalKernel = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
+            #cfg.setSobelFilterKernels(sobelHorizontalKernel, sobelVerticalKernel)
+            #edgeCfgQueue.send(cfg)
+            print("save polyDP with every point")
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourDP1.dxf'),1)
+            fct.dxf_exporter_spline(edge,path.append('splineDP1.dxf'),1)
+            
 
         if key == ord('2'):
-            print("Switching sobel filter kernel.")
-            cfg = dai.EdgeDetectorConfig()
-            sobelHorizontalKernel = [[3, 0, -3], [10, 0, -10], [3, 0, -3]]
-            sobelVerticalKernel = [[3, 10, 3], [0, 0, 0], [-3, -10, -3]]
-            cfg.setSobelFilterKernels(sobelHorizontalKernel, sobelVerticalKernel)
-            edgeCfgQueue.send(cfg)
+            #print("Switching sobel filter kernel.")
+            #cfg = dai.EdgeDetectorConfig()
+            #sobelHorizontalKernel = [[3, 0, -3], [10, 0, -10], [3, 0, -3]]
+            #sobelVerticalKernel = [[3, 10, 3], [0, 0, 0], [-3, -10, -3]]
+            #cfg.setSobelFilterKernels(sobelHorizontalKernel, sobelVerticalKernel)
+            #edgeCfgQueue.send(cfg)
+            print("save polyDP with every 2nd point")
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourDP2.dxf'),2)
+            fct.dxf_exporter_spline(edge,path.append('splineDP2.dxf'),2)
+            
             
         #added
         if key==ord('3'):
-            print('Saving contour to dxf...')
-            fct.dxf_exporter(edge,path.append('toolcontour.dxf'),2)
+            #print('Saving contour to dxf...')
+            print("save polyDP with every 3rd point")
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourDP3.dxf'),3)
+            fct.dxf_exporter_spline(edge,path.append('splineDP3.dxf'),3)
+
 
         if key==ord('4'):
-            factor+=0.0001
-            print("Factor:")
-            print(factor)
-        if key==ord('5') and factor>0.0001:
-            factor-=0.0001
-            print("Factor:")
-            print(factor)
+            #factor+=0.0001
+            #print("Factor:")
+            #print(factor)
+            print("save polyDP with every 3rd point")
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.dxf_exporter(edge,path.append('contourHull1.dxf'),1)
+            fct.dxf_exporter_spline(edge,path.append('splineHull1.dxf'),1)
+            
+        if key==ord('5'):
+            #factor-=0.0001
+            #print("Factor:")
+            #print(factor)
+            print("save polyDP with every 3rd point")
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.dxf_exporter(edge,path.append('contourHull2.dxf'),2)
+            fct.dxf_exporter_spline(edge,path.append('splineHull2.dxf'),2)
+            
         if key==ord('6'):
-            factor+=0.001
-            print("Factor:")
-            print(factor)
+            #factor+=0.001
+            #print("Factor:")
+            #print(factor)
+            print("save polyDP with every 3rd point")
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+            fct.dxf_exporter(edge,path.append('contourHull3.dxf'),3)
+            fct.dxf_exporter_spline(edge,path.append('splineHull3.dxf'),3)
+            
         if key==ord('7') and factor > 0.001:
-            factor-=0.001
-            print("Factor:")
-            print(factor)
+            #factor-=0.001
+            #print("Factor:")
+            #print(factor)
+            print("save polyDP with every 3rd point")
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourTC1.dxf'),1)
+            fct.dxf_exporter_spline(edge,path.append('splineTC1.dxf'),1)
+            
         if key==ord('8'):
-            thresh_val+=10
-            print("Threshold:")
-            print(thresh_val)
+            #thresh_val+=10
+            #print("Threshold:")
+            #print(thresh_val)
+            print("save polyDP with every 3rd point")
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourTC2.dxf'),2)
+            fct.dxf_exporter_spline(edge,path.append('splineTC2.dxf'),2)
+            
         if key==ord('9') and thresh_val > 10:
-            thresh_val-=10
-            print("Threshold:")
-            print(thresh_val)
+            #thresh_val-=10
+            #print("Threshold:")
+            #print(thresh_val)
+            print("save polyDP with every 3rd point")
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+            fct.dxf_exporter(edge,path.append('contourTC3.dxf'),3)
+            fct.dxf_exporter_spline(edge,path.append('splineTC3.dxf'),3)
         
             
 
