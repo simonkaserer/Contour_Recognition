@@ -66,14 +66,14 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
                     tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
                     inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
-                    cv2.imshow("tool-curve",img_cont)
-                    return tool_contour
+                     #cv2.imshow("tool-curve",img_cont)
+                    return tool_contour,img_cont
             else:
                 print("Tool not found")
-                return None
+                
         else:
             print("Outer edge not found")
-            return None
+            
             
 
 def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
@@ -135,8 +135,8 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
                     # Draw the contour
                     inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     cont_img=cv2.drawContours(inv,[tool_hull],-1,(0,255,0),3)
-                    cv2.imshow("tool-curve",cont_img)
-                    return tool_hull 
+                    #cv2.imshow("tool-curve",cont_img)
+                    return tool_hull,cont_img
             else:
                 print("Tool not found")
         else:

@@ -91,16 +91,22 @@ with dai.Device(pipeline) as device:
 
         # add the contour extraction here:
 
-        #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
+        #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
         #print(edge)
         
         if fct.check_for_square(edgeRgbFrame,thresh_val):
             counter+=1
             if counter>3:
-                edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-                cv2.waitKey(0)
+                #edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+                edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+                cv2.imshow("tool-curve",img_edge)
         #print(hull)
-            
+
+        #
+        
+        
+        #cv2.imshow("tool Contour",img_edge)
+
         
 
         key = cv2.waitKey(50)
