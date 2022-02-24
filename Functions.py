@@ -152,6 +152,18 @@ def dxf_exporter(contour,path_and_name):
     msp.add_lwpolyline(points)
     file.saveas(path_and_name)
 
-
+def dxf_exporter_spline(contour,path_and_name): 
+    # Spline is not working with InkScape - Fusion 360 works (Inventor should also)
+    file=dxf.new('R2000')
+    msp=file.modelspace()
+    points=[]
+    #convert the contour to a list:
+    cnt=contour.tolist()
+    #add the first entry of the contour to the end for a closed contour in dxf
+    cnt.append(cnt[0])
+    for point in cnt:
+        points.append((point[0][0],point[0][1],0))
+    msp.add_spline(points)
+    file.saveas(path_and_name)
 
     
