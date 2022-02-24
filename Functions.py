@@ -43,38 +43,39 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
             warped_image=warped_image[0+border_offset:width-border_offset,0+border_offset:height-border_offset]
             # Look for the contour of the tool:
-            
-            # Look for the contour of the tool:
-            cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        
+            cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
             if len(cnts)>0:
                 cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                epsilon=factor_epsilon*cv2.arcLength(cnt,True)
+                tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
+                inv=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
+                img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
+            # Look for the contour of the tool:
+            #cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        
+            #if len(cnts)>0:
+                #cnt=sorted(cnts,key=cv2.contourArea)[-1]
                 # Turn the tool
                 (x,y),(w,h),a=cv2.minAreaRect(cnt)
                 rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
-                rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
+                rotated_image=cv2.warpAffine(img_cont,rot_mat,(int(w+x),int(h+y)))
                 # Crop the tool
-                cnts,hierarchy=cv2.findContours(rotated_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                x,y,w,h=cv2.boundingRect(cnt)
+                #cnts,hierarchy=cv2.findContours(rotated_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                #cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                #x,y,w,h=cv2.boundingRect(cnt)
                
-                cropped_image=rotated_image[y-2:y+h+2,x-2:x+w+2]
-                cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-                if len(cnts)>0:
-                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                    epsilon=factor_epsilon*cv2.arcLength(cnt,True)
-                    tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
+                cropped_image=rotated_image[int(y-h/2):int(y+h/2),int(x-w/2):int(x+w/2)]
+                
 
                 
-                    if printpoints:
-                        print("Number of appr. points:")
-                        print(len(tool_contour))
-                    
+                if printpoints:
+                    print("Number of appr. points:")
+                    print(len(tool_contour))
+                
 
-                    inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
-                    cont_tool=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
-                    cv2.imshow("tool-curve",cont_tool)
-                    return tool_contour
+                
+                cv2.imshow("tool-curve",cropped_image)
+                return tool_contour
             else:
                 print("Tool not found")
         else:
