@@ -4,7 +4,7 @@ import numpy as np
 import os
 import ezdxf as dxf
 
-def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize,printpoints):
+def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,printsize,printpoints,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -12,9 +12,10 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
     if len(contours) > 0:
         cnt = sorted(contours,key=cv2.contourArea)[-1]
         #Test: Show the found contour:
-        pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
-        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
-        cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
+        if show_outer_edge:
+            pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
+            edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
+            cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
         # warp the contour into a straight rectangle:
             # find the cornerpoints of the square
         epsilon=0.01*cv2.arcLength(cnt,True)
@@ -41,7 +42,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
-            warped_image=warped_image[0+border_offset:width-border_offset,0+border_offset:height-border_offset]
+            warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
             
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -69,11 +70,13 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset,printsize
                     return tool_contour
             else:
                 print("Tool not found")
+                return None
         else:
-            print("Outer square not found!")
+            print("Outer edge not found")
+            return None
             
 
-def extraction_convexHull(img,threshold_value,border_offset):
+def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -81,9 +84,10 @@ def extraction_convexHull(img,threshold_value,border_offset):
     if len(contours) > 0:
         cnt = sorted(contours,key=cv2.contourArea)[-1]
         #Test: Show the found contour:
-        pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
-        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
-        cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
+        if show_outer_edge:
+            pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
+            edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
+            cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
         # warp the contour into a straight rectangle:
             # find the cornerpoints of the square
         epsilon=0.01*cv2.arcLength(cnt,True)
@@ -108,7 +112,7 @@ def extraction_convexHull(img,threshold_value,border_offset):
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
-            warped_image=warped_image[0+border_offset:width-border_offset,0+border_offset:height-border_offset]
+            warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
 
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -139,7 +143,7 @@ def extraction_convexHull(img,threshold_value,border_offset):
             print("Outer square not found!")
     
 
-def dxf_exporter(contour,path_and_name): 
+def dxf_exporter(contour,path_and_name,every_nth_point): 
     file=dxf.new('R2000')
     msp=file.modelspace()
     points=[]
@@ -147,12 +151,12 @@ def dxf_exporter(contour,path_and_name):
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
-    for point in cnt:
+    for point in cnt[::every_nth_point]:
         points.append((point[0][0],point[0][1]))
     msp.add_lwpolyline(points)
     file.saveas(path_and_name)
 
-def dxf_exporter_spline(contour,path_and_name): 
+def dxf_exporter_spline(contour,path_and_name,every_nth_point): 
     # Spline is not working with InkScape - Fusion 360 works (Inventor should also)
     file=dxf.new('R2000')
     msp=file.modelspace()
@@ -161,9 +165,26 @@ def dxf_exporter_spline(contour,path_and_name):
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
-    for point in cnt:
+    for point in cnt[::every_nth_point]:
         points.append((point[0][0],point[0][1],0))
     msp.add_spline(points)
     file.saveas(path_and_name)
 
-    
+def check_for_square(img,threshold_value):
+    ret,thresh=cv2.threshold(img,threshold_value,255,0)
+    contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the max-area contour of the outer line:
+    if len(contours) > 0:
+        cnt = sorted(contours,key=cv2.contourArea)[-1]
+        #Test: Show the found contour:
+        pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
+        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
+            # find the cornerpoints of the square
+        epsilon=0.01*cv2.arcLength(cnt,True)
+            # find the square shape and check if it has 4 corners
+        outer_square=cv2.approxPolyDP(cnt,epsilon,True)
+        if len(outer_square) ==4:
+            return True
+        else:
+            return False

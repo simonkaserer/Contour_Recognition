@@ -15,10 +15,23 @@ def dxf_exporter(contour,path_and_name):
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
-    for point in cnt:
+    for point in cnt[::2]:
         points.append((point[0][0],point[0][1]))
-        print(point)
+        #print(point)
     msp.add_lwpolyline(points)
+    file.saveas(path_and_name)
+
+def dxf_exporter_spline(contour,path_and_name): 
+    file=dxf.new('R2000')
+    msp=file.modelspace()
+    points=[]
+    #convert the contour to a list:
+    cnt=contour.tolist()
+    #add the first entry of the contour to the end for a closed contour in dxf
+    cnt.append(cnt[0])
+    for point in cnt[::2]:
+        points.append((point[0][0],point[0][1]))
+    msp.add_spline(points)
     file.saveas(path_and_name)
 
 #open a picture from the desktop:
@@ -90,7 +103,7 @@ if len(contours) > 0:
 
 
         dxf_exporter(approx,path+'test.dxf')
-
+        dxf_exporter_spline(approx,path+'testspline.dxf')
 
 
 

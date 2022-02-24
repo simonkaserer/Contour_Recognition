@@ -71,6 +71,7 @@ with dai.Device(pipeline) as device:
     path='/home/pi/Desktop'
     factor=0.0005
     thresh_val=170
+    counter=0
 
     while(True):
         edgeLeft = edgeLeftQueue.get()
@@ -87,13 +88,17 @@ with dai.Device(pipeline) as device:
         #cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
        
 
-       
+
         # add the contour extraction here:
 
         #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
         #print(edge)
-
-        edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0)
+        
+        if fct.check_for_square(edgeRgbFrame,thresh_val):
+            counter+=1
+            if counter>3:
+                edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+                cv2.waitKey(0)
         #print(hull)
             
         
@@ -121,7 +126,7 @@ with dai.Device(pipeline) as device:
         #added
         if key==ord('3'):
             print('Saving contour to dxf...')
-            fct.dxf_exporter(edge,path.append('testcontour.dxf'))
+            fct.dxf_exporter(edge,path.append('toolcontour.dxf'),2)
 
         if key==ord('4'):
             factor+=0.0001
