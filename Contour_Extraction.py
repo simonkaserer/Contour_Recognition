@@ -68,7 +68,7 @@ with dai.Device(pipeline) as device:
 
     print("Switch between sobel filter kernels using keys '1' and '2'\nTo save the images press '3'")
     
-    path='/home/pi/Desktop'
+    path='/home/pi/Desktop/Testcontours/'
     factor=0.0005
     thresh_val=170
     counter=0
@@ -85,7 +85,7 @@ with dai.Device(pipeline) as device:
         # Show the frame
         #cv2.imshow(edgeLeftStr, edgeLeftFrame)
         #cv2.imshow(edgeRightStr, edgeRightFrame)
-        #cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
+        cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
        
 
 
@@ -124,8 +124,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourDP1.dxf'),1)
-            fct.dxf_exporter_spline(edge,path.append('splineDP1.dxf'),1)
+            fct.dxf_exporter(edge,path+'contourDP1.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineDP1.dxf',1)
             
 
         if key == ord('2'):
@@ -139,8 +139,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourDP2.dxf'),2)
-            fct.dxf_exporter_spline(edge,path.append('splineDP2.dxf'),2)
+            fct.dxf_exporter(edge,path+'contourDP2.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineDP2.dxf',2)
             
             
         #added
@@ -150,8 +150,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourDP3.dxf'),3)
-            fct.dxf_exporter_spline(edge,path.append('splineDP3.dxf'),3)
+            fct.dxf_exporter(edge,path+'contourDP3.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineDP3.dxf',3)
 
 
         if key==ord('4'):
@@ -162,8 +162,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path.append('contourHull1.dxf'),1)
-            fct.dxf_exporter_spline(edge,path.append('splineHull1.dxf'),1)
+            fct.dxf_exporter(edge,path+'contourHull1.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineHull1.dxf',1)
             
         if key==ord('5'):
             #factor-=0.0001
@@ -173,8 +173,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path.append('contourHull2.dxf'),2)
-            fct.dxf_exporter_spline(edge,path.append('splineHull2.dxf'),2)
+            fct.dxf_exporter(edge,path+'contourHull2.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineHull2.dxf',2)
             
         if key==ord('6'):
             #factor+=0.001
@@ -184,8 +184,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path.append('contourHull3.dxf'),3)
-            fct.dxf_exporter_spline(edge,path.append('splineHull3.dxf'),3)
+            fct.dxf_exporter(edge,path+'contourHull3.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineHull3.dxf',3)
             
         if key==ord('7') and factor > 0.001:
             #factor-=0.001
@@ -195,8 +195,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourTC1.dxf'),1)
-            fct.dxf_exporter_spline(edge,path.append('splineTC1.dxf'),1)
+            fct.dxf_exporter(edge,path+'contourTC1.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineTC1.dxf',1)
             
         if key==ord('8'):
             #thresh_val+=10
@@ -206,8 +206,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourTC2.dxf'),2)
-            fct.dxf_exporter_spline(edge,path.append('splineTC2.dxf'),2)
+            fct.dxf_exporter(edge,path+'contourTC2.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineTC2.dxf',2)
             
         if key==ord('9') and thresh_val > 10:
             #thresh_val-=10
@@ -217,8 +217,8 @@ with dai.Device(pipeline) as device:
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path.append('contourTC3.dxf'),3)
-            fct.dxf_exporter_spline(edge,path.append('splineTC3.dxf'),3)
+            fct.dxf_exporter(edge,path+'contourTC3.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineTC3.dxf',3)
         
             
 
