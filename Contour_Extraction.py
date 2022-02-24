@@ -86,17 +86,19 @@ with dai.Device(pipeline) as device:
         #cv2.imshow(edgeRightStr, edgeRightFrame)
         #cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(720,500)))
        
+
+       
         # add the contour extraction here:
 
-        edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
+        #edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False)
         #print(edge)
 
-        #hull=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0)
+        edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0)
         #print(hull)
             
         
 
-        key = cv2.waitKey(1000)
+        key = cv2.waitKey(50)
         if key == ord('q'):
             break
 
