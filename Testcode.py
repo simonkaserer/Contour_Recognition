@@ -77,7 +77,6 @@ if len(contours) > 0:
     if len(cnts)>0:
         cnt=sorted(cnts,key=cv2.contourArea)[-1]
         epsilon=0.0005*cv2.arcLength(cnt,True)
-        #   use the Douglas-Peucker algorithm for approximating a rectangle shape
         approx=cv2.approxPolyDP(cnt,epsilon,True)
         print("Number of appr. points:")
         print(len(approx))
