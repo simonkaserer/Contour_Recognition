@@ -37,7 +37,7 @@ xinEdgeCfg.setStreamName(edgeCfgStr)
 
 # Properties
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
-camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
 monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
 monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
 monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
@@ -69,8 +69,10 @@ with dai.Device(pipeline) as device:
     print("Switch between sobel filter kernels using keys '1' and '2'\nTo save the images press '3'")
     
     path='/home/pi/Desktop/Testcontours/'
+    res='4K_'
+    tool='Tixo'
     factor=0.0005
-    thresh_val=170
+    thresh_val=100
     counter=0
 
     while(True):
@@ -124,8 +126,10 @@ with dai.Device(pipeline) as device:
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourDP1.dxf',1)
-            fct.dxf_exporter_spline(edge,path+'splineDP1.dxf',1)
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourDP1'+tool+res+'.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineDP1'+tool+res+'.dxf',1)
             
 
         if key == ord('2'):
@@ -139,86 +143,107 @@ with dai.Device(pipeline) as device:
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourDP2.dxf',2)
-            fct.dxf_exporter_spline(edge,path+'splineDP2.dxf',2)
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourDP2'+tool+res+'.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineDP2'+tool+res+'.dxf',2)
             
             
         #added
         if key==ord('3'):
             #print('Saving contour to dxf...')
-            print("save polyDP with every 3rd point")
+            
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourDP3.dxf',3)
-            fct.dxf_exporter_spline(edge,path+'splineDP3.dxf',3)
+            cv2.imshow("tool Contour",img_edge)
+            print("save polyDP with every 3rd point")
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourDP3'+tool+res+'.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineDP3'+tool+res+'.dxf',3)
 
 
         if key==ord('4'):
             #factor+=0.0001
             #print("Factor:")
             #print(factor)
-            print("save polyDP with every 3rd point")
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path+'contourHull1.dxf',1)
-            fct.dxf_exporter_spline(edge,path+'splineHull1.dxf',1)
+            print("save hull with every point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourHull1'+tool+res+'.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineHull1'+tool+res+'.dxf',1)
             
         if key==ord('5'):
             #factor-=0.0001
             #print("Factor:")
             #print(factor)
-            print("save polyDP with every 3rd point")
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path+'contourHull2.dxf',2)
-            fct.dxf_exporter_spline(edge,path+'splineHull2.dxf',2)
+            print("save hull with every 2nd point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourHull2'+tool+res+'.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineHull2'+tool+res+'.dxf',2)
             
         if key==ord('6'):
             #factor+=0.001
             #print("Factor:")
             #print(factor)
-            print("save polyDP with every 3rd point")
+            
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
             edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
-            fct.dxf_exporter(edge,path+'contourHull3.dxf',3)
-            fct.dxf_exporter_spline(edge,path+'splineHull3.dxf',3)
+            print("save hull with every 3rd point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourHull3'+tool+res+'.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineHull3'+tool+res+'.dxf',3)
             
-        if key==ord('7') and factor > 0.001:
+        if key==ord('7'):
             #factor-=0.001
             #print("Factor:")
             #print(factor)
-            print("save polyDP with every 3rd point")
+            
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourTC1.dxf',1)
-            fct.dxf_exporter_spline(edge,path+'splineTC1.dxf',1)
+            print("save TeH Chin with every point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourTC1'+tool+res+'.dxf',1)
+            fct.dxf_exporter_spline(edge,path+'splineTC1'+tool+res+'.dxf',1)
             
         if key==ord('8'):
             #thresh_val+=10
             #print("Threshold:")
             #print(thresh_val)
-            print("save polyDP with every 3rd point")
+            
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourTC2.dxf',2)
-            fct.dxf_exporter_spline(edge,path+'splineTC2.dxf',2)
+            print("save TeH Chin with every 2nd point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourTC2'+tool+res+'.dxf',2)
+            fct.dxf_exporter_spline(edge,path+'splineTC2'+tool+res+'.dxf',2)
             
-        if key==ord('9') and thresh_val > 10:
+        if key==ord('9'):
             #thresh_val-=10
             #print("Threshold:")
             #print(thresh_val)
-            print("save polyDP with every 3rd point")
+            
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
             edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
-            fct.dxf_exporter(edge,path+'contourTC3.dxf',3)
-            fct.dxf_exporter_spline(edge,path+'splineTC3.dxf',3)
+            print("save TeH Chin with every 3rd point")
+            cv2.imshow("tool Contour",img_edge)
+            cv2.waitKey(0)
+            fct.dxf_exporter(edge,path+'contourTC3'+tool+res+'.dxf',3)
+            fct.dxf_exporter_spline(edge,path+'splineTC3'+tool+res+'.dxf',3)
         
             
 
