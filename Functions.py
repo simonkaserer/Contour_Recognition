@@ -4,7 +4,7 @@ import numpy as np
 import os
 import ezdxf as dxf
 
-def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,printsize,printpoints,show_outer_edge):
+def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,printsize,printpoints,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -54,19 +54,22 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
                 rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
                # Crop the tool
                 cropped_image=rotated_image[int(y-h/2):int(y+h/2),int(x-w/2):int(x+w/2)]
-                if printpoints:
-                    print("Number of appr. points:")
-                    print(len(tool_contour))
+                
                 # Find the rotated and cropped tool contour
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
                 if len(cnts)>0:
                     cnt=max(cnts,key=cv2.contourArea)
-                    epsilon=factor_epsilon*cv2.arcLength(cnt,True)
+                    for point in [cnt][::every_nth_point]:
+                        cnt_nth=point
+                    epsilon=factor_epsilon*cv2.arcLength(cnt_nth,True)
                     tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
                     #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     # create a black background
                     inv=np.zeros((int(h),int(w),3),dtype='uint8')
                     img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
+                    if printpoints:
+                        print("Number of appr. points:")
+                        print(len(tool_contour))
                      #cv2.imshow("tool-curve",img_cont)
                     return tool_contour,img_cont
                 else:
@@ -78,7 +81,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
     else:
         return None,None
 
-def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,printsize,printpoints,show_outer_edge):
+def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,printsize,printpoints,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -128,18 +131,21 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
                 rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
                # Crop the tool
                 cropped_image=rotated_image[int(y-h/2):int(y+h/2),int(x-w/2):int(x+w/2)]
-                if printpoints:
-                    print("Number of appr. points:")
-                    print(len(tool_contour))
+                
                 # Find the rotated and cropped tool contour
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
                 if len(cnts)>0:
                     cnt=max(cnts,key=cv2.contourArea)
-                    tool_contour=cnt
+                    for point in [cnt][::every_nth_point]:
+                        tool_contour=point
+                    #tool_contour=cnt
+                    if printpoints:
+                        print("Number of appr. points:")
+                        print(len(tool_contour))
                     #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     # create a black background
                     inv=np.zeros((int(h),int(w),3),dtype='uint8')
-                    img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
+                    img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2)
                      #cv2.imshow("tool-curve",img_cont)
                     return tool_contour,img_cont
                 else:
@@ -151,7 +157,7 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
     else:
         return None,None
 
-def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
+def extraction_convexHull(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,printsize,printpoints,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -204,8 +210,10 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
                 if len(cnts)>0:
                     cnt=max(cnts,key=cv2.contourArea)
+                    for point in [cnt][::every_nth_point]:
+                        cnt_nth=point
                     # Find the convex hull
-                    tool_hull=cv2.convexHull(cnt)
+                    tool_hull=cv2.convexHull(cnt_nth)
                     # Draw the contour
                     inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     cont_img=cv2.drawContours(inv,[tool_hull],-1,(0,255,0),3)
@@ -220,7 +228,7 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
     else:
         return None,None
 
-def dxf_exporter(contour,path_and_name,every_nth_point): 
+def dxf_exporter(contour,path_and_name): 
     file=dxf.new('R2000')
     msp=file.modelspace()
     points=[]
@@ -228,12 +236,12 @@ def dxf_exporter(contour,path_and_name,every_nth_point):
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
-    for point in cnt[::every_nth_point]:
+    for point in cnt:
         points.append((point[0][0],point[0][1]))
     msp.add_lwpolyline(points)
     file.saveas(path_and_name)
 
-def dxf_exporter_spline(contour,path_and_name,every_nth_point): 
+def dxf_exporter_spline(contour,path_and_name): 
     # Spline is not working with InkScape - Fusion 360 works (Inventor should also)
     file=dxf.new('R2000')
     msp=file.modelspace()
@@ -242,7 +250,7 @@ def dxf_exporter_spline(contour,path_and_name,every_nth_point):
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
-    for point in cnt[::every_nth_point]:
+    for point in cnt:
         points.append((point[0][0],point[0][1],0))
     msp.add_spline(points)
     file.saveas(path_and_name)
