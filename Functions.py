@@ -10,7 +10,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
 
     # Find the max-area contour of the outer line:
     if len(contours) > 0:
-        cnt = sorted(contours,key=cv2.contourArea)[-1]
+        cnt=max(contours,key=cv2.contourArea)
         #Test: Show the found contour:
         if show_outer_edge:
             pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
@@ -47,8 +47,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
             if len(cnts)>0:
-                cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                
+                cnt=max(cnts,key=cv2.contourArea)
                 # Turn the tool
                 (x,y),(w,h),a=cv2.minAreaRect(cnt)
                 rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
@@ -61,7 +60,7 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
                 # Find the rotated and cropped tool contour
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
                 if len(cnts)>0:
-                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                    cnt=max(cnts,key=cv2.contourArea)
                     epsilon=factor_epsilon*cv2.arcLength(cnt,True)
                     tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
                     #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
@@ -85,7 +84,7 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
 
     # Find the max-area contour of the outer line:
     if len(contours) > 0:
-        cnt = sorted(contours,key=cv2.contourArea)[-1]
+        cnt=max(contours,key=cv2.contourArea)
         #Test: Show the found contour:
         if show_outer_edge:
             pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
@@ -122,8 +121,7 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
             # Look for the contour of the tool:
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
             if len(cnts)>0:
-                cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                
+                cnt=max(cnts,key=cv2.contourArea)
                 # Turn the tool
                 (x,y),(w,h),a=cv2.minAreaRect(cnt)
                 rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
@@ -136,7 +134,7 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
                 # Find the rotated and cropped tool contour
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
                 if len(cnts)>0:
-                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                    cnt=max(cnts,key=cv2.contourArea)
                     tool_contour=cnt
                     #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
                     # create a black background
@@ -159,7 +157,7 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
 
     # Find the max-area contour of the outer line:
     if len(contours) > 0:
-        cnt = sorted(contours,key=cv2.contourArea)[-1]
+        cnt=max(contours,key=cv2.contourArea)
         #Test: Show the found contour:
         if show_outer_edge:
             pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
@@ -195,8 +193,7 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
             cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
 
             if len(cnts)>0:
-                cnt=sorted(cnts,key=cv2.contourArea)[-1]
-                
+                cnt=max(cnts,key=cv2.contourArea)
                 # Turn the tool
                 (x,y),(w,h),a=cv2.minAreaRect(cnt)
                 rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
@@ -206,7 +203,7 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
                 # Look for the contour of the cropped and turned tool:
                 cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
                 if len(cnts)>0:
-                    cnt=sorted(cnts,key=cv2.contourArea)[-1]
+                    cnt=max(cnts,key=cv2.contourArea)
                     # Find the convex hull
                     tool_hull=cv2.convexHull(cnt)
                     # Draw the contour
