@@ -72,7 +72,7 @@ with dai.Device(pipeline) as device:
     res='4K_'
     tool='Tixo'
     factor=0.0005
-    thresh_val=100
+    thresh_val=100 #adoptable!
     counter=0
 
     while(True):
@@ -105,6 +105,11 @@ with dai.Device(pipeline) as device:
         #print(hull)
 
         #
+        #edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,False,False,False)
+        edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,thresh_val,0,False)
+        if img_edge is not None:
+            cv2.imshow("tool Contour",img_edge)
+            
         
         
         #cv2.imshow("tool Contour",img_edge)

@@ -64,16 +64,21 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,prints
                     cnt=sorted(cnts,key=cv2.contourArea)[-1]
                     epsilon=factor_epsilon*cv2.arcLength(cnt,True)
                     tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
-                    inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    # create a black background
+                    inv=np.zeros((int(h),int(w),3),dtype='uint8')
                     img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
                      #cv2.imshow("tool-curve",img_cont)
                     return tool_contour,img_cont
+                else:
+                    return None,None
             else:
-                print("Tool not found")
-                
+                return None,None
         else:
-            print("Outer edge not found")
-            
+            return None,None
+    else:
+        return None,None
+
 def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,printsize,printpoints,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
@@ -133,15 +138,20 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,print
                 if len(cnts)>0:
                     cnt=sorted(cnts,key=cv2.contourArea)[-1]
                     tool_contour=cnt
-                    inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
+                    # create a black background
+                    inv=np.zeros((int(h),int(w),3),dtype='uint8')
                     img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
                      #cv2.imshow("tool-curve",img_cont)
                     return tool_contour,img_cont
+                else:
+                    return None,None
             else:
-                print("Tool not found")
-                
+                return None,None
         else:
-            print("Outer edge not found")            
+            return None,None
+    else:
+        return None,None
 
 def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
@@ -204,11 +214,14 @@ def extraction_convexHull(img,threshold_value,border_offset_px,show_outer_edge):
                     cont_img=cv2.drawContours(inv,[tool_hull],-1,(0,255,0),3)
                     #cv2.imshow("tool-curve",cont_img)
                     return tool_hull,cont_img
+                else:
+                    return None,None
             else:
-                print("Tool not found")
+                return None,None
         else:
-            print("Outer square not found!")
-    
+            return None,None
+    else:
+        return None,None
 
 def dxf_exporter(contour,path_and_name,every_nth_point): 
     file=dxf.new('R2000')
