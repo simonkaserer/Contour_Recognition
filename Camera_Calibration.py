@@ -59,7 +59,7 @@ with dai.Device(pipeline) as device:
 
     print('Calibration Program')
     print('Please take 20 Pictures by pressing the space bar to calibrate the cameras')
-    print('All of the three cameras should depict the pattern in its whole shape')
+    print('All of the three cameras should depict the pattern in its whole shape and the whole picture should be filled')
 
     num_pic=1
 
@@ -110,9 +110,9 @@ with dai.Device(pipeline) as device:
     objpoints_Rgb = []
     imgpoints_Rgb = []
 
-    images_left = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
-    images_right = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
-    images_Rgb = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
+    images_left = glob.glob('./CalPicsLeft/*.jpg')
+    images_right = glob.glob('./CalPicsLeft/*.jpg')
+    images_Rgb = glob.glob('./CalPicsLeft/*.jpg')
 
     for fname in images_left:
         img = cv2.imread(fname)
@@ -129,11 +129,11 @@ with dai.Device(pipeline) as device:
             # cv2.imshow('img', img)
             # cv2.waitKey(500)
     ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
-    img=cv2.imread('CalPicsLeft/CalLeft19.jpg')
+    img=cv2.imread('./CalPicsLeft/CalLeft19.jpg')
     h,w=img.shape[:2]
-    newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),0,(w,h))
+    newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
     # save the matrices to a .yaml file
-    specs={'newcameramtx_left':newcameramtx_left,'mtx_left':mtx_left,'dist_left':dist_left}
+    specs={'newcameramtx_left':newcameramtx_left.tolist(),'mtx_left':mtx_left.tolist(),'dist_left':dist_left.tolist()}
     with open('calibrationDataLeft.yaml','w') as f:
         yaml.safe_dump(specs,f)
 
@@ -150,11 +150,11 @@ with dai.Device(pipeline) as device:
             imgpoints_right.append(corners)
     
     ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints_right, imgpoints_right, gray.shape[::-1], None, None)
-    img=cv2.imread('CalPicsRight/CalRight19.jpg')
+    img=cv2.imread('./CalPicsRight/CalRight19.jpg')
     h,w=img.shape[:2]
-    newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),0,(w,h))
+    newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),1,(w,h))
     # save the matrices to a .yaml file
-    specs={'newcameramtx_right':newcameramtx_right,'mtx_right':mtx_right,'dist_right':dist_right}
+    specs={'newcameramtx_right':newcameramtx_right.tolist(),'mtx_right':mtx_right.tolist(),'dist_right':dist_right.tolist()}
     with open('calibrationDataRight.yaml','w') as f:
         yaml.safe_dump(specs,f)
 
@@ -172,10 +172,12 @@ with dai.Device(pipeline) as device:
 
     
     ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
-    img=cv2.imread('CalPicsRGB/CalRgb19.jpg')
+    img=cv2.imread('./CalPicsRGB/CalRgb19.jpg')
     h,w=img.shape[:2]
-    newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),0,(w,h))
+    newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),1,(w,h))
     # save the matrices to a .yaml file
-    specs={'newcameramtx_Rgb':newcameramtx_Rgb,'mtx_Rgb':mtx_Rgb,'dist_Rgb':dist_Rgb}
+    specs={'newcameramtx_Rgb':newcameramtx_Rgb.tolist(),'mtx_Rgb':mtx_Rgb.tolist(),'dist_Rgb':dist_Rgb.tolist()}
     with open('calibrationDataRgb.yaml','w') as f:
         yaml.safe_dump(specs,f)
+
+    print('Calibration process finished!')
