@@ -75,6 +75,7 @@ with dai.Device(pipeline) as device:
     thresh_val=150 #adoptable!
     counter=0
     every_nth_point=1
+    flag=False
 
     while(True):
         edgeLeft = edgeLeftQueue.get()
@@ -104,20 +105,40 @@ with dai.Device(pipeline) as device:
         #        edge,img_edge=fct.extraction_polyDP(edgeRgbFrame,factor,thresh_val,2,False,False,False)
         #        cv2.imshow("tool-curve",img_edge)
         #print(hull)
-
+        key = cv2.waitKey(50) 
         #
-        edge,img_edge=fct.extraction_TehChin(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,False,True)
-        #edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,False,False)
-        if img_edge is not None:
-            cv2.imshow("tool Contour",img_edge)
-            
+        while (key!=ord('q')):
+            edge,img_edge=fct.extraction_None(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,True,True)
+            #edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,False,False)
+            if img_edge is not None:
+                cv2.imshow("tool Contour",img_edge)
+            key = cv2.waitKey(50)
+            if key == ord('q'):
+                flag=True
+                break
+            if key == ord(' '):
+                break
+            if key == ord('1') and every_nth_point<30:
+                every_nth_point+=1
+                print(every_nth_point)
+            if key == ord('2') and every_nth_point>1:
+                every_nth_point-=1
+                print(every_nth_point)
+            if key==ord('3') and thresh_val<250:
+                thresh_val+=10
+                print(thresh_val)
+            if key==ord('4') and thresh_val>30:
+                thresh_val-=10
+                print(thresh_val)
+
         
         
-        #cv2.imshow("tool Contour",img_edge)
 
         
 
         key = cv2.waitKey(50)
+        if flag is True:
+            break
         if key == ord('q'):
             break
 
