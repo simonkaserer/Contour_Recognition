@@ -97,7 +97,7 @@ with dai.Device(pipeline) as device:
         #cv2.imshow(edgeLeftStr, edgeLeftFrame)
         #cv2.imshow(edgeRightStr, edgeRightFrame)
         edgeRgbFrame_undistorted=cv2.undistort(edgeRgbFrame,mtx_Rgb,dist_Rgb,None,newcameramtx_Rgb)
-        cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame_undistorted,(720,500)))
+        cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame_undistorted,(700,500)))
         
 
 

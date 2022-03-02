@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import glob
 
-images_left = glob.glob('./CalPicsLeft/*.jpg')
+images_left = glob.glob('./CalPicsRGB/*.jpg')
 print(f"{len(images_left)} pictures added")
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -18,9 +18,9 @@ objp_left[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
 objpoints_left = [] # 3d point in real world space
 imgpoints_left = [] 
 
+i=1
 
-
-for fname in images_left:
+for fname in images_left[:10:]:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
@@ -33,15 +33,16 @@ for fname in images_left:
             imgpoints_left.append(corners)
             # Draw and display the corners
             cv2.drawChessboardCorners(img, (8,6), corners2, ret)
-            #cv2.imshow('img', img)
-            #cv2.waitKey(1000)
+            cv2.imshow('img'+str(i), img)
+            cv2.waitKey(1000)
+            i+=1
 ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left,gray.shape[::-1], None, None)
-img=cv2.imread('CalPicsLeft/CalLeft19.jpg')
+img=cv2.imread('CalPicsRGB/CalRgb19.jpg')
 h,w=img.shape[:2]
 newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
-np.save('./CalData/test_mtx_left.npy',mtx_left)
-np.save('./CalData/test_dist_left.npy',dist_left)
-np.save('./CalData/test_newcameramtx.npy',newcameramtx_left)
+#np.save('./CalData/test_mtx_left.npy',mtx_left)
+#np.save('./CalData/test_dist_left.npy',dist_left)
+#np.save('./CalData/test_newcameramtx.npy',newcameramtx_left)
 
 
 
