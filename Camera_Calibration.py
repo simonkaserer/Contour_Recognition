@@ -4,6 +4,9 @@
 
 import cv2
 import depthai as dai
+import yaml
+import glob
+import numpy as np
 
 # Create pipeline
 pipeline = dai.Pipeline()
@@ -40,6 +43,8 @@ camRgb.video.link(xoutRgb.input)
 monoLeft.out.link(xoutLeft.input)
 monoRight.out.link(xoutRight.input)
 
+
+
 # Connect to device
 with dai.Device(pipeline) as device:
 
@@ -48,7 +53,17 @@ with dai.Device(pipeline) as device:
     qRight=device.getOutputQueue(RightStr,4,False)
     qRgb=device.getOutputQueue(RgbStr,4,False)
 
-    while True:
+    path_left='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsLeft/'
+    path_right='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsRight/'
+    path_Rgb='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsRGB/'
+
+    print('Calibration Program')
+    print('Please take 20 Pictures by pressing the space bar to calibrate the cameras')
+    print('All of the three cameras should depict the pattern in its whole shape')
+
+    num_pic=1
+
+    while num_pic<=20:
         inLeft=qLeft.get()
         inRight=qRight.get()
         inRgb=qRgb.get()
@@ -57,9 +72,109 @@ with dai.Device(pipeline) as device:
         RightFrame=inRight.getFrame()
         RgbFrame=inRgb.getCvFrame()
 
-        cv2.imshow(LeftStr,LeftFrame)
-        cv2.imshow(RightStr,RightFrame)
-        cv2.imshow(RgbStr,RgbFrame)
+        cv2.imshow(LeftStr,cv2.resize(LeftFrame,(400,300)))
+        cv2.imshow(RightStr,cv2.resize(RightFrame,(400,300)))
+        cv2.imshow(RgbStr,cv2.resize(RgbFrame,(400,300)))
 
-        if cv2.waitKey(1) == ord('q'):
-            break
+        str_img_left='CalLeft'+str(num_pic)
+        str_img_right='CalRight'+str(num_pic)
+        str_img_RGB='CalRgb'+str(num_pic)
+
+        key=cv2.waitKey(10)
+        if key == ord('q'):
+            quit()
+        if key ==ord(' '):
+            cv2.imwrite((path_left+str_img_left+'.jpg'),LeftFrame)
+            cv2.imwrite((path_right+str_img_right+'.jpg'),RightFrame)
+            cv2.imwrite((path_Rgb+str_img_RGB)+'.jpg',RgbFrame)
+            print(f"Saving picture number {num_pic}")
+            num_pic+=1
+    # start the calibration process from the OpenCV documentation
+    print('Start the calibration process')
+   # termination criteria
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+    objp_left = np.zeros((6*8,3), np.float32)
+    objp_left[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
+    objp_right = np.zeros((6*8,3), np.float32)
+    objp_right[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
+    objp_Rgb = np.zeros((6*8,3), np.float32)
+    objp_Rgb[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
+
+    # Arrays to store object points and image points from all the images.
+    objpoints_left = [] # 3d point in real world space
+    imgpoints_left = [] # 2d points in image plane.
+    objpoints_right = []
+    imgpoints_right = []
+    objpoints_Rgb = []
+    imgpoints_Rgb = []
+
+    images_left = glob.glob('CalPicsLeft/*.jpg')
+    images_right = glob.glob('CalPicsRight/*.jpg')
+    images_Rgb = glob.glob('CalPicsRGB/*.jpg')
+
+    for fname in images_left:
+        img = cv2.imread(fname)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            objpoints_left.append(objp_left)
+            corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+            imgpoints_left.append(corners)
+            # # Draw and display the corners
+            # cv2.drawChessboardCorners(img, (7,6), corners2, ret)
+            # cv2.imshow('img', img)
+            # cv2.waitKey(500)
+    ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
+    img=cv2.imread('CalPicsLeft/CalLeft19.jpg')
+    h,w=img.shape[:2]
+    newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),0,(w,h))
+    # save the matrices to a .yaml file
+    specs={'newcameramtx_left':newcameramtx_left,'mtx_left':mtx_left,'dist_left':dist_left}
+    with open('calibrationDataLeft.yaml','w') as f:
+        yaml.safe_dump(specs,f)
+
+
+    for fname in images_right:
+        img = cv2.imread(fname)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            objpoints_right.append(objp_right)
+            corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+            imgpoints_right.append(corners)
+    
+    ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints_right, imgpoints_right, gray.shape[::-1], None, None)
+    img=cv2.imread('CalPicsRight/CalRight19.jpg')
+    h,w=img.shape[:2]
+    newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),0,(w,h))
+    # save the matrices to a .yaml file
+    specs={'newcameramtx_right':newcameramtx_right,'mtx_right':mtx_right,'dist_right':dist_right}
+    with open('calibrationDataRight.yaml','w') as f:
+        yaml.safe_dump(specs,f)
+
+
+    for fname in images_Rgb:
+        img = cv2.imread(fname)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            objpoints_Rgb.append(objp_Rgb)
+            corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+            imgpoints_Rgb.append(corners)
+
+    
+    ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
+    img=cv2.imread('CalPicsRGB/CalRgb19.jpg')
+    h,w=img.shape[:2]
+    newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),0,(w,h))
+    # save the matrices to a .yaml file
+    specs={'newcameramtx_Rgb':newcameramtx_Rgb,'mtx_Rgb':mtx_Rgb,'dist_Rgb':dist_Rgb}
+    with open('calibrationDataRgb.yaml','w') as f:
+        yaml.safe_dump(specs,f)
