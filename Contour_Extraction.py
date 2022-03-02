@@ -76,6 +76,7 @@ with dai.Device(pipeline) as device:
     counter=0
     every_nth_point=1
     flag=False
+    connectpoints=False
 
     while(True):
         edgeLeft = edgeLeftQueue.get()
@@ -108,7 +109,7 @@ with dai.Device(pipeline) as device:
         key = cv2.waitKey(50) 
         #
         while (key!=ord('q')):
-            edge,img_edge=fct.extraction_None(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,True,True)
+            edge,img_edge=fct.extraction_None(edgeRgbFrame,factor,thresh_val,2,every_nth_point,connectpoints,False,True,True)
             #edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,False,False)
             if img_edge is not None:
                 cv2.imshow("tool Contour",img_edge)
@@ -130,6 +131,10 @@ with dai.Device(pipeline) as device:
             if key==ord('4') and thresh_val>30:
                 thresh_val-=10
                 print(thresh_val)
+            if key==ord('5'):
+                connectpoints=True
+            if key==ord('6'):
+                connectpoints=False
 
         
         
