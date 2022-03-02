@@ -89,9 +89,10 @@ with dai.Device(pipeline) as device:
             cv2.imwrite((path_Rgb+str_img_RGB)+'.jpg',RgbFrame)
             print(f"Saving picture number {num_pic}")
             num_pic+=1
+    cv2.destroyAllWindows()
     # start the calibration process from the OpenCV documentation
     print('Start the calibration process')
-   # termination criteria
+    # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp_left = np.zeros((6*8,3), np.float32)
@@ -109,15 +110,15 @@ with dai.Device(pipeline) as device:
     objpoints_Rgb = []
     imgpoints_Rgb = []
 
-    images_left = glob.glob('CalPicsLeft/*.jpg')
-    images_right = glob.glob('CalPicsRight/*.jpg')
-    images_Rgb = glob.glob('CalPicsRGB/*.jpg')
+    images_left = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
+    images_right = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
+    images_Rgb = glob.glob('MCI_Contour_Recognition/CalPicsLeft/*.jpg')
 
     for fname in images_left:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        ret, corners = cv2.findChessboardCorners(gray, (8,6), None)
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints_left.append(objp_left)
@@ -141,7 +142,7 @@ with dai.Device(pipeline) as device:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        ret, corners = cv2.findChessboardCorners(gray, (8,6), None)
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints_right.append(objp_right)
@@ -162,7 +163,7 @@ with dai.Device(pipeline) as device:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (7,6), None)
+        ret, corners = cv2.findChessboardCorners(gray, (8,6), None)
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints_Rgb.append(objp_Rgb)
