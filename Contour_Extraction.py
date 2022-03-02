@@ -109,7 +109,7 @@ with dai.Device(pipeline) as device:
         key = cv2.waitKey(50) 
         #
         while (key!=ord('q')):
-            edge,img_edge=fct.extraction_None(edgeRgbFrame,factor,thresh_val,2,every_nth_point,connectpoints,False,True,True)
+            edge,img_edge=fct.extraction_canny(edgeRgbFrame,factor,thresh_val,2,every_nth_point,connectpoints,False,True,True)
             #edge,img_edge=fct.extraction_convexHull(edgeRgbFrame,factor,thresh_val,2,every_nth_point,False,False,False)
             if img_edge is not None:
                 cv2.imshow("tool Contour",img_edge)
