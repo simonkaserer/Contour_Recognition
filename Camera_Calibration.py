@@ -45,7 +45,7 @@ monoRight.out.link(xoutRight.input)
 
 squaresize=21 #in mm
 
-def main():
+def main():  
     # Connect to device
     with dai.Device(pipeline) as device:
 
