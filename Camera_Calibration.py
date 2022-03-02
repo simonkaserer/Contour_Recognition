@@ -31,7 +31,7 @@ xoutRgb.setStreamName(RgbStr)
 
 # Properties
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
-camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
 monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
@@ -42,8 +42,6 @@ monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 camRgb.video.link(xoutRgb.input)
 monoLeft.out.link(xoutLeft.input)
 monoRight.out.link(xoutRight.input)
-
-
 
 # Connect to device
 with dai.Device(pipeline) as device:
@@ -72,9 +70,12 @@ with dai.Device(pipeline) as device:
         RightFrame=inRight.getFrame()
         RgbFrame=inRgb.getCvFrame()
 
-        cv2.imshow(LeftStr,cv2.resize(LeftFrame,(400,300)))
-        cv2.imshow(RightStr,cv2.resize(RightFrame,(400,300)))
-        cv2.imshow(RgbStr,cv2.resize(RgbFrame,(400,300)))
+        Left_small=LeftFrame
+        Right_small=RightFrame
+        Rgb_small=RgbFrame
+        cv2.imshow(LeftStr,cv2.resize(Left_small,(400,300)))
+        cv2.imshow(RightStr,cv2.resize(Right_small,(400,300)))
+        cv2.imshow(RgbStr,cv2.resize(Rgb_small,(400,300)))
 
         str_img_left='CalLeft'+str(num_pic)
         str_img_right='CalRight'+str(num_pic)
@@ -132,11 +133,10 @@ with dai.Device(pipeline) as device:
     img=cv2.imread('./CalPicsLeft/CalLeft19.jpg')
     h,w=img.shape[:2]
     newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
-    # save the matrices to a .yaml file
-    specs={'newcameramtx_left':newcameramtx_left.tolist(),'mtx_left':mtx_left.tolist(),'dist_left':dist_left.tolist()}
-    with open('calibrationDataLeft.yaml','w') as f:
-        yaml.safe_dump(specs,f)
-
+    # save the matrices to .npy files
+    np.save('./CalData/mtx_left.npy',mtx_left)
+    np.save('./CalData/dist_left.npy',dist_left)
+    np.save('./CalData/newcameramtx_left.npy',newcameramtx_left)
 
     for fname in images_right:
         img = cv2.imread(fname)
@@ -153,11 +153,10 @@ with dai.Device(pipeline) as device:
     img=cv2.imread('./CalPicsRight/CalRight19.jpg')
     h,w=img.shape[:2]
     newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),1,(w,h))
-    # save the matrices to a .yaml file
-    specs={'newcameramtx_right':newcameramtx_right.tolist(),'mtx_right':mtx_right.tolist(),'dist_right':dist_right.tolist()}
-    with open('calibrationDataRight.yaml','w') as f:
-        yaml.safe_dump(specs,f)
-
+    # save the matrices to .npy files
+    np.save('./CalData/mtx_right.npy',mtx_right)
+    np.save('./CalData/dist_right.npy',dist_right)
+    np.save('./CalData/newcameramtx_right.npy',newcameramtx_right)
 
     for fname in images_Rgb:
         img = cv2.imread(fname)
@@ -170,14 +169,13 @@ with dai.Device(pipeline) as device:
             corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
             imgpoints_Rgb.append(corners)
 
-    
     ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
     img=cv2.imread('./CalPicsRGB/CalRgb19.jpg')
     h,w=img.shape[:2]
     newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),1,(w,h))
-    # save the matrices to a .yaml file
-    specs={'newcameramtx_Rgb':newcameramtx_Rgb.tolist(),'mtx_Rgb':mtx_Rgb.tolist(),'dist_Rgb':dist_Rgb.tolist()}
-    with open('calibrationDataRgb.yaml','w') as f:
-        yaml.safe_dump(specs,f)
+    # save the matrices to .npy files
+    np.save('./CalData/mtx_Rgb.npy',mtx_Rgb)
+    np.save('./CalData/dist_Rgb.npy',dist_Rgb)
+    np.save('./CalData/newcameramtx_Rgb.npy',newcameramtx_Rgb)
 
     print('Calibration process finished!')

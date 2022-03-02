@@ -6,7 +6,6 @@ from traceback import FrameSummary
 import cv2
 import numpy as np
 import glob
-import yaml
 
 images_left = glob.glob('./CalPicsLeft/*.jpg')
 print(f"{len(images_left)} pictures added")
@@ -40,19 +39,12 @@ ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objp
 img=cv2.imread('CalPicsLeft/CalLeft19.jpg')
 h,w=img.shape[:2]
 newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
-# save the matrices to a .yaml file
-specs={'newcameramtx_left':newcameramtx_left.tolist(),'mtx_left':mtx_left.tolist(),'dist_left':dist_left.tolist()}
-with open('calibrationDataLeft.yaml','w') as f:
-    yaml.safe_dump(specs,f)
+np.save('./CalData/test_mtx_left.npy',mtx_left)
+np.save('./CalData/test_dist_left.npy',dist_left)
+np.save('./CalData/test_newcameramtx.npy',newcameramtx_left)
 
-with open('calibrationDataLeft.yaml') as f:
-    loaded=yaml.load(f,yaml.Loader)
-loaded=np.array(loaded)
 
-print(loaded)
-#print('   ')
-#print(specs)
-#print(specs['dist_left'])
 
-cv2.imshow('undistorted',cv2.undistort(img,mtx_left,dist_left,newcameramtx_left))
+
+cv2.imshow('undistorted',cv2.undistort(img,mtx_left,dist_left,None,newcameramtx_left))
 cv2.waitKey(0)
