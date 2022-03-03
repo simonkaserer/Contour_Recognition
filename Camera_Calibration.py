@@ -120,7 +120,18 @@ def main():
 
         images_left = glob.glob('./CalPicsLeft/*.jpg')
         images_right = glob.glob('./CalPicsRight/*.jpg')
-        images_Rgb = glob.glob('./CalPicsRGB*.jpg')
+        images_Rgb = glob.glob('./CalPicsRGB/*.jpg')
+        if len(images_left)<10 :
+            print('Not enough pictures found in CalPicsLeft!')
+            quit()
+        if len(images_right)<10 :
+            print('Not enough pictures found in CalPicsRight!')
+            quit()
+        if len(images_Rgb)<10 :
+            print('Not enough pictures found in CalPicsRGB!')
+            quit()
+
+
 
         for fname in images_left:
             img = cv2.imread(fname)
@@ -137,14 +148,14 @@ def main():
                 # cv2.imshow('img', img)
                 # cv2.waitKey(500)
         ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsLeft/CalLeft19.jpg')
+        img=cv2.imread('./CalPicsLeft/CalLeft12.jpg')
         h,w=img.shape[:2]
         newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
         # save the matrices to .npy files
         np.save('./CalData/mtx_left.npy',mtx_left)
         np.save('./CalData/dist_left.npy',dist_left)
         np.save('./CalData/newcameramtx_left.npy',newcameramtx_left)
-
+        print('Left camera calibrated!')
         for fname in images_right:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -157,14 +168,14 @@ def main():
                 imgpoints_right.append(corners)
         
         ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints_right, imgpoints_right, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsRight/CalRight19.jpg')
+        img=cv2.imread('./CalPicsRight/CalRight12.jpg')
         h,w=img.shape[:2]
         newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),1,(w,h))
         # save the matrices to .npy files
         np.save('./CalData/mtx_right.npy',mtx_right)
         np.save('./CalData/dist_right.npy',dist_right)
         np.save('./CalData/newcameramtx_right.npy',newcameramtx_right)
-
+        print('Right camera calibrated!')
         for fname in images_Rgb:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -177,7 +188,7 @@ def main():
                 imgpoints_Rgb.append(corners)
 
         ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsRGB/CalRgb19.jpg')
+        img=cv2.imread('./CalPicsRGB/CalRgb12.jpg')
         h,w=img.shape[:2]
         newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),1,(w,h))
         # save the matrices to .npy files
