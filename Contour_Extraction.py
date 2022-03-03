@@ -78,6 +78,7 @@ with dai.Device(pipeline) as device:
     every_nth_point=1
     flag=False
     connectpoints=False
+    i=400
 
     # Load the calibration data
     mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
@@ -107,7 +108,7 @@ with dai.Device(pipeline) as device:
         
         while (key!=ord('q')):
             # function call                     image ,DP-factor,TH value,pixel offset,use nth point,connect points,printisze,print number of points,show outer edge
-            edge,img_edge=fct.extraction_None(edgeRgbFrame_undistorted,factor,thresh_val,2,every_nth_point,connectpoints,False,True,False)
+            edge,img_edge=fct.extraction_polyDP(edgeRgbFrame_undistorted,factor,thresh_val,0,every_nth_point,connectpoints,False,False,False)
             
             if img_edge is not None:
                 cv2.imshow("tool Contour",img_edge)
@@ -133,7 +134,15 @@ with dai.Device(pipeline) as device:
                 connectpoints=True
             if key==ord('6'):
                 connectpoints=False
-
+            if key==ord('7'):
+                factor+=0.0001
+                print(factor)
+            if key==ord('8'):
+                factor-=0.0001
+                print(factor)
+            if key==ord('0'):
+                fct.dxf_exporter(edge,'/home/pi/Desktop/Testcontours/'+str(i)+'.dxf')
+                i+=1
         
         
 

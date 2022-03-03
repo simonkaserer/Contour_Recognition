@@ -51,8 +51,8 @@ def warp_img(img,threshold_value,border_offset_px,show_outer_edge):
                 rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
                 rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
                # Crop the tool
-                cropped_image=rotated_image[int(y-h/2):int(y+h/2),int(x-w/2):int(x+w/2)]
-                return cropped_image,w,h,width,height
+                cropped_image=rotated_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
+                return cropped_image,w+4,h+4,width,height
             else:
                 return None,None,None,None,None
         else:   
@@ -142,8 +142,9 @@ def extraction_None(img,factor_epsilon,threshold_value,border_offset_px,every_nt
     cropped_image,w,h,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
     if cropped_image is None:
         return None,None
+    else:
     #for testing
-    cv2.imshow('cropped image',cropped_image)
+        cv2.imshow('cropped image',cropped_image)
     print(framewidth)
     print(frameheight)
 
