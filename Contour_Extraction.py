@@ -106,8 +106,8 @@ with dai.Device(pipeline) as device:
         key = cv2.waitKey(50) 
         
         while (key!=ord('q')):
-
-            edge,img_edge=fct.extraction_None(edgeRgbFrame_undistorted,factor,thresh_val,2,every_nth_point,connectpoints,False,True,True)
+            # function call                     image ,DP-factor,TH value,pixel offset,use nth point,connect points,printisze,print number of points,show outer edge
+            edge,img_edge=fct.extraction_None(edgeRgbFrame_undistorted,factor,thresh_val,2,every_nth_point,connectpoints,False,True,False)
             
             if img_edge is not None:
                 cv2.imshow("tool Contour",img_edge)

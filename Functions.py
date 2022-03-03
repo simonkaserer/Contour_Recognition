@@ -144,7 +144,9 @@ def extraction_None(img,factor_epsilon,threshold_value,border_offset_px,every_nt
     cropped_image,w,h=warp_img(img,threshold_value,border_offset_px,show_outer_edge,printsize)
     if cropped_image is None:
         return None,None
-
+    #for testing
+    cv2.imshow('cropped image',cropped_image)
+    
     # Find the rotated and cropped tool contour
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
