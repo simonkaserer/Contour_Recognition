@@ -5,22 +5,31 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-class window(QWidget):
-   def __init__(self, parent = None):
-      super(window, self).__init__(parent)
-      self.resize(200,50)
-      self.setWindowTitle("PyQt5")
-      self.label = QLabel(self)
-      self.label.setText("Hello World")
-      font = QFont()
-      font.setFamily("Arial")
-      font.setPointSize(16)
-      self.label.setFont(font)
-      self.label.move(50,20)
-def main():
+
+def window():
    app = QApplication(sys.argv)
-   ex = window()
-   ex.show()
+   win = QDialog()
+   b1 = QPushButton(win)
+   b1.setText("Button1")
+   b1.move(50,20)
+   b1.clicked.connect(b1_clicked)
+   
+   b2 = QPushButton(win)
+   b2.setText("Button2")
+   b2.move(50,50)
+   b2.clicked.connect(b2_clicked)
+   
+   win.setGeometry(100,100,200,100)
+
+   win.setWindowTitle("PyQt5")
+   win.show()
    sys.exit(app.exec_())
+
+def b1_clicked():
+   print ("Button 1 clicked")
+
+def b2_clicked():
+   print ("Button 2 clicked")
+
 if __name__ == '__main__':
-   main()
+   window()
