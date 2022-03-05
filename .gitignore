@@ -8,6 +8,7 @@ CalPicsLeft/
 CalPicsRight/
 CalPicsRGB/
 CalData/
+GUI/
 
 *.yaml
 *.npy
