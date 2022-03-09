@@ -7,7 +7,7 @@ then
 pid=$(grep -E '[0-9]' ./keyboard.pid)
 kill -15 $pid 
 # start the keyboard and store the pid in this file:
-matchbox-keyboard & echo $! > ./keyboard.pid
+onboard & echo $! > ./keyboard.pid
 else
 # start the keyboard and store the pid in this file:
 onboard & echo $! > ./keyboard.pid
