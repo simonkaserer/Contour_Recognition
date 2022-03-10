@@ -32,7 +32,7 @@ class MainWindow():
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
         self.ContourView.setTextFormat(QtCore.Qt.AutoText)
-        self.ContourView.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
+        #self.ContourView.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
         self.ContourView.setScaledContents(True)
         self.ContourView.setObjectName("ContourView")
 
@@ -45,7 +45,7 @@ class MainWindow():
         self.Preview.setToolTip("Contour Preview")
         self.Preview.setWhatsThis("")
         self.Preview.setText("")
-        self.Preview.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
+        #self.Preview.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
         self.Preview.setScaledContents(True)
         self.Preview.setObjectName("Preview")
 

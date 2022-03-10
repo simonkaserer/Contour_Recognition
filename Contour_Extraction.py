@@ -7,6 +7,7 @@ import depthai as dai
 import numpy as np
 import yaml
 import Functions as fct
+from contourGUI import *
 
 
 # Create pipeline
@@ -85,6 +86,16 @@ with dai.Device(pipeline) as device:
     dist_Rgb=np.load('./CalData/dist_Rgb.npy')
     newcameramtx_Rgb=np.load('./CalData/newcameramtx_Rgb.npy')
 
+    app = QtWidgets.QApplication(sys.argv)
+    ContourExtraction = QtWidgets.QMainWindow()
+    gui = MainWindow(ContourExtraction,True)
+    #gui.setupUi(ContourExtraction)
+    ContourExtraction.show()
+    #gui.Preview.setPixmap(QtGui.QPixmap('./test.jpg'))
+    #image = cv2.imread('test.jpg')
+    #update_contour(gui,image)
+    
+
     while(True):
         edgeLeft = edgeLeftQueue.get()
         edgeRight = edgeRightQueue.get()
@@ -112,6 +123,8 @@ with dai.Device(pipeline) as device:
             
             if img_edge is not None:
                 cv2.imshow("tool Contour",img_edge)
+            
+            
             key = cv2.waitKey(50)
             if key == ord('q'):
                 flag=True
@@ -150,10 +163,11 @@ with dai.Device(pipeline) as device:
 
         key = cv2.waitKey(50)
         if flag is True:
-            break
+            sys.exit()
         if key == ord('q'):
-            break
-
+            sys.exit()
+    
+    sys.exit(app.exec_())
         
             
 
