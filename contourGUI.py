@@ -108,6 +108,15 @@ class MainWindow():
         self.Button_resetFilename.setObjectName("Button_resetFilename")
         self.Button_resetFilename.clicked.connect(self.reset_filename)
 
+        self.Button_addNewItem= QtWidgets.QPushButton(self.centralwidget)
+        self.Button_addNewItem.setGeometry(QtCore.QRect(1180, 140, 50, 50))
+        self.Button_addNewItem.setObjectName("Button_addNewItem")
+        font=QtGui.QFont()
+        font.setPointSize(20)
+        self.Button_addNewItem.setFont(font)
+        self.Button_addNewItem.setText('+')
+        self.Button_addNewItem.clicked.connect(self.save_new_item_dialog)
+
         self.label_filename = QtWidgets.QLabel(self.centralwidget)
         self.label_filename.setGeometry(QtCore.QRect(880, 72, 68, 22))
         self.label_filename.setObjectName("label_filename")
@@ -255,6 +264,8 @@ class MainWindow():
 
         ContourExtraction.setCentralWidget(self.centralwidget)
 
+        
+
         self.retranslateUi(ContourExtraction)
         QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
 
@@ -276,7 +287,7 @@ class MainWindow():
         self.Button_openKeypad.setText(_translate("ContourExtraction", "Open Keypad"))
         self.Button_closeKeypad.setText(_translate("ContourExtraction", "Close Keypad"))
         self.Button_resetFilename.setText(_translate("ContourExtraction", "Reset Filename"))
-        self.label_newitem.setText(_translate("ContourExtraction", "Put in a text without whitespace here and drag it\n onto the box it should be saved!"))
+        self.label_newitem.setText(_translate("ContourExtraction", "Put in a text without whitespace here and drag it\nonto the box it should be saved or press + !"))
         self.label_pliers.setText(_translate("ContourExtraction", "Pliers"))
         self.label_sizes.setText(_translate("ContourExtraction", "Sizes"))
         self.label_measTools.setText(_translate("ContourExtraction", "Measurement tools"))
@@ -351,6 +362,54 @@ class MainWindow():
         with open('./ComboBoxItems/items.yaml','w') as f:
             yaml.safe_dump(self.items,f)
 
+    def on_button_savePliers(self):
+        self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveScrewdrivers(self):
+        self.comboBox_screwdrivers.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveMeasTools(self):
+        self.comboBox_measTools.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveMisc(self):
+        self.comboBox_tools_misc.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveCustom(self):
+        self.comboBox_custom.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveNumberParts(self):
+        self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveSizes(self):
+        self.comboBox_sizes.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+    def on_button_saveNumbers(self):
+        self.comboBox_numbers.addItem(self.lineEdit_newItem.text())
+        self.Dialog.close()
+        self.save_items_boxes()
+
+    def save_new_item_dialog(self):
+        if self.lineEdit_newItem.text() != '':
+            self.Dialog = QtWidgets.QDialog()
+            self.ui = Dialog()
+            self.ui.setupUi(self.Dialog)
+            self.Dialog.show()
+            self.ui.Button_pliers.clicked.connect(self.on_button_savePliers)
+            self.ui.Button_screwdrivers.clicked.connect(self.on_button_saveScrewdrivers)
+            self.ui.Button_MeasTools.clicked.connect(self.on_button_saveMeasTools)
+            self.ui.Butto_misc.clicked.connect(self.on_button_saveMisc)
+            self.ui.Button_custom.clicked.connect(self.on_button_saveCustom)
+            self.ui.Button_NumberParts.clicked.connect(self.on_button_saveNumberParts)
+            self.ui.Button_sizes.clicked.connect(self.on_button_saveSizes)
+            self.ui.Button_numbers.clicked.connect(self.on_button_saveNumbers)
+
 class combo(QtWidgets.QComboBox):
    def __init__(self, parent):
       super(combo, self).__init__( parent)
@@ -367,13 +426,61 @@ class combo(QtWidgets.QComboBox):
    def dropEvent(self, e):
       self.addItem(e.mimeData().text())
       
-    #   all_items=[self.itemText(i) for i in range(self.count())]
-    #     #save all of the items to a individual yaml file per combo box
-    #   dict={self.objectName():all_items}
-    #   with open('./ComboBoxItems/'+self.objectName()+'.yaml','w') as f:
-    #     yaml.safe_dump(dict,f)
-      
+class Dialog(object):
+    def __init__(self):
+        super(Dialog,self).__init__()
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.setWindowModality(QtCore.Qt.NonModal)
+        Dialog.resize(300, 360)
+        self.widget = QtWidgets.QWidget(Dialog)
+        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 301))
+        self.widget.setObjectName("widget")
+        self.gridLayout = QtWidgets.QGridLayout(self.widget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.Button_pliers = QtWidgets.QPushButton(self.widget)
+        self.Button_pliers.setObjectName("Button_pliers")
+        self.gridLayout.addWidget(self.Button_pliers, 0, 0, 1, 1)
+        self.Button_sizes = QtWidgets.QPushButton(self.widget)
+        self.Button_sizes.setObjectName("Button_sizes")
+        self.gridLayout.addWidget(self.Button_sizes, 0, 1, 1, 1)
+        self.Button_MeasTools = QtWidgets.QPushButton(self.widget)
+        self.Button_MeasTools.setObjectName("Button_MeasTools")
+        self.gridLayout.addWidget(self.Button_MeasTools, 1, 0, 1, 1)
+        self.Button_NumberParts = QtWidgets.QPushButton(self.widget)
+        self.Button_NumberParts.setObjectName("Button_NumberParts")
+        self.gridLayout.addWidget(self.Button_NumberParts, 1, 1, 1, 1)
+        self.Button_screwdrivers = QtWidgets.QPushButton(self.widget)
+        self.Button_screwdrivers.setObjectName("Button_screwdrivers")
+        self.gridLayout.addWidget(self.Button_screwdrivers, 2, 0, 1, 1)
+        self.Button_numbers = QtWidgets.QPushButton(self.widget)
+        self.Button_numbers.setObjectName("Button_numbers")
+        self.gridLayout.addWidget(self.Button_numbers, 2, 1, 1, 1)
+        self.Butto_misc = QtWidgets.QPushButton(self.widget)
+        self.Butto_misc.setObjectName("Butto_misc")
+        self.gridLayout.addWidget(self.Butto_misc, 3, 0, 1, 1)
+        self.Button_custom = QtWidgets.QPushButton(self.widget)
+        self.Button_custom.setObjectName("Button_custom")
+        
+        self.gridLayout.addWidget(self.Button_custom, 3, 1, 1, 1)
 
+        self.retranslateUi(Dialog)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Save new item"))
+        self.Button_pliers.setText(_translate("Dialog", "Pliers"))
+        self.Button_sizes.setText(_translate("Dialog", "Sizes"))
+        self.Button_MeasTools.setText(_translate("Dialog", "Measure Tools"))
+        self.Button_NumberParts.setText(_translate("Dialog", "Number Parts"))
+        self.Button_screwdrivers.setText(_translate("Dialog", "Screwdrivers"))
+        self.Button_numbers.setText(_translate("Dialog", "Numbers"))
+        self.Butto_misc.setText(_translate("Dialog", "Tools misc"))
+        self.Button_custom.setText(_translate("Dialog", "Custom"))
+    
+       
 
 def update_contour(gui,image):
     #convert the openCv image data into a Qimage
