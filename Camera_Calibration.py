@@ -4,7 +4,7 @@
 
 import cv2
 import depthai as dai
-import yaml
+import os
 import glob
 import numpy as np
 
@@ -54,9 +54,16 @@ def main():
         qRight=device.getOutputQueue(RightStr,4,False)
         qRgb=device.getOutputQueue(RgbStr,4,False)
 
-        path_left='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsLeft/'
-        path_right='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsRight/'
-        path_Rgb='/home/pi/MCI_Contour_Kaserer/MCI_Contour_Recognition/CalPicsRGB/'
+        path_left='./CalPicsLeft/'
+        path_right='./CalPicsRight/'
+        path_Rgb='./CalPicsRGB/'
+        path_data='./CalData/'
+
+        # Check if the directories exist, if not create them:
+        paths=[path_left,path_right,path_Rgb,path_data]
+        for path in paths:
+            if not os.path.exists(path):
+                os.makedirs(path)
 
         print('Calibration Program')
         print('Please take 12 Pictures by pressing the space bar to calibrate the cameras')
