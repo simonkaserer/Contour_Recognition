@@ -1,6 +1,8 @@
 import subprocess
 import sys
 import cv2
+import depthai as dai
+from soupsieve import match
 import yaml
 import Functions
 import os
@@ -10,24 +12,25 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 #from QtImageViewer import QtImageViewer
 
 class MainWindow():
-    def __init__(self, ContourExtraction,bool):
+    def __init__(self, ContourExtraction):
         super(MainWindow,self).__init__()
         self.filename=''
         self.bufferFilename=''
         #For testing!
-        self.contour=np.zeros((int(100),int(100),3),dtype='uint8')
-        #self.contour=None
+        #self.contour=np.zeros((int(100),int(100),3),dtype='uint8')
+        #self.image=None
+        self.contour=None
+        self.image=None
         
-        
-        # if self.filename is not self.bufferFilename:
-        #     self.lineEdit_filename.setText(self.filename)
-        #     self.bufferFilename=self.filename
         
         self.load_items_boxes()
         self.sort_items_boxes()
         self.load_prefs()
 
-          
+        # Load the calibration data
+        self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
+        self.dist_Rgb=np.load('./CalData/dist_Rgb.npy')
+        self.newcameramtx_Rgb=np.load('./CalData/newcameramtx_Rgb.npy')
 
         ContourExtraction.setObjectName("ContourExtraction")
         ContourExtraction.setWindowModality(QtCore.Qt.WindowModal)
@@ -40,21 +43,19 @@ class MainWindow():
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
-        self.ContourView.setTextFormat(QtCore.Qt.AutoText)
         self.ContourView.setScaledContents(True)
         self.ContourView.setObjectName("ContourView")
 
         self.Preview = QtWidgets.QLabel(self.centralwidget)
         self.Preview.setGeometry(QtCore.QRect(590, 450, 200, 200))
         self.Preview.setToolTip("Contour Preview")
-        self.Preview.setWhatsThis("")
         self.Preview.setText("")
         self.Preview.setScaledContents(True)
         self.Preview.setObjectName("Preview")
 
         self.button_getContour = QtWidgets.QPushButton(self.centralwidget)
         self.button_getContour.setGeometry(QtCore.QRect(590, 420, 200, 30))
-        self.button_getContour.clicked.connect(lambda:update_contour(self,cv2.imread('test.jpg')))
+        self.button_getContour.clicked.connect(self.process)
         self.button_getContour.setObjectName("button_getContour")
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
@@ -74,12 +75,12 @@ class MainWindow():
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_closeKeypad.setGeometry(QtCore.QRect(1090, 20, 131, 30))
+        self.Button_closeKeypad.setGeometry(QtCore.QRect(1090, 20, 130, 30))
         self.Button_closeKeypad.setObjectName("Button_closeKeypad")
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_resetFilename.setGeometry(QtCore.QRect(1080, 70, 140, 30))
+        self.Button_resetFilename.setGeometry(QtCore.QRect(1090, 70, 130, 30))
         self.Button_resetFilename.setObjectName("Button_resetFilename")
         self.Button_resetFilename.clicked.connect(self.reset_filename)
 
@@ -127,6 +128,7 @@ class MainWindow():
 
         self.checkBox_connectpoints = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_connectpoints.setGeometry(QtCore.QRect(590, 320, 141, 28))
+        self.checkBox_connectpoints.stateChanged.connect(self.process)
         self.checkBox_connectpoints.setObjectName("checkBox_connectpoints")
 
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
@@ -141,7 +143,7 @@ class MainWindow():
         self.lineEdit_newItem = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_newItem.setGeometry(QtCore.QRect(880, 160, 290, 30))
         font = QtGui.QFont()
-        font.setPointSize(23)
+        font.setPointSize(12)
         font.setBold(False)
         font.setWeight(50)
         self.lineEdit_newItem.setFont(font)
@@ -500,10 +502,13 @@ class MainWindow():
         self.save_items_boxes()
     def threshold_changed(self):
         self.prefs['threshold']=self.slider_thresh.value()
+        self.process()
     def factor_changed(self):
         self.prefs['factor']=float(self.slider_factor.value())/10000
+        self.process()
     def slider3_changed(self):
         self.prefs['reserved']=self.slider3.vlaue()
+        self.process()
     def method_changed(self):
         if self.comboBox_method.currentText()=='PolyDP':
             self.slider_factor.show()
@@ -517,6 +522,51 @@ class MainWindow():
         else:
             self.slider3.hide()
             self.label_slider3.hide()
+    def update_preview(self):
+        
+        
+        #self.warped_image=None
+        #while self.warped_image is None:
+        edgeRgb = edgeRgbQueue.get()
+        self.image=edgeRgb.getFrame()
+        image_undistorted=cv2.undistort(self.image,self.mtx_Rgb,self.dist_Rgb,None,self.newcameramtx_Rgb)
+        # Warp the image
+        self.warped_image,self.framewidth,self.frameheigth=Functions.warp_img(image_undistorted,self.prefs['threshold'],1,False)
+        #cv2.waitKey(100)
+        if self.warped_image is not None:    
+            frame=cv2.cvtColor(self.warped_image,cv2.COLOR_BGR2RGB)
+            img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+            self.Preview.setPixmap(QtGui.QPixmap.fromImage(img))   
+    def process(self):
+        # will be automatic later:
+        self.update_preview()
+        #
+
+        
+        cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.warped_image)
+
+        #extraction function without warp and crop!
+
+
+        
+        contour_image=None
+        
+        #while contour_image is None:
+        if self.comboBox_method.currentText() == 'PolyDP':
+            self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+        elif self.comboBox_method.currentText() == 'NoApprox':
+            self.contour,contour_image=Functions.extraction_None(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+        elif self.comboBox_method.currentText() == 'ConvexHull':
+            self.contour,contour_image=Functions.extraction_convexHull(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+        elif self.comboBox_method.currentText() == 'TehChin':
+            self.contour,contour_image=Functions.extraction_TehChin(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+        elif self.comboBox_method.currentText() == 'CustomApprox':
+            print('To be implemented!')
+            self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+        if contour_image is not None:    
+            frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
+            img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+            self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
 
 class combo(QtWidgets.QComboBox):
    def __init__(self, parent):
@@ -590,24 +640,102 @@ class Dialog(object):
     
        
 
-def update_contour(gui,image):
-    #convert the openCv image data into a Qimage
-    img = QtGui.QImage(image.data,image.shape[1],image.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped()
-    gui.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))    
 
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    ContourExtraction = QtWidgets.QMainWindow()
-    gui = MainWindow(ContourExtraction,True)
-    ContourExtraction.show()
-    # Save the preferences and the items of the ComboBoxes before closing
-    app.aboutToQuit.connect(gui.closeEvent)
-    sys.exit(app.exec_())
+
+#def main():
     
 
 if __name__ == '__main__':
     
-    main()
-    
-        
-        
+    #main()
+
+    # Create pipeline
+    pipeline = dai.Pipeline()
+
+    # Define sources and outputs
+    camRgb = pipeline.create(dai.node.ColorCamera)
+    monoLeft = pipeline.create(dai.node.MonoCamera)
+    monoRight = pipeline.create(dai.node.MonoCamera)
+
+    edgeDetectorLeft = pipeline.create(dai.node.EdgeDetector)
+    edgeDetectorRight = pipeline.create(dai.node.EdgeDetector)
+    edgeDetectorRgb = pipeline.create(dai.node.EdgeDetector)
+
+    xoutEdgeLeft = pipeline.create(dai.node.XLinkOut)
+    xoutEdgeRight = pipeline.create(dai.node.XLinkOut)
+    xoutEdgeRgb = pipeline.create(dai.node.XLinkOut)
+    xinEdgeCfg = pipeline.create(dai.node.XLinkIn)
+
+    edgeLeftStr = "edge left"
+    edgeRightStr = "edge right"
+    edgeRgbStr = "edge rgb"
+    edgeCfgStr = "edge cfg"
+
+    xoutEdgeLeft.setStreamName(edgeLeftStr)
+    xoutEdgeRight.setStreamName(edgeRightStr)
+    xoutEdgeRgb.setStreamName(edgeRgbStr)
+    xinEdgeCfg.setStreamName(edgeCfgStr)
+
+    # Properties
+    camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
+    camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+    monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+    monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
+    monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+    monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+    edgeDetectorRgb.setMaxOutputFrameSize(camRgb.getVideoWidth() * camRgb.getVideoHeight())
+
+    # Linking
+    monoLeft.out.link(edgeDetectorLeft.inputImage)
+    monoRight.out.link(edgeDetectorRight.inputImage)
+    camRgb.video.link(edgeDetectorRgb.inputImage)
+
+    edgeDetectorLeft.outputImage.link(xoutEdgeLeft.input)
+    edgeDetectorRight.outputImage.link(xoutEdgeRight.input)
+    edgeDetectorRgb.outputImage.link(xoutEdgeRgb.input)
+
+    xinEdgeCfg.out.link(edgeDetectorLeft.inputConfig)
+    xinEdgeCfg.out.link(edgeDetectorRight.inputConfig)
+    xinEdgeCfg.out.link(edgeDetectorRgb.inputConfig)
+
+ 
+    # Connect to device and start pipeline
+    with dai.Device(pipeline) as device:
+        # Output/input queues
+        edgeLeftQueue = device.getOutputQueue(edgeLeftStr, 8, False)
+        edgeRightQueue = device.getOutputQueue(edgeRightStr, 8, False)
+        edgeRgbQueue = device.getOutputQueue(edgeRgbStr, 8, False)
+        edgeCfgQueue = device.getInputQueue(edgeCfgStr)
+
+        app = QtWidgets.QApplication(sys.argv)
+        ContourExtraction = QtWidgets.QMainWindow()
+        gui = MainWindow(ContourExtraction)
+        ContourExtraction.show()
+
+        while True:
+
+            edgeLeft = edgeLeftQueue.get()
+            edgeRight = edgeRightQueue.get()
+            edgeRgb = edgeRgbQueue.get()
+
+            edgeLeftFrame = edgeLeft.getFrame()
+            edgeRightFrame = edgeRight.getFrame()
+            edgeRgbFrame = edgeRgb.getFrame()
+
+            
+
+
+
+            
+            gui.image=edgeRgb.getFrame()
+            #gui.image=cv2.undistort(edgeRgbFrame,mtx_Rgb,dist_Rgb,None,newcameramtx_Rgb)
+
+            # Save the preferences and the items of the ComboBoxes before closing
+            app.aboutToQuit.connect(gui.closeEvent)
+
+            
+
+
+            sys.exit(app.exec_())
+            
+            
