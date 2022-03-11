@@ -19,9 +19,9 @@ class MainWindow():
         #self.contour=None
         
         
-        if self.filename is not self.bufferFilename:
-            self.lineEdit_filename.setText(self.filename)
-            self.bufferFilename=self.filename
+        # if self.filename is not self.bufferFilename:
+        #     self.lineEdit_filename.setText(self.filename)
+        #     self.bufferFilename=self.filename
         
         self.load_items_boxes()
         self.sort_items_boxes()
