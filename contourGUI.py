@@ -2,6 +2,7 @@ import subprocess
 import sys
 import cv2
 import yaml
+import Functions
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from QtImageViewer import QtImageViewer
@@ -11,6 +12,7 @@ class MainWindow():
         super(MainWindow,self).__init__()
         self.filename=''
         self.bufferFilename=''
+        self.contour=None
         if self.filename is not self.bufferFilename:
             self.lineEdit_filename.setText(self.filename)
             self.bufferFilename=self.filename
@@ -56,10 +58,12 @@ class MainWindow():
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
         self.Button_Path.setGeometry(QtCore.QRect(512, 100, 28, 30))
+        self.Button_Path.clicked.connect(self.open_folder)
         self.Button_Path.setObjectName("Button_Path")
 
         self.Button_savedxf = QtWidgets.QPushButton(self.centralwidget)
         self.Button_savedxf.setGeometry(QtCore.QRect(1200, 590, 60, 60))
+        self.Button_savedxf.clicked.connect(self.save_dxf_button)
         self.Button_savedxf.setObjectName("Button_savedxf")
 
         self.SliderThresh = QtWidgets.QSlider(self.centralwidget)
@@ -295,33 +299,27 @@ class MainWindow():
         self.label_screwdrivers.setText(_translate("ContourExtraction", "Screwdrivers"))
         self.label_numbers.setText(_translate("ContourExtraction", "Numbers"))
         self.label_tools_misc.setText(_translate("ContourExtraction", "Tools"))
-        self.label_custom.setText(_translate("ContourExtraction", "Custom"))
-    
+        self.label_custom.setText(_translate("ContourExtraction", "Custom"))   
     def reset_filename(self):
         self.lineEdit_filename.setText('')
         self.filename=''
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         for box in boxes:
             box.setCurrentText('')
-        self.save_items_boxes()    
-    
+        self.save_items_boxes()        
     def open_keyboard(self):
         subprocess.call('./open_keyboard.sh')
-
     def close_keyboard(self):
         subprocess.call('./close_keyboard.sh')
-
     def update_preview(self,str_image:str):
         self.Preview.setPixmap(QtGui.QPixmap(str_image))
-
     def change_filename(self):
         self.filename=''
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         for box in boxes:
             str=box.currentText()
             self.filename+=str
-        self.lineEdit_filename.setText(self.filename)
-    
+        self.lineEdit_filename.setText(self.filename)   
     def load_items_boxes(self):
         try:
             with open('./ComboBoxItems/items.yaml','r') as f:
@@ -334,8 +332,7 @@ class MainWindow():
             'custom':[''],
             'number_parts':['','2pieces','3pieces','4pieces'],
             'sizes':['','Small','Medium','Large'],
-            'numbers':['','1','2','3','4','5','6','7','8','9','10']}
-    
+            'numbers':['','1','2','3','4','5','6','7','8','9','10']}    
     def sort_items_boxes(self):
         for i in self.items:
             items=self.items[i]
@@ -348,7 +345,6 @@ class MainWindow():
         numbers=sorted(numbers,key=int)
         numbers.insert(0,'')
         self.items['numbers']=numbers
-
     def save_items_boxes(self):
         self.items['pliers']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
         self.items['screwdrivers']=[self.comboBox_screwdrivers.itemText(i) for i in range(self.comboBox_screwdrivers.count())]
@@ -361,7 +357,6 @@ class MainWindow():
        
         with open('./ComboBoxItems/items.yaml','w') as f:
             yaml.safe_dump(self.items,f)
-
     def on_button_savePliers(self):
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
@@ -394,7 +389,6 @@ class MainWindow():
         self.comboBox_numbers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-
     def save_new_item_dialog(self):
         if self.lineEdit_newItem.text() != '':
             self.Dialog = QtWidgets.QDialog()
@@ -409,6 +403,21 @@ class MainWindow():
             self.ui.Button_NumberParts.clicked.connect(self.on_button_saveNumberParts)
             self.ui.Button_sizes.clicked.connect(self.on_button_saveSizes)
             self.ui.Button_numbers.clicked.connect(self.on_button_saveNumbers)
+    def open_folder(self):
+        folderpath=''
+        folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,'Select the path to save the contours',options=QtWidgets.QFileDialog.Options())
+        if folderpath !='':
+            self.lineEdit_Path.setText(folderpath)
+    def save_dxf_button(self):
+        if self.lineEdit_filename.text() != '' and self.filename !='':
+            path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
+            print(path_and_filename)
+            if self.contour is not None:
+                Functions.dxf_exporter(self.contour,path_and_filename)
+            else:
+                print('No contour available!')
+        else:
+            print('No path or filename selected!')
 
 class combo(QtWidgets.QComboBox):
    def __init__(self, parent):
@@ -491,11 +500,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     ContourExtraction = QtWidgets.QMainWindow()
     gui = MainWindow(ContourExtraction,True)
-    #gui.setupUi(ContourExtraction)
     ContourExtraction.show()
-    #gui.Preview.setPixmap(QtGui.QPixmap('./test.jpg'))
-    #image = cv2.imread('test.jpg')
-    #update_contour(gui,image)
     sys.exit(app.exec_())
     
 

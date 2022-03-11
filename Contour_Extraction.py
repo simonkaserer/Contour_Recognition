@@ -89,7 +89,6 @@ with dai.Device(pipeline) as device:
     app = QtWidgets.QApplication(sys.argv)
     ContourExtraction = QtWidgets.QMainWindow()
     gui = MainWindow(ContourExtraction,True)
-    #gui.setupUi(ContourExtraction)
     ContourExtraction.show()
     #gui.Preview.setPixmap(QtGui.QPixmap('./test.jpg'))
     #image = cv2.imread('test.jpg')
