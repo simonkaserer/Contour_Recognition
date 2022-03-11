@@ -42,29 +42,36 @@ def warp_img(img,threshold_value,border_offset_px,show_outer_edge):
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
-            # Look for the contour of the tool:
-            cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-            if len(cnts)>0:
-                cnt=max(cnts,key=cv2.contourArea)
-                # Turn the tool
-                (x,y),(w,h),a=cv2.minAreaRect(cnt)
-                rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
-                rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
-               # Crop the tool
-                cropped_image=rotated_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
-                return cropped_image,w+4,h+4,width,height
-            else:
-                return None,None,None,None,None
+            
+            return warped_image,width,height
+            
         else:   
-            return None,None,None,None,None
+            return None,None,None
+    else:
+        return None,None,None
+
+def crop_image(warped_image):
+    # Look for the contour of the tool:
+    cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    if len(cnts)>0:
+        cnt=max(cnts,key=cv2.contourArea)
+        # Turn the tool
+        (x,y),(w,h),a=cv2.minAreaRect(cnt)
+        rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
+        rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
+        # Crop the tool
+        cropped_image=rotated_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
+        return cropped_image,w+4,h+4,x,y
     else:
         return None,None,None,None,None
 
 def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,connectpoints,printsize,printpoints,show_outer_edge):
-    cropped_image,w,h,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
-    if cropped_image is None:
+    warped_image,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
+    if warped_image is None:
         return None,None
-                
+    cropped_image,w,h,x,y=crop_image(warped_image)
+    if cropped_image is None:
+        return None,None            
     # Find the rotated and cropped tool contour
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
@@ -89,10 +96,12 @@ def extraction_polyDP(img,factor_epsilon,threshold_value,border_offset_px,every_
         return None,None
 
 def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,connectpoints,printsize,printpoints,show_outer_edge):
-    cropped_image,w,h,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
-    if cropped_image is None:
+    warped_image,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
+    if warped_image is None:
         return None,None
-                
+    cropped_image,w,h,x,y=crop_image(warped_image)
+    if cropped_image is None:
+        return None,None  
     # Find the rotated and cropped tool contour
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
     if len(cnts)>0:
@@ -114,10 +123,12 @@ def extraction_TehChin(img,factor_epsilon,threshold_value,border_offset_px,every
         return None,None
 
 def extraction_convexHull(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,connectpoints,printsize,printpoints,show_outer_edge): 
-    cropped_image,w,h,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
-    if cropped_image is None:
+    warped_image,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
+    if warped_image is None:
         return None,None
-
+    cropped_image,w,h,x,y=crop_image(warped_image)
+    if cropped_image is None:
+        return None,None 
     # Look for the contour of the cropped and turned tool:
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
@@ -138,16 +149,12 @@ def extraction_convexHull(img,factor_epsilon,threshold_value,border_offset_px,ev
         return None,None
 
 def extraction_None(img,factor_epsilon,threshold_value,border_offset_px,every_nth_point,connectpoints,printsize,printpoints,show_outer_edge):
-    
-    cropped_image,w,h,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
-    if cropped_image is None:
+    warped_image,framewidth,frameheight=warp_img(img,threshold_value,border_offset_px,show_outer_edge)
+    if warped_image is None:
         return None,None
-    else:
-    #for testing
-        cv2.imshow('cropped image',cropped_image)
-    print(framewidth)
-    print(frameheight)
-
+    cropped_image,w,h,x,y=crop_image(warped_image)
+    if cropped_image is None:
+        return None,None 
     # Find the rotated and cropped tool contour
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
