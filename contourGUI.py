@@ -3,6 +3,8 @@ import sys
 import cv2
 import yaml
 import Functions
+import os
+import numpy as np
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from QtImageViewer import QtImageViewer
@@ -12,19 +14,24 @@ class MainWindow():
         super(MainWindow,self).__init__()
         self.filename=''
         self.bufferFilename=''
-        self.contour=None
+        #For testing!
+        self.contour=np.zeros((int(100),int(100),3),dtype='uint8')
+        #self.contour=None
+        
+        
         if self.filename is not self.bufferFilename:
             self.lineEdit_filename.setText(self.filename)
             self.bufferFilename=self.filename
         
         self.load_items_boxes()
         self.sort_items_boxes()
-           
+        self.load_prefs()
+
+          
 
         ContourExtraction.setObjectName("ContourExtraction")
         ContourExtraction.setWindowModality(QtCore.Qt.WindowModal)
         ContourExtraction.resize(1280, 710)
-        #ContourExtraction.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         ContourExtraction.setWindowOpacity(1.0)
         ContourExtraction.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.Austria))
         self.centralwidget = QtWidgets.QWidget(ContourExtraction)
@@ -34,7 +41,6 @@ class MainWindow():
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
         self.ContourView.setTextFormat(QtCore.Qt.AutoText)
-        #self.ContourView.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
         self.ContourView.setScaledContents(True)
         self.ContourView.setObjectName("ContourView")
 
@@ -47,7 +53,6 @@ class MainWindow():
         self.Preview.setToolTip("Contour Preview")
         self.Preview.setWhatsThis("")
         self.Preview.setText("")
-        #self.Preview.setPixmap(QtGui.QPixmap("./GUI/CalLeft1.jpg"))
         self.Preview.setScaledContents(True)
         self.Preview.setObjectName("Preview")
 
@@ -64,21 +69,30 @@ class MainWindow():
         self.Button_savedxf = QtWidgets.QPushButton(self.centralwidget)
         self.Button_savedxf.setGeometry(QtCore.QRect(1200, 590, 60, 60))
         self.Button_savedxf.clicked.connect(self.save_dxf_button)
+        self.Button_savedxf.setStyleSheet("background-color:green")
         self.Button_savedxf.setObjectName("Button_savedxf")
 
-        self.SliderThresh = QtWidgets.QSlider(self.centralwidget)
-        self.SliderThresh.setGeometry(QtCore.QRect(590, 185, 236, 15))
-        self.SliderThresh.setOrientation(QtCore.Qt.Horizontal)
-        self.SliderThresh.setObjectName("SliderThresh")
+        self.slider_thresh = QtWidgets.QSlider(self.centralwidget)
+        self.slider_thresh.setGeometry(QtCore.QRect(590, 185, 236, 15))
+        self.slider_thresh.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_thresh.setMaximum(254)
+        self.slider_thresh.setValue(self.prefs['threshold'])
+        self.slider_thresh.valueChanged.connect(self.threshold_changed)
+        self.slider_thresh.setObjectName("slider_thresh")
 
-        self.Slider_factor = QtWidgets.QSlider(self.centralwidget)
-        self.Slider_factor.setGeometry(QtCore.QRect(590, 235, 236, 15))
-        self.Slider_factor.setOrientation(QtCore.Qt.Horizontal)
-        self.Slider_factor.setObjectName("Slider_factor")
+        self.slider_factor = QtWidgets.QSlider(self.centralwidget)
+        self.slider_factor.setGeometry(QtCore.QRect(590, 235, 236, 15))
+        self.slider_factor.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_factor.setValue(int(self.prefs['factor']*10000))
+        self.slider_factor.valueChanged.connect(self.factor_changed)
+        self.slider_factor.setObjectName("Slider_factor")
 
         self.slider3 = QtWidgets.QSlider(self.centralwidget)
         self.slider3.setGeometry(QtCore.QRect(590, 285, 236, 15))
         self.slider3.setOrientation(QtCore.Qt.Horizontal)
+        self.slider3.setMaximum(255)
+        self.slider3.setValue(self.prefs['reserved'])
+        self.slider3.valueChanged.connect(self.slider3_changed)
         self.slider3.setObjectName("slider3")
 
         self.comboBox_method = QtWidgets.QComboBox(self.centralwidget)
@@ -88,6 +102,8 @@ class MainWindow():
         self.comboBox_method.addItem('NoApprox')
         self.comboBox_method.addItem('ConvexHull')
         self.comboBox_method.addItem('TehChin')
+        self.comboBox_method.addItem('CustomApprox')
+        self.comboBox_method.currentTextChanged.connect(self.method_changed)
 
         self.checkBox_connectpoints = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_connectpoints.setGeometry(QtCore.QRect(590, 320, 141, 28))
@@ -95,6 +111,7 @@ class MainWindow():
 
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_filename.setGeometry(QtCore.QRect(880, 100, 340, 30))
+        self.lineEdit_filename.textChanged.connect(self.filename_manual)
         self.lineEdit_filename.setObjectName("lineEdit_filename")
 
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
@@ -268,7 +285,21 @@ class MainWindow():
 
         ContourExtraction.setCentralWidget(self.centralwidget)
 
-        
+        #Check which method is currently set and show/hide the corresponding sliders
+        if self.comboBox_method.currentText()=='PolyDP':
+            self.slider_factor.show()
+            self.label_slider_factor.show()
+        else:
+            self.slider_factor.hide()
+            self.label_slider_factor.hide()
+        if self.comboBox_method.currentText()=='CustomApprox':
+            self.slider3.show()
+            self.label_slider3.show()
+        else:
+            self.slider3.hide()
+            self.label_slider3.hide()
+        # Deactivate the saving Button:
+        self.Button_savedxf.setEnabled(False)
 
         self.retranslateUi(ContourExtraction)
         QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
@@ -313,16 +344,26 @@ class MainWindow():
         subprocess.call('./close_keyboard.sh')
     def update_preview(self,str_image:str):
         self.Preview.setPixmap(QtGui.QPixmap(str_image))
+    def filename_manual(self):
+        self.filename=self.lineEdit_filename.text()
+        if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+            self.Button_savedxf.setEnabled(True)
+        else:
+            self.Button_savedxf.setEnabled(False)
     def change_filename(self):
         self.filename=''
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         for box in boxes:
             str=box.currentText()
             self.filename+=str
-        self.lineEdit_filename.setText(self.filename)   
+        self.lineEdit_filename.setText(self.filename) 
+        if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+            self.Button_savedxf.setEnabled(True)
+        else:
+            self.Button_savedxf.setEnabled(False)
     def load_items_boxes(self):
         try:
-            with open('./ComboBoxItems/items.yaml','r') as f:
+            with open('items.yaml','r') as f:
                 self.items=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.items={'pliers':['','CombinationPliers','CrimpingPliers'],
@@ -355,7 +396,7 @@ class MainWindow():
         self.items['sizes']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
         self.items['numbers']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
        
-        with open('./ComboBoxItems/items.yaml','w') as f:
+        with open('items.yaml','w') as f:
             yaml.safe_dump(self.items,f)
     def on_button_savePliers(self):
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
@@ -405,19 +446,75 @@ class MainWindow():
             self.ui.Button_numbers.clicked.connect(self.on_button_saveNumbers)
     def open_folder(self):
         folderpath=''
-        folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,'Select the path to save the contours',options=QtWidgets.QFileDialog.Options())
+        folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,'Select the path to save the contours')
         if folderpath !='':
             self.lineEdit_Path.setText(folderpath)
+            if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+                self.Button_savedxf.setEnabled(True)
+            else:
+                self.Button_savedxf.setEnabled(False)
     def save_dxf_button(self):
-        if self.lineEdit_filename.text() != '' and self.filename !='':
+        if self.lineEdit_Path.text() != '' and self.filename !='':
             path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
-            print(path_and_filename)
+            #remove eventual whitespaces in the filename:
+            path_and_filename.replace(' ','')
             if self.contour is not None:
                 Functions.dxf_exporter(self.contour,path_and_filename)
+                success=os.path.exists(path_and_filename)
+                if success:
+                    dlg=QtWidgets.QMessageBox(self.centralwidget)
+                    dlg.setWindowTitle(' ')
+                    dlg.setText('Saving file was successful!')
+                    dlg.exec()
+                else:
+                    dlg=QtWidgets.QMessageBox(self.centralwidget)
+                    dlg.setWindowTitle(' ')
+                    dlg.setText('File could not be saved!')
+                    dlg.exec()
             else:
-                print('No contour available!')
+                dlg=QtWidgets.QMessageBox(self.centralwidget)
+                dlg.setWindowTitle(' ')
+                dlg.setText('No contour available!')
+                dlg.exec()
         else:
-            print('No path or filename selected!')
+            dlg=QtWidgets.QMessageBox(self.centralwidget)
+            dlg.setWindowTitle(' ')
+            dlg.setText('No path or filename selected!')
+            dlg.exec()
+    def load_prefs(self):
+        try:
+            with open('prefs.yaml','r') as f:
+                self.prefs=yaml.safe_load(f)
+        except FileNotFoundError as exc:
+            self.prefs={'threshold':150,'factor':0.0005,'reserved':0}  
+    def save_prefs(self):
+        self.prefs['threshold']=self.slider_thresh.value()
+        self.prefs['factor']=self.slider_factor.value()/10000
+        self.prefs['reserved']=self.slider3.value()
+        with open('prefs.yaml','w') as f:
+            yaml.safe_dump(self.prefs,f)
+    def closeEvent(self):
+        self.save_prefs()
+        self.save_items_boxes()
+    def threshold_changed(self):
+        self.prefs['threshold']=self.slider_thresh.value()
+    def factor_changed(self):
+        self.prefs['factor']=float(self.slider_factor.value())/10000
+    def slider3_changed(self):
+        self.prefs['reserved']=self.slider3.vlaue()
+    def method_changed(self):
+        if self.comboBox_method.currentText()=='PolyDP':
+            self.slider_factor.show()
+            self.label_slider_factor.show()
+        else:
+            self.slider_factor.hide()
+            self.label_slider_factor.hide()
+        if self.comboBox_method.currentText()=='CustomApprox':
+            self.slider3.show()
+            self.label_slider3.show()
+        else:
+            self.slider3.hide()
+            self.label_slider3.hide()
 
 class combo(QtWidgets.QComboBox):
    def __init__(self, parent):
@@ -501,6 +598,8 @@ def main():
     ContourExtraction = QtWidgets.QMainWindow()
     gui = MainWindow(ContourExtraction,True)
     ContourExtraction.show()
+    # Save the preferences and the items of the ComboBoxes before closing
+    app.aboutToQuit.connect(gui.closeEvent)
     sys.exit(app.exec_())
     
 
