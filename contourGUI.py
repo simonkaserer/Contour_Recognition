@@ -15,14 +15,16 @@ class MainWindow():
     def __init__(self, ContourExtraction):
         super(MainWindow,self).__init__()
         self.filename=''
-        self.bufferFilename=''
-        #For testing!
-        #self.contour=np.zeros((int(100),int(100),3),dtype='uint8')
-        #self.image=None
+        #self.bufferFilename=''
         self.contour=None
         self.image=None
+        self.warped_image=None
+        self.cropped_image=None
+        self.extraction_image=None
+        #The shadowboards are eliminated - only the 550x550mm is valid
+        self.scaling=1.0
         
-        
+
         self.load_items_boxes()
         self.sort_items_boxes()
         self.load_prefs()
@@ -40,10 +42,15 @@ class MainWindow():
         self.centralwidget = QtWidgets.QWidget(ContourExtraction)
         self.centralwidget.setObjectName("centralwidget")
 
+        # Set up a timer for a repeated refreshing of the preview
+        self.timer=QtCore.QTimer(self.centralwidget)
+        self.timer.setInterval(1500)
+        self.timer.timeout.connect(self.update_preview)
+
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
-        self.ContourView.setScaledContents(True)
+        self.ContourView.setScaledContents(False)
         self.ContourView.setObjectName("ContourView")
 
         self.Preview = QtWidgets.QLabel(self.centralwidget)
@@ -55,7 +62,7 @@ class MainWindow():
 
         self.button_getContour = QtWidgets.QPushButton(self.centralwidget)
         self.button_getContour.setGeometry(QtCore.QRect(590, 420, 200, 30))
-        self.button_getContour.clicked.connect(self.process)
+        self.button_getContour.clicked.connect(self.get_contour)
         self.button_getContour.setObjectName("button_getContour")
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
@@ -63,11 +70,11 @@ class MainWindow():
         self.Button_Path.clicked.connect(self.open_folder)
         self.Button_Path.setObjectName("Button_Path")
 
-        self.Button_savedxf = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_savedxf.setGeometry(QtCore.QRect(1200, 590, 60, 60))
-        self.Button_savedxf.clicked.connect(self.save_dxf_button)
-        self.Button_savedxf.setStyleSheet("background-color:green")
-        self.Button_savedxf.setObjectName("Button_savedxf")
+        self.button_savedxf = QtWidgets.QPushButton(self.centralwidget)
+        self.button_savedxf.setGeometry(QtCore.QRect(1200, 590, 60, 60))
+        self.button_savedxf.clicked.connect(self.save_dxf_button)
+        self.button_savedxf.setStyleSheet("background-color:green")
+        self.button_savedxf.setObjectName("button_savedxf")
 
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_openKeypad.setGeometry(QtCore.QRect(960, 20, 131, 30))
@@ -102,19 +109,20 @@ class MainWindow():
         self.slider_thresh.setObjectName("slider_thresh")
 
         self.slider_factor = QtWidgets.QSlider(self.centralwidget)
-        self.slider_factor.setGeometry(QtCore.QRect(590, 235, 236, 15))
+        self.slider_factor.setGeometry(QtCore.QRect(590, 285, 236, 15))
         self.slider_factor.setOrientation(QtCore.Qt.Horizontal)
         self.slider_factor.setValue(int(self.prefs['factor']*10000))
         self.slider_factor.valueChanged.connect(self.factor_changed)
         self.slider_factor.setObjectName("Slider_factor")
 
-        self.slider3 = QtWidgets.QSlider(self.centralwidget)
-        self.slider3.setGeometry(QtCore.QRect(590, 285, 236, 15))
-        self.slider3.setOrientation(QtCore.Qt.Horizontal)
-        self.slider3.setMaximum(255)
-        self.slider3.setValue(self.prefs['reserved'])
-        self.slider3.valueChanged.connect(self.slider3_changed)
-        self.slider3.setObjectName("slider3")
+        self.slider_nth_point = QtWidgets.QSlider(self.centralwidget)
+        self.slider_nth_point.setGeometry(QtCore.QRect(590, 235, 236, 15))
+        self.slider_nth_point.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_nth_point.setMinimum(1)
+        self.slider_nth_point.setMaximum(50)
+        self.slider_nth_point.setValue(self.prefs['nth_point'])
+        self.slider_nth_point.valueChanged.connect(self.slider3_changed)
+        self.slider_nth_point.setObjectName("slider3")
 
         self.comboBox_method = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_method.setGeometry(QtCore.QRect(590, 100, 236, 30))
@@ -296,14 +304,13 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
-        if self.comboBox_method.currentText()=='CustomApprox':
-            self.slider3.show()
-            self.label_slider3.show()
-        else:
-            self.slider3.hide()
-            self.label_slider3.hide()
-        # Deactivate the saving Button:
-        self.Button_savedxf.setEnabled(False)
+        
+        # Deactivate the saving and get contour Button:
+        self.button_savedxf.setEnabled(False)
+        self.button_getContour.setEnabled(False)
+
+        #Start the timer
+        self.timer.start()
 
         self.retranslateUi(ContourExtraction)
         QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
@@ -314,12 +321,12 @@ class MainWindow():
         self.Button_Path.setText(_translate("ContourExtraction", "..."))
         self.ContourView.setToolTip(_translate("ContourExtraction", "Contour view"))
         self.Label_Path.setText(_translate("ContourExtraction", "Path to save the files in"))
-        self.Button_savedxf.setText(_translate("ContourExtraction", "Save\n dxf"))
+        self.button_savedxf.setText(_translate("ContourExtraction", "Save\n dxf"))
         self.label_method.setText(_translate("ContourExtraction", "Method"))
         self.button_getContour.setText(_translate("ContourExtraction", "Get Contour"))
         self.label_slider_thresh.setText(_translate("ContourExtraction", "Threshold"))
         self.label_slider_factor.setText(_translate("ContourExtraction", "Factor Epsilon"))
-        self.label_slider3.setText(_translate("ContourExtraction", "Reserve"))
+        self.label_slider3.setText(_translate("ContourExtraction", "Every nth point"))
         self.checkBox_connectpoints.setText(_translate("ContourExtraction", "Connect points"))
         self.label_filename.setText(_translate("ContourExtraction", "Filename"))
         self.label_dxfEnding.setText(_translate("ContourExtraction", ".dxf"))
@@ -351,9 +358,9 @@ class MainWindow():
     def filename_manual(self):
         self.filename=self.lineEdit_filename.text()
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            self.Button_savedxf.setEnabled(True)
+            self.button_savedxf.setEnabled(True)
         else:
-            self.Button_savedxf.setEnabled(False)
+            self.button_savedxf.setEnabled(False)
     def change_filename(self):
         self.filename=''
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
@@ -362,9 +369,9 @@ class MainWindow():
             self.filename+=str
         self.lineEdit_filename.setText(self.filename) 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            self.Button_savedxf.setEnabled(True)
+            self.button_savedxf.setEnabled(True)
         else:
-            self.Button_savedxf.setEnabled(False)
+            self.button_savedxf.setEnabled(False)
     def load_items_boxes(self):
         try:
             with open('items.yaml','r') as f:
@@ -454,16 +461,16 @@ class MainWindow():
         if folderpath !='':
             self.lineEdit_Path.setText(folderpath)
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-                self.Button_savedxf.setEnabled(True)
+                self.button_savedxf.setEnabled(True)
             else:
-                self.Button_savedxf.setEnabled(False)
+                self.button_savedxf.setEnabled(False)
     def save_dxf_button(self):
         if self.lineEdit_Path.text() != '' and self.filename !='':
             path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             #remove eventual whitespaces in the filename:
             path_and_filename.replace(' ','')
             if self.contour is not None:
-                Functions.dxf_exporter(self.contour,path_and_filename)
+                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling)
                 success=os.path.exists(path_and_filename)
                 if success:
                     dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -490,11 +497,11 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'reserved':0}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1}  
     def save_prefs(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
-        self.prefs['reserved']=self.slider3.value()
+        self.prefs['nth_point']=self.slider_nth_point.value()
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def closeEvent(self):
@@ -507,7 +514,7 @@ class MainWindow():
         self.prefs['factor']=float(self.slider_factor.value())/10000
         self.process()
     def slider3_changed(self):
-        self.prefs['reserved']=self.slider3.vlaue()
+        self.prefs['nth_point']=self.slider_nth_point.value()
         self.process()
     def method_changed(self):
         if self.comboBox_method.currentText()=='PolyDP':
@@ -516,53 +523,53 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
-        if self.comboBox_method.currentText()=='CustomApprox':
-            self.slider3.show()
-            self.label_slider3.show()
-        else:
-            self.slider3.hide()
-            self.label_slider3.hide()
+        self.process()
     def update_preview(self):
-        
-        
-        #self.warped_image=None
-        #while self.warped_image is None:
         edgeRgb = edgeRgbQueue.get()
         self.image=edgeRgb.getFrame()
         image_undistorted=cv2.undistort(self.image,self.mtx_Rgb,self.dist_Rgb,None,self.newcameramtx_Rgb)
         # Warp the image
-        self.warped_image,self.framewidth,self.frameheigth=Functions.warp_img(image_undistorted,self.prefs['threshold'],1,False)
-        #cv2.waitKey(100)
-        if self.warped_image is not None:    
-            frame=cv2.cvtColor(self.warped_image,cv2.COLOR_BGR2RGB)
+        warped_image,self.framewidth,self.frameheigth=Functions.warp_img(image_undistorted,self.prefs['threshold'],1,False)
+        # Update the Preview if a square was found:
+        if warped_image is not None:
+            self.warped_image=warped_image    
+            frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
-            self.Preview.setPixmap(QtGui.QPixmap.fromImage(img))   
+            self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
+            self.scaling=np.average([[self.frameheigth/550],[self.framewidth/550]])  
+        # Activate the button if a processable image was warped
+        if self.warped_image is not None:    
+            self.button_getContour.setEnabled(True)
+        else:
+            self.button_getContour.setEnabled(False)
+        self.timer.start()
+    def get_contour(self):
+        self.cropped_image=None
+        self.extraction_image=self.warped_image
+        while self.cropped_image is None:
+            if self.extraction_image is not None:
+                self.cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.extraction_image)
+        self.process()    
     def process(self):
-        # will be automatic later:
-        self.update_preview()
-        #
-
         
-        cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.warped_image)
 
-        #extraction function without warp and crop!
-
+        # find a way for a while loop? 
 
         
         contour_image=None
-        
+        if self.cropped_image is not None:
         #while contour_image is None:
-        if self.comboBox_method.currentText() == 'PolyDP':
-            self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
-        elif self.comboBox_method.currentText() == 'NoApprox':
-            self.contour,contour_image=Functions.extraction_None(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
-        elif self.comboBox_method.currentText() == 'ConvexHull':
-            self.contour,contour_image=Functions.extraction_convexHull(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
-        elif self.comboBox_method.currentText() == 'TehChin':
-            self.contour,contour_image=Functions.extraction_TehChin(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
-        elif self.comboBox_method.currentText() == 'CustomApprox':
-            print('To be implemented!')
-            self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['reserved'],self.checkBox_connectpoints.isChecked(),False,False,False)
+            if self.comboBox_method.currentText() == 'PolyDP':
+                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+            elif self.comboBox_method.currentText() == 'NoApprox':
+                self.contour,contour_image=Functions.extraction_None(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+            elif self.comboBox_method.currentText() == 'ConvexHull':
+                self.contour,contour_image=Functions.extraction_convexHull(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+            elif self.comboBox_method.currentText() == 'TehChin':
+                self.contour,contour_image=Functions.extraction_TehChin(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+            elif self.comboBox_method.currentText() == 'CustomApprox':
+                print('To be implemented!')
+                self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
@@ -642,12 +649,16 @@ class Dialog(object):
 
 
 
-#def main():
     
 
 if __name__ == '__main__':
+    sys._excepthook=sys.excepthook
+
+    def exception_hook(exctype,value,traceback):
+        sys._excepthook(exctype,value,traceback)
+        sys.exit(1)
     
-    #main()
+    sys.excepthook=exception_hook
 
     # Create pipeline
     pipeline = dai.Pipeline()
