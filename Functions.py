@@ -69,11 +69,11 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
-        cont=cnt.tolist()
+        epsilon=factor_epsilon*cv2.arcLength(cnt,True)
+        cont=cv2.approxPolyDP(cnt,epsilon,True)
+        cont=cont.tolist()
         cont=cont[::every_nth_point]
-        cnt_nth=np.array(cont)
-        epsilon=factor_epsilon*cv2.arcLength(cnt_nth,True)
-        tool_contour=cv2.approxPolyDP(cnt,epsilon,True)
+        tool_contour=np.array(cont)
         #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
         # create a black background
         inv=np.zeros((int(toolheight+10),int(toolwidth+10),3),dtype='uint8')
