@@ -317,6 +317,10 @@ class MainWindow():
         #Start the timer
         self.timer.start()
 
+        #Start an instance of the worker object to update the preview
+        self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
+        self.worker.finished.connect(self.worker_finished)
+
         self.retranslateUi(ContourExtraction)
         QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
 
@@ -536,18 +540,15 @@ class MainWindow():
         self.process()
     def worker_finished(self):
         self.timer.start()
-    def update_preview(self):
-        self.worker=UpdatePreview_worker()
-        warped_image,framewidth,frameheight,img=self.worker.run(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
-        
-        self.worker.finished.connect(self.worker_finished)
+    def update_preview(self):   
+        warped_image,framewidth,frameheight=self.worker.run()
         
         if warped_image is not None:
             self.warped_image=warped_image
             self.framewidth=framewidth
             self.frameheight=frameheight  
-            # frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
-            # img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+            frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
+            img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
             self.scaling=np.average([[self.frameheight/550],[self.framewidth/550]]) 
 
@@ -657,22 +658,28 @@ class Dialog(object):
         self.Button_custom.setText(_translate("Dialog", "Custom"))
     
 class UpdatePreview_worker(QtCore.QThread):
-    def run(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
+    def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
+        super().__init__()
+        self.mtx=mtx_Rgb
+        self.dist=dist_Rgb
+        self.newmtx=newcameramtx_Rgb
+        self.threshold=threshold
+    
+    def run(self):
         edgeRgb = edgeRgbQueue.get()
         image=edgeRgb.getFrame()
-        image_undistorted=cv2.undistort(image,mtx_Rgb,dist_Rgb,None,newcameramtx_Rgb)
+        image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
         # Warp the image
-        warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,threshold,1,False)
+        warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,self.threshold,1,False)
         # Return the warped image if a square was found:
         if warped_image is not None:
             if warped_image.shape[0] > 500:
-                frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
-                img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
-                return warped_image,framewidth,frameheigth, img
+                return warped_image,framewidth,frameheigth
             else:
-                return None,None,None,None
+                return None,None,None
         else:
-            return None,None,None,None
+            return None,None,None
+        
 
 
 
@@ -739,10 +746,10 @@ if __name__ == '__main__':
  
     # Connect to device and start pipeline
     with dai.Device(pipeline) as device:
-        # Output/input queues
-        edgeLeftQueue = device.getOutputQueue(edgeLeftStr, 8, False)
-        edgeRightQueue = device.getOutputQueue(edgeRightStr, 8, False)
-        edgeRgbQueue = device.getOutputQueue(edgeRgbStr,2 , False)
+        # Output/input queues                (name,maxSize,blocking)
+        edgeLeftQueue = device.getOutputQueue(edgeLeftStr, 1, False)
+        edgeRightQueue = device.getOutputQueue(edgeRightStr, 1, False)
+        edgeRgbQueue = device.getOutputQueue(edgeRgbStr, 1, False)
         edgeCfgQueue = device.getInputQueue(edgeCfgStr)
 
         app = QtWidgets.QApplication(sys.argv)
@@ -750,30 +757,21 @@ if __name__ == '__main__':
         gui = MainWindow(ContourExtraction)
         ContourExtraction.show()
 
-        while True:
+        
+        # These get called in the individual methods of the QT slots
+        # edgeLeft = edgeLeftQueue.get()
+        # edgeRight = edgeRightQueue.get()
+        # edgeRgb = edgeRgbQueue.get()
 
-            edgeLeft = edgeLeftQueue.get()
-            edgeRight = edgeRightQueue.get()
-            edgeRgb = edgeRgbQueue.get()
+        # edgeLeftFrame = edgeLeft.getFrame()
+        # edgeRightFrame = edgeRight.getFrame()
+        # edgeRgbFrame = edgeRgb.getFrame()
 
-            edgeLeftFrame = edgeLeft.getFrame()
-            edgeRightFrame = edgeRight.getFrame()
-            edgeRgbFrame = edgeRgb.getFrame()
+        
 
-            
-
-
-
-            
-            gui.image=edgeRgb.getFrame()
-            #gui.image=cv2.undistort(edgeRgbFrame,mtx_Rgb,dist_Rgb,None,newcameramtx_Rgb)
-
-            # Save the preferences and the items of the ComboBoxes before closing
-            app.aboutToQuit.connect(gui.closeEvent)
-
-            
-
-
-            sys.exit(app.exec_())
+        # Save the preferences and the items of the ComboBoxes before closing
+        app.aboutToQuit.connect(gui.closeEvent)
+        
+        sys.exit(app.exec_())
             
             
