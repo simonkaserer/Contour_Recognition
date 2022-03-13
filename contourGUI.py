@@ -44,7 +44,7 @@ class MainWindow():
 
         # Set up a timer for a repeated refreshing of the preview
         self.timer=QtCore.QTimer(self.centralwidget)
-        self.timer.setInterval(1500)
+        self.timer.setInterval(5000)
         self.timer.timeout.connect(self.update_preview)
 
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
@@ -101,26 +101,30 @@ class MainWindow():
         self.Button_addNewItem.clicked.connect(self.save_new_item_dialog)
 
         self.slider_thresh = QtWidgets.QSlider(self.centralwidget)
-        self.slider_thresh.setGeometry(QtCore.QRect(590, 185, 236, 15))
+        self.slider_thresh.setGeometry(QtCore.QRect(590, 175, 236, 40))
         self.slider_thresh.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_thresh.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_thresh.setMaximum(254)
         self.slider_thresh.setValue(self.prefs['threshold'])
         self.slider_thresh.valueChanged.connect(self.threshold_changed)
         self.slider_thresh.setObjectName("slider_thresh")
 
         self.slider_factor = QtWidgets.QSlider(self.centralwidget)
-        self.slider_factor.setGeometry(QtCore.QRect(590, 285, 236, 15))
+        self.slider_factor.setGeometry(QtCore.QRect(590, 275, 236, 40))
         self.slider_factor.setOrientation(QtCore.Qt.Horizontal)
         self.slider_factor.setValue(int(self.prefs['factor']*10000))
+        self.slider_factor.setMaximum(200)
+        self.slider_factor.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_factor.valueChanged.connect(self.factor_changed)
         self.slider_factor.setObjectName("Slider_factor")
 
         self.slider_nth_point = QtWidgets.QSlider(self.centralwidget)
-        self.slider_nth_point.setGeometry(QtCore.QRect(590, 235, 236, 15))
+        self.slider_nth_point.setGeometry(QtCore.QRect(590, 225, 236, 40))
         self.slider_nth_point.setOrientation(QtCore.Qt.Horizontal)
         self.slider_nth_point.setMinimum(1)
         self.slider_nth_point.setMaximum(50)
         self.slider_nth_point.setValue(self.prefs['nth_point'])
+        self.slider_nth_point.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_nth_point.valueChanged.connect(self.slider3_changed)
         self.slider_nth_point.setObjectName("slider3")
 
@@ -136,7 +140,8 @@ class MainWindow():
 
         self.checkBox_connectpoints = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_connectpoints.setGeometry(QtCore.QRect(590, 320, 141, 28))
-        self.checkBox_connectpoints.stateChanged.connect(self.process)
+        self.checkBox_connectpoints.stateChanged.connect(self.connectpoints_changed)
+        self.checkBox_connectpoints.setChecked(self.prefs['connectpoints'])
         self.checkBox_connectpoints.setObjectName("checkBox_connectpoints")
 
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
@@ -176,11 +181,11 @@ class MainWindow():
         self.label_slider_thresh.setObjectName("label_slider_thresh")
 
         self.label_slider_factor = QtWidgets.QLabel(self.centralwidget)
-        self.label_slider_factor.setGeometry(QtCore.QRect(590, 210, 121, 22))
+        self.label_slider_factor.setGeometry(QtCore.QRect(590, 260, 121, 22))
         self.label_slider_factor.setObjectName("label_slider_factor")
 
         self.label_slider3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_slider3.setGeometry(QtCore.QRect(590, 260, 68, 22))
+        self.label_slider3.setGeometry(QtCore.QRect(590, 210, 121, 22))
         self.label_slider3.setObjectName("label_slider3")
         
         self.label_method = QtWidgets.QLabel(self.centralwidget)
@@ -353,8 +358,6 @@ class MainWindow():
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self):
         subprocess.call('./close_keyboard.sh')
-    def update_preview(self,str_image:str):
-        self.Preview.setPixmap(QtGui.QPixmap(str_image))
     def filename_manual(self):
         self.filename=self.lineEdit_filename.text()
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
@@ -465,6 +468,9 @@ class MainWindow():
             else:
                 self.button_savedxf.setEnabled(False)
     def save_dxf_button(self):
+        
+        
+
         if self.lineEdit_Path.text() != '' and self.filename !='':
             path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             #remove eventual whitespaces in the filename:
@@ -497,11 +503,12 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True}  
     def save_prefs(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
         self.prefs['nth_point']=self.slider_nth_point.value()
+        self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def closeEvent(self):
@@ -516,6 +523,9 @@ class MainWindow():
     def slider3_changed(self):
         self.prefs['nth_point']=self.slider_nth_point.value()
         self.process()
+    def connectpoints_changed(self):
+        self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
+        self.process()
     def method_changed(self):
         if self.comboBox_method.currentText()=='PolyDP':
             self.slider_factor.show()
@@ -524,25 +534,30 @@ class MainWindow():
             self.slider_factor.hide()
             self.label_slider_factor.hide()
         self.process()
+    def worker_finished(self):
+        self.timer.start()
     def update_preview(self):
-        edgeRgb = edgeRgbQueue.get()
-        self.image=edgeRgb.getFrame()
-        image_undistorted=cv2.undistort(self.image,self.mtx_Rgb,self.dist_Rgb,None,self.newcameramtx_Rgb)
-        # Warp the image
-        warped_image,self.framewidth,self.frameheigth=Functions.warp_img(image_undistorted,self.prefs['threshold'],1,False)
-        # Update the Preview if a square was found:
+        self.worker=UpdatePreview_worker()
+        warped_image,framewidth,frameheight,img=self.worker.run(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
+        
+        self.worker.finished.connect(self.worker_finished)
+        
         if warped_image is not None:
-            self.warped_image=warped_image    
-            frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
-            img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+            self.warped_image=warped_image
+            self.framewidth=framewidth
+            self.frameheight=frameheight  
+            # frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
+            # img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-            self.scaling=np.average([[self.frameheigth/550],[self.framewidth/550]])  
+            self.scaling=np.average([[self.frameheight/550],[self.framewidth/550]]) 
+
         # Activate the button if a processable image was warped
         if self.warped_image is not None:    
+            
             self.button_getContour.setEnabled(True)
+            
         else:
             self.button_getContour.setEnabled(False)
-        self.timer.start()
     def get_contour(self):
         self.cropped_image=None
         self.extraction_image=self.warped_image
@@ -552,24 +567,20 @@ class MainWindow():
         self.process()    
     def process(self):
         
-
-        # find a way for a while loop? 
-
-        
         contour_image=None
         if self.cropped_image is not None:
         #while contour_image is None:
             if self.comboBox_method.currentText() == 'PolyDP':
                 self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'NoApprox':
-                self.contour,contour_image=Functions.extraction_None(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+                self.contour,contour_image=Functions.extraction_None(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'ConvexHull':
-                self.contour,contour_image=Functions.extraction_convexHull(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+                self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'TehChin':
-                self.contour,contour_image=Functions.extraction_TehChin(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+                self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'CustomApprox':
                 print('To be implemented!')
-                self.contour,contour_image=Functions.extraction_polyDP(self.image,self.prefs['factor'],self.prefs['threshold'],1,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),False,False,False)
+                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
@@ -645,7 +656,23 @@ class Dialog(object):
         self.Butto_misc.setText(_translate("Dialog", "Tools misc"))
         self.Button_custom.setText(_translate("Dialog", "Custom"))
     
-       
+class UpdatePreview_worker(QtCore.QThread):
+    def run(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
+        edgeRgb = edgeRgbQueue.get()
+        image=edgeRgb.getFrame()
+        image_undistorted=cv2.undistort(image,mtx_Rgb,dist_Rgb,None,newcameramtx_Rgb)
+        # Warp the image
+        warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,threshold,1,False)
+        # Return the warped image if a square was found:
+        if warped_image is not None:
+            if warped_image.shape[0] > 500:
+                frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
+                img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+                return warped_image,framewidth,frameheigth, img
+            else:
+                return None,None,None,None
+        else:
+            return None,None,None,None
 
 
 
@@ -715,7 +742,7 @@ if __name__ == '__main__':
         # Output/input queues
         edgeLeftQueue = device.getOutputQueue(edgeLeftStr, 8, False)
         edgeRightQueue = device.getOutputQueue(edgeRightStr, 8, False)
-        edgeRgbQueue = device.getOutputQueue(edgeRgbStr, 8, False)
+        edgeRgbQueue = device.getOutputQueue(edgeRgbStr,2 , False)
         edgeCfgQueue = device.getInputQueue(edgeCfgStr)
 
         app = QtWidgets.QApplication(sys.argv)
