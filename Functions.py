@@ -181,7 +181,7 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
         return None,None
 
 
-def dxf_exporter(contour,path_and_name,scaling): 
+def dxf_exporter(contour,path_and_name,scaling_width,scaling_height): 
     file=dxf.new('R2000')
     msp=file.modelspace()
     points=[]
@@ -190,7 +190,7 @@ def dxf_exporter(contour,path_and_name,scaling):
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
     for point in cnt:
-        points.append((point[0][0]/scaling,point[0][1]/scaling))
+        points.append((point[0][0]/scaling_width,point[0][1]/scaling_height))
     msp.add_lwpolyline(points)
     file.saveas(path_and_name)
 
