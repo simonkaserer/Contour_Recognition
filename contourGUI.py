@@ -1,3 +1,6 @@
+# Author: Simon Kaserer
+# MCI Bachelor Thesis 2022
+
 import subprocess
 import sys
 import cv2
@@ -22,12 +25,16 @@ class MainWindow():
         self.cropped_image=None
         self.extraction_image=None
         #The shadowboards are eliminated - only the 550x550mm is valid
-        self.scaling=1.0
+        self.scaling_width=1.0
+        self.scaling_height=1.0
         
-
+        
+        self.load_prefs()
+        self.language=self.prefs['language']
         self.load_items_boxes()
         self.sort_items_boxes()
-        self.load_prefs()
+ 
+
 
         # Load the calibration data
         self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
@@ -38,6 +45,7 @@ class MainWindow():
         ContourExtraction.setWindowModality(QtCore.Qt.WindowModal)
         ContourExtraction.resize(1280, 710)
         ContourExtraction.setWindowOpacity(1.0)
+        ContourExtraction.setWindowTitle("Contour Extraction")
         ContourExtraction.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.Austria))
         self.centralwidget = QtWidgets.QWidget(ContourExtraction)
         self.centralwidget.setObjectName("centralwidget")
@@ -71,23 +79,23 @@ class MainWindow():
         self.Button_Path.setObjectName("Button_Path")
 
         self.button_savedxf = QtWidgets.QPushButton(self.centralwidget)
-        self.button_savedxf.setGeometry(QtCore.QRect(1200, 590, 60, 60))
+        self.button_savedxf.setGeometry(QtCore.QRect(1170, 590, 80, 60))
         self.button_savedxf.clicked.connect(self.save_dxf_button)
         self.button_savedxf.setStyleSheet("background-color:green")
         self.button_savedxf.setObjectName("button_savedxf")
 
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_openKeypad.setGeometry(QtCore.QRect(960, 20, 131, 30))
+        self.Button_openKeypad.setGeometry(QtCore.QRect(920, 20, 150, 30))
         self.Button_openKeypad.setObjectName("Button_openKeypad")
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_closeKeypad.setGeometry(QtCore.QRect(1090, 20, 130, 30))
+        self.Button_closeKeypad.setGeometry(QtCore.QRect(1070, 20, 150, 30))
         self.Button_closeKeypad.setObjectName("Button_closeKeypad")
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_resetFilename.setGeometry(QtCore.QRect(1090, 70, 130, 30))
+        self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 70, 180, 30))
         self.Button_resetFilename.setObjectName("Button_resetFilename")
         self.Button_resetFilename.clicked.connect(self.reset_filename)
 
@@ -169,7 +177,7 @@ class MainWindow():
         self.lineEdit_newItem.setObjectName("lineEdit_newItem")
 
         self.label_filename = QtWidgets.QLabel(self.centralwidget)
-        self.label_filename.setGeometry(QtCore.QRect(880, 72, 68, 22))
+        self.label_filename.setGeometry(QtCore.QRect(880, 72, 90, 22))
         self.label_filename.setObjectName("label_filename")
 
         self.label_dxfEnding = QtWidgets.QLabel(self.centralwidget)
@@ -177,15 +185,15 @@ class MainWindow():
         self.label_dxfEnding.setObjectName("label_dxfEnding")
 
         self.label_slider_thresh = QtWidgets.QLabel(self.centralwidget)
-        self.label_slider_thresh.setGeometry(QtCore.QRect(590, 160, 121, 22))
+        self.label_slider_thresh.setGeometry(QtCore.QRect(590, 160, 180, 22))
         self.label_slider_thresh.setObjectName("label_slider_thresh")
 
         self.label_slider_factor = QtWidgets.QLabel(self.centralwidget)
-        self.label_slider_factor.setGeometry(QtCore.QRect(590, 260, 121, 22))
+        self.label_slider_factor.setGeometry(QtCore.QRect(590, 260, 180, 22))
         self.label_slider_factor.setObjectName("label_slider_factor")
 
         self.label_slider3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_slider3.setGeometry(QtCore.QRect(590, 210, 121, 22))
+        self.label_slider3.setGeometry(QtCore.QRect(590, 210, 180, 22))
         self.label_slider3.setObjectName("label_slider3")
         
         self.label_method = QtWidgets.QLabel(self.centralwidget)
@@ -196,7 +204,6 @@ class MainWindow():
         self.Label_Path.setGeometry(QtCore.QRect(40, 72, 333, 22))
         self.Label_Path.setObjectName("Label_Path")
 
-        
 
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
         self.label_newitem.setGeometry(QtCore.QRect(880, 190, 371, 51))
@@ -204,7 +211,7 @@ class MainWindow():
 
         # Grid Layout for combo boxes
         self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(880, 250, 371, 311))
+        self.widget.setGeometry(QtCore.QRect(880, 250, 370, 310))
         self.widget.setObjectName("widget")
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -220,15 +227,11 @@ class MainWindow():
 
         self.comboBox_pliers = combo(self.widget)
         self.comboBox_pliers.setObjectName("comboBox_pliers")
-        self.comboBox_pliers.addItems(self.items['pliers'])
-        self.comboBox_pliers.setCurrentText('')
         self.comboBox_pliers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_pliers, 1, 0, 1, 1)
 
         self.comboBox_sizes = combo(self.widget)
         self.comboBox_sizes.setObjectName("comboBox_sizes")
-        self.comboBox_sizes.addItems(self.items['sizes'])
-        self.comboBox_sizes.setCurrentText('')
         self.comboBox_sizes.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_sizes, 1, 1, 1, 1)
 
@@ -242,15 +245,11 @@ class MainWindow():
 
         self.comboBox_measTools = combo(self.widget)
         self.comboBox_measTools.setObjectName("comboBox_measTools")
-        self.comboBox_measTools.addItems(self.items['meas_tools'])
-        self.comboBox_measTools.setCurrentText('')
         self.comboBox_measTools.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_measTools, 3, 0, 1, 1)
 
         self.comboBox_numberParts = combo(self.widget)
         self.comboBox_numberParts.setObjectName("comboBox_numberParts")
-        self.comboBox_numberParts.addItems(self.items['number_parts'])
-        self.comboBox_numberParts.setCurrentText('')
         self.comboBox_numberParts.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_numberParts, 3, 1, 1, 1)
 
@@ -264,15 +263,11 @@ class MainWindow():
 
         self.comboBox_screwdrivers = combo(self.widget)
         self.comboBox_screwdrivers.setObjectName("comboBox_screwdrivers")
-        self.comboBox_screwdrivers.addItems(self.items['screwdrivers'])
-        self.comboBox_screwdrivers.setCurrentText('')
         self.comboBox_screwdrivers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_screwdrivers, 5, 0, 1, 1)
 
         self.comboBox_numbers = combo(self.widget)
         self.comboBox_numbers.setObjectName("comboBox_numbers")
-        self.comboBox_numbers.addItems(self.items['numbers'])
-        self.comboBox_numbers.setCurrentText('')
         self.comboBox_numbers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_numbers, 5, 1, 1, 1)
 
@@ -286,19 +281,47 @@ class MainWindow():
 
         self.comboBox_tools_misc = combo(self.widget)
         self.comboBox_tools_misc.setObjectName("comboBox_tools_misc")
-        self.comboBox_tools_misc.addItems(self.items['tools_misc'])
-        self.comboBox_tools_misc.setCurrentText('')
         self.comboBox_tools_misc.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_tools_misc, 7, 0, 1, 1)
 
         self.comboBox_custom = combo(self.widget)
         self.comboBox_custom.setObjectName("comboBox_custom")
-        self.comboBox_custom.addItems(self.items['custom'])
-        self.comboBox_custom.setCurrentText('')
         self.comboBox_custom.currentTextChanged.connect(self.change_filename)
         self.comboBox_custom.setAcceptDrops(True)
 
+        self.fill_comboBoxes()
+
         self.gridLayout.addWidget(self.comboBox_custom, 7, 1, 1, 1)
+
+        #Experimental Menu bar:
+        self.menuBar = QtWidgets.QMenuBar(ContourExtraction)
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
+        self.menuBar.setObjectName("menuBar")
+        self.menuLanguage = QtWidgets.QMenu(self.menuBar)
+        self.menuLanguage.setObjectName("menuLanguage")
+        ContourExtraction.setMenuBar(self.menuBar)
+        self.actionEnglish = QtWidgets.QAction(self.centralwidget)
+        self.actionEnglish.setObjectName("actionEnglish")
+        self.actionGerman = QtWidgets.QAction(self.centralwidget)
+        self.actionGerman.setObjectName("actionGerman")
+        self.menuLanguage.addAction(self.actionEnglish)
+        self.menuLanguage.addAction(self.actionGerman)
+        self.menuBar.addAction(self.menuLanguage.menuAction())
+        self.actionEnglish.triggered.connect(self.lang_english)
+        self.actionGerman.triggered.connect(self.lang_german)
+
+        # Buttons for saving metadata and image file: ######################
+        self.button_meta=QtWidgets.QPushButton(self.centralwidget)
+        self.button_meta.setGeometry(QtCore.QRect(870,610,121,30))
+        self.button_meta.clicked.connect(self.save_meta)
+        self.button_meta.setObjectName("button_meta")
+        self.button_meta.setText('Save meta')
+        self.button_img=QtWidgets.QPushButton(self.centralwidget)
+        self.button_img.setGeometry(QtCore.QRect(1020,610,121,30))
+        self.button_img.clicked.connect(self.save_img)
+        self.button_img.setObjectName("button_img")
+        self.button_img.setText('Save cnt-img')
+        ####################################################################
 
         ContourExtraction.setCentralWidget(self.centralwidget)
 
@@ -312,45 +335,145 @@ class MainWindow():
         
         # Deactivate the saving and get contour Button:
         self.button_savedxf.setEnabled(False)
-        self.button_getContour.setEnabled(False)
-
-        #Start the timer
-        self.timer.start()
+        self.button_getContour.setEnabled(False)        
 
         #Start an instance of the worker object to update the preview
         self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
         self.worker.finished.connect(self.worker_finished)
 
-        self.retranslateUi(ContourExtraction)
+        self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
+        #Start the timer
+        self.timer.start()
 
-    def retranslateUi(self, ContourExtraction):
-        _translate = QtCore.QCoreApplication.translate
-        ContourExtraction.setWindowTitle(_translate("ContourExtraction", "Contour Extraction"))
-        self.Button_Path.setText(_translate("ContourExtraction", "..."))
-        self.ContourView.setToolTip(_translate("ContourExtraction", "Contour view"))
-        self.Label_Path.setText(_translate("ContourExtraction", "Path to save the files in"))
-        self.button_savedxf.setText(_translate("ContourExtraction", "Save\n dxf"))
-        self.label_method.setText(_translate("ContourExtraction", "Method"))
-        self.button_getContour.setText(_translate("ContourExtraction", "Get Contour"))
-        self.label_slider_thresh.setText(_translate("ContourExtraction", "Threshold"))
-        self.label_slider_factor.setText(_translate("ContourExtraction", "Factor Epsilon"))
-        self.label_slider3.setText(_translate("ContourExtraction", "Every nth point"))
-        self.checkBox_connectpoints.setText(_translate("ContourExtraction", "Connect points"))
-        self.label_filename.setText(_translate("ContourExtraction", "Filename"))
-        self.label_dxfEnding.setText(_translate("ContourExtraction", ".dxf"))
-        self.Button_openKeypad.setText(_translate("ContourExtraction", "Open Keypad"))
-        self.Button_closeKeypad.setText(_translate("ContourExtraction", "Close Keypad"))
-        self.Button_resetFilename.setText(_translate("ContourExtraction", "Reset Filename"))
-        self.label_newitem.setText(_translate("ContourExtraction", "Put in a text without whitespace here and drag it\nonto the box it should be saved or press + !"))
-        self.label_pliers.setText(_translate("ContourExtraction", "Pliers"))
-        self.label_sizes.setText(_translate("ContourExtraction", "Sizes"))
-        self.label_measTools.setText(_translate("ContourExtraction", "Measurement tools"))
-        self.label_numberParts.setText(_translate("ContourExtraction", "Number of parts"))
-        self.label_screwdrivers.setText(_translate("ContourExtraction", "Screwdrivers"))
-        self.label_numbers.setText(_translate("ContourExtraction", "Numbers"))
-        self.label_tools_misc.setText(_translate("ContourExtraction", "Tools"))
-        self.label_custom.setText(_translate("ContourExtraction", "Custom"))   
+    ####################### test purpose##################
+    def save_meta(self):
+        self.prefs['threshold']=self.slider_thresh.value()
+        self.prefs['factor']=self.slider_factor.value()/10000
+        self.prefs['nth_point']=self.slider_nth_point.value()
+        self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
+        self.prefs['framewidth']=self.framewidth
+        self.prefs['frameheight']=self.frameheight
+        self.prefs['x']=self.tool_pos_x
+        self.prefs['y']=self.tool_pos_y
+        self.prefs['scaling_width']=self.scaling_width
+        self.prefs['scaling_height']=self.scaling_height
+        path='/home/pi/Desktop/Testcontours/'+self.filename+'.yaml'
+        with open(path,'w') as f:
+            yaml.safe_dump(self.prefs,f)
+    def save_img(self):
+        path='/home/pi/Desktop/Testcontours/'+self.filename+'.jpg'
+        cv2.imwrite(path,self.cropped_image)
+    #####################################################
+    def lang_english(self):
+        self.save_items_boxes()
+        self.language='English'
+        self.retranslateUi()
+        self.load_items_boxes()
+        self.fill_comboBoxes()
+    def lang_german(self):
+        self.save_items_boxes()
+        self.language='German'
+        self.retranslateUi()
+        self.load_items_boxes()
+        self.fill_comboBoxes()
+    def retranslateUi(self):
+        if self.language == 'German':
+            self.Button_Path.setText( "...")
+            self.ContourView.setToolTip( "Konturvorschau")
+            self.Label_Path.setText( "Speicherpfad")
+            self.button_savedxf.setText( "dxf \n speichern")
+            self.label_method.setText( "Methode")
+            self.button_getContour.setText( "Kontur anzeigen")
+            self.label_slider_thresh.setText( "Grenzwert Binarisierung")
+            self.label_slider_factor.setText( "Faktor Epsilon")
+            self.label_slider3.setText( "Punktverringerung")
+            self.checkBox_connectpoints.setText( "Punkte verbinden")
+            self.label_filename.setText( "Dateiname")
+            self.label_dxfEnding.setText( ".dxf")
+            self.Button_openKeypad.setText( "Tastatur öffnen")
+            self.Button_closeKeypad.setText( "Tastatur schließen")
+            self.Button_resetFilename.setText( "Dateiname zurücksetzen")
+            self.label_newitem.setText( "Hier einen Textbaustein eingeben und\nauf die gewünschte Liste ziehen oder + drücken!")
+            self.label_pliers.setText( "Zangen")
+            self.label_sizes.setText( "Größen")
+            self.label_measTools.setText( "Messwerkzeuge")
+            self.label_numberParts.setText( "Teileanzahl")
+            self.label_screwdrivers.setText( "Schraubenzieher")
+            self.label_numbers.setText( "Nummern")
+            self.label_tools_misc.setText( "Diverse")
+            self.label_custom.setText( "Spezial") 
+        else:
+            self.Button_Path.setText( "...")
+            self.ContourView.setToolTip( "Contour view")
+            self.Label_Path.setText( "Path to save the files in")
+            self.button_savedxf.setText( "Save\n dxf")
+            self.label_method.setText( "Method")
+            self.button_getContour.setText( "Get Contour")
+            self.label_slider_thresh.setText( "Threshold")
+            self.label_slider_factor.setText( "Factor Epsilon")
+            self.label_slider3.setText( "Every nth point")
+            self.checkBox_connectpoints.setText( "Connect points")
+            self.label_filename.setText( "Filename")
+            self.label_dxfEnding.setText( ".dxf")
+            self.Button_openKeypad.setText( "Open Keypad")
+            self.Button_closeKeypad.setText( "Close Keypad")
+            self.Button_resetFilename.setText( "Reset Filename")
+            self.label_newitem.setText( "Put in a text without whitespace here and drag it\nonto the box it should be saved or press + !")
+            self.label_pliers.setText( "Pliers")
+            self.label_sizes.setText( "Sizes")
+            self.label_measTools.setText( "Measurement tools")
+            self.label_numberParts.setText( "Number of parts")
+            self.label_screwdrivers.setText( "Screwdrivers")
+            self.label_numbers.setText( "Numbers")
+            self.label_tools_misc.setText( "Tools")
+            self.label_custom.setText( "Custom") 
+        # Not affected by the language change
+        self.menuLanguage.setTitle( "Language")
+        self.actionEnglish.setText( "English")
+        self.actionGerman.setText( "German")
+    def fill_comboBoxes(self):
+        if self.language=='German':
+            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
+            for box in boxes:
+                box.clear()
+            self.comboBox_pliers.addItems(self.items_german['Zangen'])
+            self.comboBox_pliers.setCurrentText('')
+            self.comboBox_sizes.addItems(self.items_german['Groessen'])
+            self.comboBox_sizes.setCurrentText('')
+            self.comboBox_measTools.addItems(self.items_german['Messwerkzeuge'])
+            self.comboBox_measTools.setCurrentText('')
+            self.comboBox_numberParts.addItems(self.items_german['Teileanzahl'])
+            self.comboBox_numberParts.setCurrentText('')
+            self.comboBox_screwdrivers.addItems(self.items_german['Schraubenzieher'])
+            self.comboBox_screwdrivers.setCurrentText('')
+            self.comboBox_numbers.addItems(self.items_german['Nummern'])
+            self.comboBox_numbers.setCurrentText('')
+            self.comboBox_tools_misc.addItems(self.items_german['Diverse'])
+            self.comboBox_tools_misc.setCurrentText('')
+            self.comboBox_custom.addItems(self.items_german['Spezial'])
+            self.comboBox_custom.setCurrentText('')
+        else:
+            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
+            for box in boxes:
+                box.clear()
+            self.comboBox_pliers.addItems(self.items_english['pliers'])
+            self.comboBox_pliers.setCurrentText('')
+            self.comboBox_sizes.addItems(self.items_english['sizes'])
+            self.comboBox_sizes.setCurrentText('')
+            self.comboBox_measTools.addItems(self.items_english['meas_tools'])
+            self.comboBox_measTools.setCurrentText('')
+            self.comboBox_numberParts.addItems(self.items_english['number_parts'])
+            self.comboBox_numberParts.setCurrentText('')
+            self.comboBox_screwdrivers.addItems(self.items_english['screwdrivers'])
+            self.comboBox_screwdrivers.setCurrentText('')
+            self.comboBox_numbers.addItems(self.items_english['numbers'])
+            self.comboBox_numbers.setCurrentText('')
+            self.comboBox_tools_misc.addItems(self.items_english['tools_misc'])
+            self.comboBox_tools_misc.setCurrentText('')
+            self.comboBox_custom.addItems(self.items_english['custom'])
+            self.comboBox_custom.setCurrentText('')
+
     def reset_filename(self):
         self.lineEdit_filename.setText('')
         self.filename=''
@@ -380,42 +503,82 @@ class MainWindow():
         else:
             self.button_savedxf.setEnabled(False)
     def load_items_boxes(self):
+        
         try:
-            with open('items.yaml','r') as f:
-                self.items=yaml.safe_load(f)
+            with open('items_german.yaml','r') as f:
+                self.items_german=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.items={'pliers':['','CombinationPliers','CrimpingPliers'],
+            self.items_german={
+            'Zangen':['','Kombizange','Crimpzange'],
+            'Schraubenzieher':['','Pozi','Philips','Schlitz'],
+            'Messwerkzeuge':['','Geodreieck','Rollmaßband','Lineal'],
+            'Diverse':[''],
+            'Spezial':[''],
+            'Teileanzahl':['','2teilig','3teilig','4teilig'],
+            'Groessen':['','Klein','Mittel','Groß'],
+            'Nummern':['','1','2','3','4','5','6','7','8','9','10']}  
+    
+        try:
+            with open('items_english.yaml','r') as f:
+                self.items_english=yaml.safe_load(f)
+        except FileNotFoundError as exc:
+            self.items_english={
+            'pliers':['','CombinationPliers','CrimpingPliers'],
             'screwdrivers':['','PoziDriver','PhilipsDriver','FlatDriver'],
             'meas_tools':['','Ruler','Measuringtape','TriangleRuler'],
             'tools_misc':[''],
             'custom':[''],
             'number_parts':['','2pieces','3pieces','4pieces'],
             'sizes':['','Small','Medium','Large'],
-            'numbers':['','1','2','3','4','5','6','7','8','9','10']}    
+            'numbers':['','1','2','3','4','5','6','7','8','9','10']} 
     def sort_items_boxes(self):
-        for i in self.items:
-            items=self.items[i]
+        for i in self.items_german:
+            items=self.items_german[i]
             items.sort()
-            self.items[i]=items
-        numbers=self.items['numbers']
+            self.items_german[i]=items
+        numbers=self.items_german['Nummern']
         for i in numbers:
             if i.isnumeric() is False:
                 numbers.remove(i)
         numbers=sorted(numbers,key=int)
         numbers.insert(0,'')
-        self.items['numbers']=numbers
+        self.items_german['Nummern']=numbers
+        for i in self.items_english:
+            items=self.items_english[i]
+            items.sort()
+            self.items_english[i]=items
+        numbers=self.items_english['numbers']
+        for i in numbers:
+            if i.isnumeric() is False:
+                numbers.remove(i)
+        numbers=sorted(numbers,key=int)
+        numbers.insert(0,'')
+        self.items_english['numbers']=numbers
     def save_items_boxes(self):
-        self.items['pliers']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
-        self.items['screwdrivers']=[self.comboBox_screwdrivers.itemText(i) for i in range(self.comboBox_screwdrivers.count())]
-        self.items['meas_tools']=[self.comboBox_measTools.itemText(i) for i in range(self.comboBox_measTools.count())]
-        self.items['tools_misc']=[self.comboBox_tools_misc.itemText(i) for i in range(self.comboBox_tools_misc.count())]
-        self.items['custom']=[self.comboBox_custom.itemText(i) for i in range(self.comboBox_custom.count())]
-        self.items['number_parts']=[self.comboBox_numberParts.itemText(i) for i in range(self.comboBox_numberParts.count())]
-        self.items['sizes']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
-        self.items['numbers']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
+        if self.language=='German':
+            self.items_german['Zangen']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
+            self.items_german['Schraubenzieher']=[self.comboBox_screwdrivers.itemText(i) for i in range(self.comboBox_screwdrivers.count())]
+            self.items_german['Messwerkzeuge']=[self.comboBox_measTools.itemText(i) for i in range(self.comboBox_measTools.count())]
+            self.items_german['Diverse']=[self.comboBox_tools_misc.itemText(i) for i in range(self.comboBox_tools_misc.count())]
+            self.items_german['Spezial']=[self.comboBox_custom.itemText(i) for i in range(self.comboBox_custom.count())]
+            self.items_german['Teileanzahl']=[self.comboBox_numberParts.itemText(i) for i in range(self.comboBox_numberParts.count())]
+            self.items_german['Groessen']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
+            self.items_german['Nummern']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
        
-        with open('items.yaml','w') as f:
-            yaml.safe_dump(self.items,f)
+            with open('items_german.yaml','w') as f:
+                yaml.safe_dump(self.items_german,f)
+        else:
+            self.items_english['pliers']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
+            self.items_english['screwdrivers']=[self.comboBox_screwdrivers.itemText(i) for i in range(self.comboBox_screwdrivers.count())]
+            self.items_english['meas_tools']=[self.comboBox_measTools.itemText(i) for i in range(self.comboBox_measTools.count())]
+            self.items_english['tools_misc']=[self.comboBox_tools_misc.itemText(i) for i in range(self.comboBox_tools_misc.count())]
+            self.items_english['custom']=[self.comboBox_custom.itemText(i) for i in range(self.comboBox_custom.count())]
+            self.items_english['number_parts']=[self.comboBox_numberParts.itemText(i) for i in range(self.comboBox_numberParts.count())]
+            self.items_english['sizes']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
+            self.items_english['numbers']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
+        
+            with open('items_english.yaml','w') as f:
+                yaml.safe_dump(self.items_english,f)
     def on_button_savePliers(self):
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
@@ -452,7 +615,7 @@ class MainWindow():
         if self.lineEdit_newItem.text() != '':
             self.Dialog = QtWidgets.QDialog()
             self.ui = Dialog()
-            self.ui.setupUi(self.Dialog)
+            self.ui.setupUi(self.Dialog,self.language)
             self.Dialog.show()
             self.ui.Button_pliers.clicked.connect(self.on_button_savePliers)
             self.ui.Button_screwdrivers.clicked.connect(self.on_button_saveScrewdrivers)
@@ -472,15 +635,12 @@ class MainWindow():
             else:
                 self.button_savedxf.setEnabled(False)
     def save_dxf_button(self):
-        
-        
-
         if self.lineEdit_Path.text() != '' and self.filename !='':
             path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             #remove eventual whitespaces in the filename:
             path_and_filename.replace(' ','')
             if self.contour is not None:
-                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling)
+                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_width,self.scaling_height)
                 success=os.path.exists(path_and_filename)
                 if success:
                     dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -507,12 +667,13 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English'}  
     def save_prefs(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
         self.prefs['nth_point']=self.slider_nth_point.value()
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
+        self.prefs['language']=self.language
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def closeEvent(self):
@@ -550,7 +711,8 @@ class MainWindow():
             frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-            self.scaling=np.average([[self.frameheight/550],[self.framewidth/550]]) 
+            self.scaling_width=float(self.frameheight/550)
+            self.scaling_height=float(self.framewidth/550)
 
         # Activate the button if a processable image was warped
         if self.warped_image is not None:    
@@ -606,10 +768,16 @@ class combo(QtWidgets.QComboBox):
 class Dialog(object):
     def __init__(self):
         super(Dialog,self).__init__()
-    def setupUi(self, Dialog):
+        
+    def setupUi(self, Dialog,language):
+        self.language=language
         Dialog.setObjectName("Dialog")
         Dialog.setWindowModality(QtCore.Qt.NonModal)
         Dialog.resize(300, 360)
+        if self.language =='English':
+            Dialog.setWindowTitle("Save new item")
+        elif self.language=='German':
+            Dialog.setWindowTitle("Textbaustein speichern")
         self.widget = QtWidgets.QWidget(Dialog)
         self.widget.setGeometry(QtCore.QRect(10, 20, 271, 301))
         self.widget.setObjectName("widget")
@@ -642,21 +810,28 @@ class Dialog(object):
         
         self.gridLayout.addWidget(self.Button_custom, 3, 1, 1, 1)
 
-        self.retranslateUi(Dialog)
+        self.retranslateUi(self.language)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-    def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Save new item"))
-        self.Button_pliers.setText(_translate("Dialog", "Pliers"))
-        self.Button_sizes.setText(_translate("Dialog", "Sizes"))
-        self.Button_MeasTools.setText(_translate("Dialog", "Measure Tools"))
-        self.Button_NumberParts.setText(_translate("Dialog", "Number Parts"))
-        self.Button_screwdrivers.setText(_translate("Dialog", "Screwdrivers"))
-        self.Button_numbers.setText(_translate("Dialog", "Numbers"))
-        self.Butto_misc.setText(_translate("Dialog", "Tools misc"))
-        self.Button_custom.setText(_translate("Dialog", "Custom"))
-    
+    def retranslateUi(self, language):
+        if language == 'German':
+            self.Button_pliers.setText("Zangen")
+            self.Button_sizes.setText("Größen")
+            self.Button_MeasTools.setText("Messwerkzeuge")
+            self.Button_NumberParts.setText("Teileanzahl")
+            self.Button_screwdrivers.setText("Schraubenzieher")
+            self.Button_numbers.setText("Nummern")
+            self.Butto_misc.setText("Diverse")
+            self.Button_custom.setText("Spezial")
+        else:
+            self.Button_pliers.setText("Pliers")
+            self.Button_sizes.setText("Sizes")
+            self.Button_MeasTools.setText("Measure Tools")
+            self.Button_NumberParts.setText("Number Parts")
+            self.Button_screwdrivers.setText("Screwdrivers")
+            self.Button_numbers.setText("Numbers")
+            self.Butto_misc.setText("Tools misc")
+            self.Button_custom.setText("Custom")
 class UpdatePreview_worker(QtCore.QThread):
     def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
         super().__init__()
