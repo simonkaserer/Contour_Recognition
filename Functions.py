@@ -76,7 +76,7 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
         tool_contour=np.array(cont)
         #inv=cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2BGR)
         # create a black background
-        inv=np.zeros((int(toolheight+10),int(toolwidth+10),3),dtype='uint8')
+        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
@@ -105,7 +105,7 @@ def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,tool
         tool_contour=np.array(cont)
        
         # create a black background
-        inv=np.zeros((int(toolheight+10),int(toolwidth+10),3),dtype='uint8')
+        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
@@ -162,7 +162,7 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight+10),int(toolwidth+10),3),dtype='uint8')
+        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
