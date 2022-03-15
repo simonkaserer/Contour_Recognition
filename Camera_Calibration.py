@@ -1,4 +1,7 @@
-# This code calibrates the three cameras with OpenCV and a pattern and saves the camera parameters into configuration files
+# This code calibrates the three cameras with OpenCV and a 7x6 chessboard pattern and 
+# saves the camera parameters into configuration files
+
+# This has to be executed in the Terminal since it has no GUI!
 
 #!/usr/bin/env python3
 
@@ -11,7 +14,7 @@ import numpy as np
 # Create pipeline
 pipeline = dai.Pipeline()
 
-# Define sources and outputs
+# Define sources and outputs of the OAK-D camera
 camRgb = pipeline.create(dai.node.ColorCamera)
 monoLeft = pipeline.create(dai.node.MonoCamera)
 monoRight = pipeline.create(dai.node.MonoCamera)
@@ -69,7 +72,7 @@ def main():
         print('Please take 12 Pictures by pressing the space bar to calibrate the cameras')
         print('All of the three cameras should depict the pattern in its whole shape and the whole picture should be filled')
 
-        num_pic=1
+        num_pic=13
 
         while num_pic<=12:
             inLeft=qLeft.get()
@@ -128,6 +131,9 @@ def main():
         images_left = glob.glob('./CalPicsLeft/*.jpg')
         images_right = glob.glob('./CalPicsRight/*.jpg')
         images_Rgb = glob.glob('./CalPicsRGB/*.jpg')
+        images_left.sort()
+        images_right.sort()
+        images_Rgb.sort()
         if len(images_left)<10 :
             print('Not enough pictures found in CalPicsLeft!')
             quit()
@@ -140,7 +146,7 @@ def main():
 
 
 
-        for fname in images_left:
+        for fname in images_left[:11:]:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             # Find the chess board corners
@@ -150,20 +156,19 @@ def main():
                 objpoints_left.append(objp_left)
                 corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
                 imgpoints_left.append(corners)
-                # # Draw and display the corners
-                # cv2.drawChessboardCorners(img, (7,6), corners2, ret)
-                # cv2.imshow('img', img)
-                # cv2.waitKey(500)
+            print(f'{fname} processed!')
         ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsLeft/CalLeft12.jpg')
+        #Take an unused picture for the optimal camera matrix
+        img=cv2.imread('./CalPicsLeft/CalLeft9.jpg')
         h,w=img.shape[:2]
+        # Get the new camera matrix
         newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
         # save the matrices to .npy files
         np.save('./CalData/mtx_left.npy',mtx_left)
         np.save('./CalData/dist_left.npy',dist_left)
         np.save('./CalData/newcameramtx_left.npy',newcameramtx_left)
-        print('Left camera calibrated!')
-        for fname in images_right:
+        print('                           Left camera calibrated!')
+        for fname in images_right[:11:]:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             # Find the chess board corners
@@ -173,17 +178,18 @@ def main():
                 objpoints_right.append(objp_right)
                 corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
                 imgpoints_right.append(corners)
-        
+            print(f'{fname} processed!')
         ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints_right, imgpoints_right, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsRight/CalRight12.jpg')
+        #Take an unused picture for the optimal camera matrix
+        img=cv2.imread('./CalPicsRight/CalRight9.jpg')
         h,w=img.shape[:2]
         newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),1,(w,h))
         # save the matrices to .npy files
         np.save('./CalData/mtx_right.npy',mtx_right)
         np.save('./CalData/dist_right.npy',dist_right)
         np.save('./CalData/newcameramtx_right.npy',newcameramtx_right)
-        print('Right camera calibrated!')
-        for fname in images_Rgb:
+        print('                                       Right camera calibrated!')
+        for fname in images_Rgb[:11:]:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             # Find the chess board corners
@@ -193,9 +199,10 @@ def main():
                 objpoints_Rgb.append(objp_Rgb)
                 corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
                 imgpoints_Rgb.append(corners)
-
+            print(f'{fname} processed!')
         ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
-        img=cv2.imread('./CalPicsRGB/CalRgb12.jpg')
+        #Take an unused picture for the optimal camera matrix
+        img=cv2.imread('./CalPicsRGB/CalRgb9.jpg')
         h,w=img.shape[:2]
         newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),1,(w,h))
         # save the matrices to .npy files
@@ -203,7 +210,7 @@ def main():
         np.save('./CalData/dist_Rgb.npy',dist_Rgb)
         np.save('./CalData/newcameramtx_Rgb.npy',newcameramtx_Rgb)
 
-        print('Calibration process finished!')
+        print(                                      'Calibration process finished!')
 
 if __name__=="__main__":
     main()
