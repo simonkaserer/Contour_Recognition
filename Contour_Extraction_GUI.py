@@ -730,8 +730,8 @@ class MainWindow():
                 frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
                 img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
                 self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-                self.scaling_width=float(self.frameheight/550)
-                self.scaling_height=float(self.framewidth/550)
+                self.scaling_height=float(self.frameheight/550)
+                self.scaling_width=float(self.framewidth/550)
 
         # Activate the button if a processable image was warped
         if self.warped_image is not None:    
