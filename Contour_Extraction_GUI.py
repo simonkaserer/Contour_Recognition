@@ -1,6 +1,7 @@
 # Author: Simon Kaserer
 # MCI Bachelor Thesis 2022
 
+from genericpath import exists
 import subprocess
 import sys
 import cv2
@@ -32,12 +33,8 @@ class MainWindow():
         self.language=self.prefs['language']
         self.load_items_boxes()
         self.sort_items_boxes()
-
-        # Load the calibration data
-        self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
-        self.dist_Rgb=np.load('./CalData/dist_Rgb.npy')
-        self.newcameramtx_Rgb=np.load('./CalData/newcameramtx_Rgb.npy')
-
+        self.load_cal_data()
+    
         ContourExtraction.setObjectName("ContourExtraction")
         ContourExtraction.setWindowModality(QtCore.Qt.WindowModal)
         ContourExtraction.resize(1280, 710)
@@ -114,7 +111,7 @@ class MainWindow():
         self.slider_factor.setGeometry(QtCore.QRect(590, 275, 236, 40))
         self.slider_factor.setOrientation(QtCore.Qt.Horizontal)
         self.slider_factor.setValue(int(self.prefs['factor']*10000))
-        self.slider_factor.setMaximum(200)
+        self.slider_factor.setMaximum(100)
         self.slider_factor.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_factor.valueChanged.connect(self.factor_changed)
         self.slider_factor.setObjectName("Slider_factor")
@@ -465,6 +462,20 @@ class MainWindow():
         for box in boxes:
             box.setCurrentText('')
         self.save_items_boxes()
+    def load_cal_data(self):
+        try:
+            self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
+            self.dist_Rgb=np.load('./CalData/dist_Rgb.npy')
+            self.newcameramtx_Rgb=np.load('./CalData/newcameramtx_Rgb.npy')
+            self.mtx_right=np.load('./CalData/mtx_right.npy')
+            self.dist_right=np.load('./CalData/dist_right.npy')
+            self.newcameramtx_right=np.load('./CalData/newcameramtx_right.npy')
+            self.mtx_left=np.load('./CalData/mtx_left.npy')
+            self.dist_left=np.load('./CalData/dist_left.npy')
+            self.newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
+        except FileNotFoundError as exc:
+            print('Calibration Data not found')
+            quit()
     def load_items_boxes(self):
         
         try:

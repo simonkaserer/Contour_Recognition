@@ -72,7 +72,7 @@ def main():
         print('Please take 12 Pictures by pressing the space bar to calibrate the cameras')
         print('All of the three cameras should depict the pattern in its whole shape and the whole picture should be filled')
 
-        num_pic=13
+        num_pic=1
 
         while num_pic<=12:
             inLeft=qLeft.get()
