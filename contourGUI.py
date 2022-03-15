@@ -27,14 +27,11 @@ class MainWindow():
         #The shadowboards are eliminated - only the 550x550mm is valid
         self.scaling_width=1.0
         self.scaling_height=1.0
-        
-        
+                
         self.load_prefs()
         self.language=self.prefs['language']
         self.load_items_boxes()
         self.sort_items_boxes()
- 
-
 
         # Load the calibration data
         self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
@@ -55,6 +52,7 @@ class MainWindow():
         self.timer.setInterval(5000)
         self.timer.timeout.connect(self.update_preview)
 
+        # Create the Widgets for the GUI
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
@@ -204,12 +202,11 @@ class MainWindow():
         self.Label_Path.setGeometry(QtCore.QRect(40, 72, 333, 22))
         self.Label_Path.setObjectName("Label_Path")
 
-
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
         self.label_newitem.setGeometry(QtCore.QRect(880, 190, 371, 51))
         self.label_newitem.setObjectName("label_newitem")
 
-        # Grid Layout for combo boxes
+        # Grid Layout for combo boxes ###############################################
         self.widget = QtWidgets.QWidget(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(880, 250, 370, 310))
         self.widget.setObjectName("widget")
@@ -292,37 +289,37 @@ class MainWindow():
         self.fill_comboBoxes()
 
         self.gridLayout.addWidget(self.comboBox_custom, 7, 1, 1, 1)
+        #################################################################################
 
-        #Experimental Menu bar:
+        #Menu bar:
         self.menuBar = QtWidgets.QMenuBar(ContourExtraction)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
         self.menuBar.setObjectName("menuBar")
         self.menuLanguage = QtWidgets.QMenu(self.menuBar)
         self.menuLanguage.setObjectName("menuLanguage")
-        ContourExtraction.setMenuBar(self.menuBar)
-        self.actionEnglish = QtWidgets.QAction(self.centralwidget)
+        self.menuExtras = QtWidgets.QMenu(self.menuBar)
+        self.menuExtras.setObjectName("menuExtras")
+        self.actionEnglish = QtWidgets.QAction(ContourExtraction)
         self.actionEnglish.setObjectName("actionEnglish")
-        self.actionGerman = QtWidgets.QAction(self.centralwidget)
+        self.actionGerman = QtWidgets.QAction(ContourExtraction)
         self.actionGerman.setObjectName("actionGerman")
+        self.actionSave_Metadata = QtWidgets.QAction(ContourExtraction)
+        self.actionSave_Metadata.setObjectName("actionSave_Metadata")
+        self.actionSave_Contour_Image = QtWidgets.QAction(ContourExtraction)
+        self.actionSave_Contour_Image.setObjectName("actionSave_Contour_Image")
+        ContourExtraction.setMenuBar(self.menuBar)
         self.menuLanguage.addAction(self.actionEnglish)
         self.menuLanguage.addAction(self.actionGerman)
+        self.menuExtras.addAction(self.actionSave_Metadata)
+        self.menuExtras.addAction(self.actionSave_Contour_Image)
         self.menuBar.addAction(self.menuLanguage.menuAction())
+        self.menuBar.addAction(self.menuExtras.menuAction())
         self.actionEnglish.triggered.connect(self.lang_english)
         self.actionGerman.triggered.connect(self.lang_german)
-
-        # Buttons for saving metadata and image file: ######################
-        self.button_meta=QtWidgets.QPushButton(self.centralwidget)
-        self.button_meta.setGeometry(QtCore.QRect(870,610,121,30))
-        self.button_meta.clicked.connect(self.save_meta)
-        self.button_meta.setObjectName("button_meta")
-        self.button_meta.setText('Save meta')
-        self.button_img=QtWidgets.QPushButton(self.centralwidget)
-        self.button_img.setGeometry(QtCore.QRect(1020,610,121,30))
-        self.button_img.clicked.connect(self.save_img)
-        self.button_img.setObjectName("button_img")
-        self.button_img.setText('Save cnt-img')
-        ####################################################################
-
+        self.actionSave_Contour_Image.triggered.connect(self.save_img)
+        self.actionSave_Metadata.triggered.connect(self.save_meta)
+        ###################################
+       
         ContourExtraction.setCentralWidget(self.centralwidget)
 
         #Check which method is currently set and show/hide the corresponding sliders
@@ -336,43 +333,14 @@ class MainWindow():
         # Deactivate the saving and get contour Button:
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
-
         #Start an instance of the worker object to update the preview
         self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
         self.worker.finished.connect(self.worker_finished)
-
+        # Set the texts of each labelled element
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(ContourExtraction)
         #Start the timer
         self.timer.start()
 
-    ####################### test purpose##################
-    def save_meta(self):
-        self.prefs['threshold']=self.slider_thresh.value()
-        self.prefs['factor']=self.slider_factor.value()/10000
-        self.prefs['nth_point']=self.slider_nth_point.value()
-        self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
-        self.prefs['framewidth']=self.framewidth
-        self.prefs['frameheight']=self.frameheight
-        self.prefs['x']=self.tool_pos_x
-        self.prefs['y']=self.tool_pos_y
-        self.prefs['scaling_width']=self.scaling_width
-        self.prefs['scaling_height']=self.scaling_height
-        path='/home/pi/Desktop/Testcontours/'+self.filename+'.yaml'
-        with open(path,'w') as f:
-            yaml.safe_dump(self.prefs,f)
-    def save_img(self):
-        path='/home/pi/Desktop/Testcontours/'+self.filename+'.jpg'
-        pathleft='/home/pi/Desktop/Testcontours/'+self.filename+'Left.jpg'
-        pathright='/home/pi/Desktop/Testcontours/'+self.filename+'Right.jpg'
-        cv2.imwrite(path,self.cropped_image)
-        edgeLeft = edgeLeftQueue.get()
-        image=edgeLeft.getFrame()
-        cv2.imwrite(pathleft,image)
-        edgeRight = edgeRightQueue.get()
-        image=edgeRight.getFrame()
-        cv2.imwrite(pathright,image)
-    #####################################################
     def lang_english(self):
         self.save_items_boxes()
         self.language='English'
@@ -440,55 +408,38 @@ class MainWindow():
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
         self.actionGerman.setText( "German")
-    def fill_comboBoxes(self):
-        if self.language=='German':
-            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
-            for box in boxes:
-                box.clear()
-            self.comboBox_pliers.addItems(self.items_german['Zangen'])
-            self.comboBox_pliers.setCurrentText('')
-            self.comboBox_sizes.addItems(self.items_german['Groessen'])
-            self.comboBox_sizes.setCurrentText('')
-            self.comboBox_measTools.addItems(self.items_german['Messwerkzeuge'])
-            self.comboBox_measTools.setCurrentText('')
-            self.comboBox_numberParts.addItems(self.items_german['Teileanzahl'])
-            self.comboBox_numberParts.setCurrentText('')
-            self.comboBox_screwdrivers.addItems(self.items_german['Schraubenzieher'])
-            self.comboBox_screwdrivers.setCurrentText('')
-            self.comboBox_numbers.addItems(self.items_german['Nummern'])
-            self.comboBox_numbers.setCurrentText('')
-            self.comboBox_tools_misc.addItems(self.items_german['Diverse'])
-            self.comboBox_tools_misc.setCurrentText('')
-            self.comboBox_custom.addItems(self.items_german['Spezial'])
-            self.comboBox_custom.setCurrentText('')
-        else:
-            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
-            for box in boxes:
-                box.clear()
-            self.comboBox_pliers.addItems(self.items_english['pliers'])
-            self.comboBox_pliers.setCurrentText('')
-            self.comboBox_sizes.addItems(self.items_english['sizes'])
-            self.comboBox_sizes.setCurrentText('')
-            self.comboBox_measTools.addItems(self.items_english['meas_tools'])
-            self.comboBox_measTools.setCurrentText('')
-            self.comboBox_numberParts.addItems(self.items_english['number_parts'])
-            self.comboBox_numberParts.setCurrentText('')
-            self.comboBox_screwdrivers.addItems(self.items_english['screwdrivers'])
-            self.comboBox_screwdrivers.setCurrentText('')
-            self.comboBox_numbers.addItems(self.items_english['numbers'])
-            self.comboBox_numbers.setCurrentText('')
-            self.comboBox_tools_misc.addItems(self.items_english['tools_misc'])
-            self.comboBox_tools_misc.setCurrentText('')
-            self.comboBox_custom.addItems(self.items_english['custom'])
-            self.comboBox_custom.setCurrentText('')
+        self.menuExtras.setTitle("Extras")
+        self.actionSave_Metadata.setText("Save Metadata")
+        self.actionSave_Contour_Image.setText("Save Contour Image")
 
-    def reset_filename(self):
-        self.lineEdit_filename.setText('')
-        self.filename=''
-        boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
-        for box in boxes:
-            box.setCurrentText('')
-        self.save_items_boxes()        
+    def save_meta(self):
+        if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+            self.prefs['threshold']=self.slider_thresh.value()
+            self.prefs['factor']=self.slider_factor.value()/10000
+            self.prefs['nth_point']=self.slider_nth_point.value()
+            self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
+            self.prefs['framewidth']=self.framewidth
+            self.prefs['frameheight']=self.frameheight
+            self.prefs['x']=self.tool_pos_x
+            self.prefs['y']=self.tool_pos_y
+            self.prefs['scaling_width']=self.scaling_width
+            self.prefs['scaling_height']=self.scaling_height
+            path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
+            with open(path,'w') as f:
+                yaml.safe_dump(self.prefs,f)
+    def save_img(self):
+        if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+            path=self.lineEdit_Path.text()+'/'+self.filename+'.jpg'
+            pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
+            pathright=self.lineEdit_Path.text()+'/'+self.filename+'Right.jpg'
+            cv2.imwrite(path,self.cropped_image)
+            edgeLeft = edgeLeftQueue.get()
+            image=edgeLeft.getFrame()
+            cv2.imwrite(pathleft,image)
+            edgeRight = edgeRightQueue.get()
+            image=edgeRight.getFrame()
+            cv2.imwrite(pathright,image)
+    
     def open_keyboard(self):
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self):
@@ -510,6 +461,13 @@ class MainWindow():
             self.button_savedxf.setEnabled(True)
         else:
             self.button_savedxf.setEnabled(False)
+    def reset_filename(self):
+        self.lineEdit_filename.setText('')
+        self.filename=''
+        boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
+        for box in boxes:
+            box.setCurrentText('')
+        self.save_items_boxes()
     def load_items_boxes(self):
         
         try:
@@ -587,6 +545,47 @@ class MainWindow():
         
             with open('items_english.yaml','w') as f:
                 yaml.safe_dump(self.items_english,f)
+    def fill_comboBoxes(self):
+        if self.language=='German':
+            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
+            for box in boxes:
+                box.clear()
+            self.comboBox_pliers.addItems(self.items_german['Zangen'])
+            self.comboBox_pliers.setCurrentText('')
+            self.comboBox_sizes.addItems(self.items_german['Groessen'])
+            self.comboBox_sizes.setCurrentText('')
+            self.comboBox_measTools.addItems(self.items_german['Messwerkzeuge'])
+            self.comboBox_measTools.setCurrentText('')
+            self.comboBox_numberParts.addItems(self.items_german['Teileanzahl'])
+            self.comboBox_numberParts.setCurrentText('')
+            self.comboBox_screwdrivers.addItems(self.items_german['Schraubenzieher'])
+            self.comboBox_screwdrivers.setCurrentText('')
+            self.comboBox_numbers.addItems(self.items_german['Nummern'])
+            self.comboBox_numbers.setCurrentText('')
+            self.comboBox_tools_misc.addItems(self.items_german['Diverse'])
+            self.comboBox_tools_misc.setCurrentText('')
+            self.comboBox_custom.addItems(self.items_german['Spezial'])
+            self.comboBox_custom.setCurrentText('')
+        else:
+            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
+            for box in boxes:
+                box.clear()
+            self.comboBox_pliers.addItems(self.items_english['pliers'])
+            self.comboBox_pliers.setCurrentText('')
+            self.comboBox_sizes.addItems(self.items_english['sizes'])
+            self.comboBox_sizes.setCurrentText('')
+            self.comboBox_measTools.addItems(self.items_english['meas_tools'])
+            self.comboBox_measTools.setCurrentText('')
+            self.comboBox_numberParts.addItems(self.items_english['number_parts'])
+            self.comboBox_numberParts.setCurrentText('')
+            self.comboBox_screwdrivers.addItems(self.items_english['screwdrivers'])
+            self.comboBox_screwdrivers.setCurrentText('')
+            self.comboBox_numbers.addItems(self.items_english['numbers'])
+            self.comboBox_numbers.setCurrentText('')
+            self.comboBox_tools_misc.addItems(self.items_english['tools_misc'])
+            self.comboBox_tools_misc.setCurrentText('')
+            self.comboBox_custom.addItems(self.items_english['custom'])
+            self.comboBox_custom.setCurrentText('')
     def on_button_savePliers(self):
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
@@ -688,9 +687,6 @@ class MainWindow():
         self.prefs['language']=self.language
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
-    def closeEvent(self):
-        self.save_prefs()
-        self.save_items_boxes()
     def threshold_changed(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.process()
@@ -760,6 +756,9 @@ class MainWindow():
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
+    def closeEvent(self):
+        self.save_prefs()
+        self.save_items_boxes()
 
 class combo(QtWidgets.QComboBox):
    def __init__(self, parent):
@@ -775,8 +774,7 @@ class combo(QtWidgets.QComboBox):
          e.ignore()
 
    def dropEvent(self, e):
-      self.addItem(e.mimeData().text())
-      
+      self.addItem(e.mimeData().text())      
 class Dialog(object):
     def __init__(self):
         super(Dialog,self).__init__()
@@ -867,10 +865,7 @@ class UpdatePreview_worker(QtCore.QThread):
         else:
             return None,None,None
         
-
-
-
-    
+  
 
 if __name__ == '__main__':
     sys._excepthook=sys.excepthook
@@ -943,18 +938,6 @@ if __name__ == '__main__':
         ContourExtraction = QtWidgets.QMainWindow()
         gui = MainWindow(ContourExtraction)
         ContourExtraction.show()
-
-        
-        # These get called in the individual methods of the QT slots
-        # edgeLeft = edgeLeftQueue.get()
-        # edgeRight = edgeRightQueue.get()
-        # edgeRgb = edgeRgbQueue.get()
-
-        # edgeLeftFrame = edgeLeft.getFrame()
-        # edgeRightFrame = edgeRight.getFrame()
-        # edgeRgbFrame = edgeRgb.getFrame()
-
-        
 
         # Save the preferences and the items of the ComboBoxes before closing
         app.aboutToQuit.connect(gui.closeEvent)
