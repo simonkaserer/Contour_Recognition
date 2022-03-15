@@ -5,11 +5,11 @@ import subprocess
 import sys
 import cv2
 import depthai as dai
-from soupsieve import match
 import yaml
 import Functions
 import os
 import numpy as np
+import time
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from QtImageViewer import QtImageViewer
@@ -46,11 +46,6 @@ class MainWindow():
         ContourExtraction.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.Austria))
         self.centralwidget = QtWidgets.QWidget(ContourExtraction)
         self.centralwidget.setObjectName("centralwidget")
-
-        # Set up a timer for a repeated refreshing of the preview
-        self.timer=QtCore.QTimer(self.centralwidget)
-        self.timer.setInterval(5000)
-        self.timer.timeout.connect(self.update_preview)
 
         # Create the Widgets for the GUI
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
@@ -291,7 +286,7 @@ class MainWindow():
         self.gridLayout.addWidget(self.comboBox_custom, 7, 1, 1, 1)
         #################################################################################
 
-        #Menu bar:
+        #Menu bar:#######################################################################
         self.menuBar = QtWidgets.QMenuBar(ContourExtraction)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
         self.menuBar.setObjectName("menuBar")
@@ -318,7 +313,7 @@ class MainWindow():
         self.actionGerman.triggered.connect(self.lang_german)
         self.actionSave_Contour_Image.triggered.connect(self.save_img)
         self.actionSave_Metadata.triggered.connect(self.save_meta)
-        ###################################
+        #################################################################################
        
         ContourExtraction.setCentralWidget(self.centralwidget)
 
@@ -335,11 +330,13 @@ class MainWindow():
         self.button_getContour.setEnabled(False)        
         #Start an instance of the worker object to update the preview
         self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
-        self.worker.finished.connect(self.worker_finished)
+        self.worker.imageUpdate.connect(self.update_preview)
+        self.worker.widthUpdate.connect(self.update_framewidth)
+        self.worker.heightUpdate.connect(self.update_frameheight)
         # Set the texts of each labelled element
         self.retranslateUi()
-        #Start the timer
-        self.timer.start()
+        #Start the worker thread
+        self.worker.start()
 
     def lang_english(self):
         self.save_items_boxes()
@@ -707,20 +704,19 @@ class MainWindow():
             self.slider_factor.hide()
             self.label_slider_factor.hide()
         self.process()
-    def worker_finished(self):
-        self.timer.start()
-    def update_preview(self):   
-        warped_image,framewidth,frameheight=self.worker.run()
-        
+    def update_frameheight(self,height):
+        self.frameheight=height
+    def update_framewidth(self,width):
+        self.framewidth=width
+    def update_preview(self,warped_image):   
         if warped_image is not None:
-            self.warped_image=warped_image
-            self.framewidth=framewidth
-            self.frameheight=frameheight  
-            frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
-            img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
-            self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-            self.scaling_width=float(self.frameheight/550)
-            self.scaling_height=float(self.framewidth/550)
+            if warped_image.shape[0]>500:
+                self.warped_image=warped_image
+                frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
+                img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+                self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
+                self.scaling_width=float(self.frameheight/550)
+                self.scaling_height=float(self.framewidth/550)
 
         # Activate the button if a processable image was warped
         if self.warped_image is not None:    
@@ -757,6 +753,7 @@ class MainWindow():
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
     def closeEvent(self):
+        self.worker.stop()
         self.save_prefs()
         self.save_items_boxes()
 
@@ -843,6 +840,9 @@ class Dialog(object):
             self.Butto_misc.setText("Tools misc")
             self.Button_custom.setText("Custom")
 class UpdatePreview_worker(QtCore.QThread):
+    imageUpdate=QtCore.pyqtSignal(np.ndarray)
+    widthUpdate=QtCore.pyqtSignal(int)
+    heightUpdate=QtCore.pyqtSignal(int)
     def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
         super().__init__()
         self.mtx=mtx_Rgb
@@ -850,20 +850,24 @@ class UpdatePreview_worker(QtCore.QThread):
         self.newmtx=newcameramtx_Rgb
         self.threshold=threshold
     
+    def stop(self):
+        self.ThreadActive=False
+        self.quit()
+    
     def run(self):
-        edgeRgb = edgeRgbQueue.get()
-        image=edgeRgb.getFrame()
-        image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
-        # Warp the image
-        warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,self.threshold,1,False)
-        # Return the warped image if a square was found:
-        if warped_image is not None:
-            if warped_image.shape[0] > 500:
-                return warped_image,framewidth,frameheigth
-            else:
-                return None,None,None
-        else:
-            return None,None,None
+        self.ThreadActive=True
+        while self.ThreadActive:
+            edgeRgb = edgeRgbQueue.get()
+            image=edgeRgb.getFrame()
+            image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
+            # Warp the image
+            warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,self.threshold,1,False)
+            if warped_image is not None:
+                self.widthUpdate.emit(framewidth)
+                self.heightUpdate.emit(frameheigth)
+                self.imageUpdate.emit(warped_image)
+            time.sleep(0.5)
+       
         
   
 
