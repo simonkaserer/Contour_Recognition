@@ -474,8 +474,12 @@ class MainWindow():
             self.dist_left=np.load('./CalData/dist_left.npy')
             self.newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
         except FileNotFoundError as exc:
-            print('Calibration Data not found')
-            quit()
+            msg=QtWidgets.QMessageBox()
+            msg.setWindowTitle('Error')
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.setText('Calibration Data not found - please run CameraCalibration.py through the Terminal inside the workspace of the contour extraction program.')
+            msg.exec_()
+            msg.buttonClicked.connect(quit())
     def load_items_boxes(self):
         
         try:
