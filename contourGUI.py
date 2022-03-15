@@ -363,7 +363,15 @@ class MainWindow():
             yaml.safe_dump(self.prefs,f)
     def save_img(self):
         path='/home/pi/Desktop/Testcontours/'+self.filename+'.jpg'
+        pathleft='/home/pi/Desktop/Testcontours/'+self.filename+'Left.jpg'
+        pathright='/home/pi/Desktop/Testcontours/'+self.filename+'Right.jpg'
         cv2.imwrite(path,self.cropped_image)
+        edgeLeft = edgeLeftQueue.get()
+        image=edgeLeft.getFrame()
+        cv2.imwrite(pathleft,image)
+        edgeRight = edgeRightQueue.get()
+        image=edgeRight.getFrame()
+        cv2.imwrite(pathright,image)
     #####################################################
     def lang_english(self):
         self.save_items_boxes()
@@ -627,7 +635,11 @@ class MainWindow():
             self.ui.Button_numbers.clicked.connect(self.on_button_saveNumbers)
     def open_folder(self):
         folderpath=''
-        folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,'Select the path to save the contours')
+        if self.language=='German':
+            open_str='Zielordner auswählen'
+        else:
+            open_str='Select the path to save the contours'
+        folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,open_str)
         if folderpath !='':
             self.lineEdit_Path.setText(folderpath)
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
