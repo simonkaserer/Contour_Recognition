@@ -83,12 +83,19 @@ def main():
             RightFrame=inRight.getFrame()
             RgbFrame=inRgb.getCvFrame()
 
-            Left_small=LeftFrame
-            Right_small=RightFrame
-            Rgb_small=RgbFrame
-            cv2.imshow(LeftStr,cv2.resize(Left_small,(400,300)))
-            cv2.imshow(RightStr,cv2.resize(Right_small,(400,300)))
-            cv2.imshow(RgbStr,cv2.resize(Rgb_small,(400,300)))
+            
+
+            img_left=cv2.resize(LeftFrame,(400,300))
+            img_right=cv2.resize(RightFrame,(400,300))
+            img_Rgb=cv2.resize(RgbFrame,(400,300))
+            #img_left=cv2.cvtColor(img_left,cv2.COLOR_BGR2GRAY)
+            img_Rgb=cv2.cvtColor(img_Rgb,cv2.COLOR_BGR2GRAY)
+            #img_right=cv2.cvtColor(img_right,cv2.COLOR_BGR2GRAY)            
+            img_stacked=np.hstack((img_left,img_Rgb))
+            img_stacked=np.hstack((img_stacked,img_right))
+            cv2.putText(img_stacked,'Please take 12 Pictures by pressing the space bar to calibrate the cameras',(0,20),cv2.FONT_HERSHEY_SIMPLEX,0.7,(255,0,0),1)
+            cv2.putText(img_stacked,'All of the three cameras should depict the pattern in its whole shape.',(0,40),cv2.FONT_HERSHEY_SIMPLEX,0.7,(255,0,0),1)
+            cv2.imshow('Camera Calibration',img_stacked)
 
             str_img_left='CalLeft'+str(num_pic)
             str_img_right='CalRight'+str(num_pic)
