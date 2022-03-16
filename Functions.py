@@ -44,7 +44,7 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LANCZOS4)
             # or
             #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
-            
+
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
             
@@ -243,3 +243,53 @@ def toolheight(img_left,img_right):
    #print(f'Right: width:{framew_right}, height:{framew_right}')
    print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
    print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
+
+def rotate_img(img,x_angle,y_angle,z_angle):
+   #From yt: v=bbSFk4vTXSI
+   if x_angle<0:
+      x_angle=360+x_angle
+   if y_angle<0:
+      y_angle=360+y_angle
+   if z_angle<0:
+      z_angle=360+z_angle
+   w=img.shape[1]
+   h=img.shape[0]
+   f=(np.sqrt(h**2+w**2))/(2*np.sin(z_angle*np.pi/np.float32(180)) if np.sin(z_angle*np.pi/np.float32(180)) != 0 else 0.000001)
+   
+   RX=np.array([[1,0,0,0],
+                [0,np.cos((x_angle*np.pi/np.float32(180))),-np.sin((x_angle*np.pi/np.float32(180))),0],
+                [0,np.sin((x_angle*np.pi/np.float32(180))),np.cos((x_angle*np.pi/np.float32(180))),0],
+                [0,0,0,1]])
+   RY=np.array([[np.cos((y_angle*np.pi/np.float32(180))),0,-np.sin((y_angle*np.pi/np.float32(180))),0],
+                [0,1,0,0],
+                [np.sin((y_angle*np.pi/np.float32(180))),0,np.cos((y_angle*np.pi/np.float32(180))),0],
+                [0,0,0,1]])
+   RZ=np.array([[np.cos((z_angle*np.pi/np.float32(180))),-np.sin((z_angle*np.pi/np.float32(180))),0,0],
+                [np.sin((z_angle*np.pi/np.float32(180))),np.cos((z_angle*np.pi/np.float32(180))),0,0],
+                [0,0,1,0],
+                [0,0,0,1]]) 
+                                  
+   # Calculate the rotation matrix
+   R=np.dot(np.dot(RX,RY),RZ)
+
+   # Translation matrix
+   T=np.array([[1,0,0,max(w,h)/3],
+               [0,1,0,-max(w,h)/2],
+               [0,0,1,f],
+               [0,0,0,1]])
+
+   # Projection of 2D matrix -> 3D matrix
+   A1=np.array([[1,0,-w/2],
+                [0,1,-h/2],
+                [0,0,1],
+                [0,0,1]])   
+
+   # Projection of 3D matrix -> 2D matrix                
+   A2=np.array([[f,0,w,0],
+                [0,f,h,0],
+                [0,0,1,0]])                            
+   M=np.dot(A2,np.dot(T,np.dot(R,A1)))
+
+   img_rot=cv2.warpPerspective(img,M,(max(w,h),max(w,h)),flags=cv2.INTER_NEAREST)
+
+   return img_rot   
