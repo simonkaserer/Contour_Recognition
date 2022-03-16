@@ -39,7 +39,12 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             input_pts=np.float32([pt_A,pt_B,pt_C,pt_D])
             output_pts=np.float32([[0,0],[0,height],[width,height],[width,0]])
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
-            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
+            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_NEAREST)
+            #maybe use :
+            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LANCZOS4)
+            # or
+            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
+            
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
             
