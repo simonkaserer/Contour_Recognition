@@ -5,7 +5,7 @@ import numpy as np
 import os
 import ezdxf as dxf
 
-def warp_img(img,threshold_value,border_offset_px,show_outer_edge): 
+def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool): 
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
     contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
