@@ -226,3 +226,15 @@ def check_for_square(img,threshold_value):
             return True
         else:
             return False
+
+def toolheight(img_left,img_right):
+   warped_left,framew_left,frameh_left=warp_img(img_left,150,1,False)
+   warped_right,framew_right,fdrameh_left=warp_img(img_right,150,1,False)
+  
+   cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
+   cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
+  
+   #print(f'Left: width:{framew_left}, height:{frameh_left}')
+   #print(f'Right: width:{framew_right}, height:{framew_right}')
+   print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
+   print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')

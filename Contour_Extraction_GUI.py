@@ -741,6 +741,18 @@ class MainWindow():
         else:
             self.button_getContour.setEnabled(False)
     def get_contour(self):
+        edgeLeft=edgeLeftQueue.get()
+        edgeRight=edgeRightQueue.get()
+        img_left=edgeLeft.getFrame()
+        img_right=edgeRight.getFrame()
+        #img_left=cv2.cvtColor(img_left,cv2.COLOR_BGR2GRAY)
+        #img_right=cv2.cvtColor(img_right,cv2.COLOR_BGR2GRAY)
+
+        img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
+        img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
+
+        Functions.toolheight(img_left,img_right)
+
         self.cropped_image=None
         self.extraction_image=self.warped_image
         while self.cropped_image is None:
