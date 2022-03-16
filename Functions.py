@@ -213,25 +213,6 @@ def dxf_exporter_spline(contour,path_and_name,scaling):
     msp.add_spline(points)
     file.saveas(path_and_name)
 
-def check_for_square(img,threshold_value):
-    ret,thresh=cv2.threshold(img,threshold_value,255,0)
-    contours,hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-
-    # Find the max-area contour of the outer line:
-    if len(contours) > 0:
-        cnt = sorted(contours,key=cv2.contourArea)[-1]
-        #Test: Show the found contour:
-        pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
-        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
-            # find the cornerpoints of the square
-        epsilon=0.01*cv2.arcLength(cnt,True)
-            # find the square shape and check if it has 4 corners
-        outer_square=cv2.approxPolyDP(cnt,epsilon,True)
-        if len(outer_square) ==4:
-            return True
-        else:
-            return False
-
 def toolheight(img_left,img_right):
    warped_left,framew_left,frameh_left=warp_img(img_left,150,1,False)
    warped_right,framew_right,fdrameh_left=warp_img(img_right,150,1,False)
@@ -239,8 +220,6 @@ def toolheight(img_left,img_right):
    cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
    cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
   
-   #print(f'Left: width:{framew_left}, height:{frameh_left}')
-   #print(f'Right: width:{framew_right}, height:{framew_right}')
    print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
    print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
 
