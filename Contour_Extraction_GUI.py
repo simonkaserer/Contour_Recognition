@@ -773,8 +773,7 @@ class MainWindow():
             elif self.comboBox_method.currentText() == 'TehChin':
                 self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'CustomApprox':
-                print('To be implemented!')
-                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)

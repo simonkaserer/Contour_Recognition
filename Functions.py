@@ -1,9 +1,9 @@
-from json import tool
 import cv2
 import depthai as dai
 import numpy as np
 import os
 import ezdxf as dxf
+from scipy.interpolate import interp1d
 
 def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool): 
     ret,thresh=cv2.threshold(img,threshold_value,255,0)
@@ -39,7 +39,7 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             input_pts=np.float32([pt_A,pt_B,pt_C,pt_D])
             output_pts=np.float32([[0,0],[0,height],[width,height],[width,0]])
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
-            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_NEAREST)
+            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
             #maybe use :
             #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LANCZOS4)
             # or
@@ -185,6 +185,52 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
     else:
         return None,None
 
+def extraction_spline(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+   
+   cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+   if len(cnts)>0:
+      cnt=max(cnts,key=cv2.contourArea)
+      cont=cnt.tolist()
+      cont=cont[::every_nth_point]
+      number_of_points=len(cont)
+      #cont.append(cont[0])
+      tool_contour=np.array(cont)
+      #Rearrange the points
+      points=np.array([[tool_contour[i][0][0],tool_contour[i][0][1]] for i in range(number_of_points)])
+
+      # Add the last point to the list by padding 
+      #pad=3
+      #points=np.pad(points,[(pad,pad),(0,0)],mode='wrap')
+      x,y=points.T
+      
+      i=np.arange(0,len(points))
+
+      interp_i=np.linspace(0,i.max(),5*i.max())
+
+      x_new=interp1d(i,x,kind='cubic')(interp_i)
+      y_new=interp1d(i,y,kind='cubic')(interp_i)
+
+      cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
+
+      # create a black background
+      inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+      if connectpoints:
+         img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),1)
+      else:
+         img_cont=cv2.drawContours(inv,cnt,-1,(0,255,0),1) #only points
+      
+      # Scale the image to the width or height of the Contour View window
+      height,width,_=img_cont.shape
+      if width > height:
+            scale=500/width
+            
+      else:
+            scale=500/height
+      img_cont_scaled=cv2.resize(img_cont,(int(width*scale),int(height*scale)))
+      
+      return tool_contour,img_cont_scaled 
+   else:
+        return None,None
 
 def dxf_exporter(contour,path_and_name,scaling_width,scaling_height): 
     file=dxf.new('R2000')
