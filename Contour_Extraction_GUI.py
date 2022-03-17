@@ -133,7 +133,8 @@ class MainWindow():
         self.comboBox_method.addItem('NoApprox')
         self.comboBox_method.addItem('ConvexHull')
         self.comboBox_method.addItem('TehChin')
-        self.comboBox_method.addItem('CustomApprox')
+        self.comboBox_method.addItem('Spline')
+        self.comboBox_method.setCurrentText(self.prefs['method'])
         self.comboBox_method.currentTextChanged.connect(self.method_changed)
 
         self.checkBox_connectpoints = QtWidgets.QCheckBox(self.centralwidget)
@@ -690,13 +691,14 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English'}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline'}  
     def save_prefs(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
         self.prefs['nth_point']=self.slider_nth_point.value()
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.prefs['language']=self.language
+        self.prefs['method']=self.comboBox_method.currentText()
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def threshold_changed(self):
@@ -718,7 +720,13 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
+        if self.comboBox_method.currentText()=='Spline':
+            self.checkBox_connectpoints.hide()
+        else:
+            self.checkBox_connectpoints.show()
+        
         self.process()
+
     def update_frameheight(self,height):
         self.frameheight=height
     def update_framewidth(self,width):
@@ -772,7 +780,7 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'TehChin':
                 self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
-            elif self.comboBox_method.currentText() == 'CustomApprox':
+            elif self.comboBox_method.currentText() == 'Spline':
                 self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
