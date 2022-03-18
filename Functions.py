@@ -39,11 +39,9 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             input_pts=np.float32([pt_A,pt_B,pt_C,pt_D])
             output_pts=np.float32([[0,0],[0,height],[width,height],[width,0]])
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
-            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
+            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
             #maybe use :
-            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LANCZOS4)
-            # or
-            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
+            warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
 
                 # crop the image to remove the outer edge (offset can maybe be smaller when camera calibration is done?)
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
@@ -260,14 +258,15 @@ def dxf_exporter_spline(contour,path_and_name,scaling):
     file.saveas(path_and_name)
 
 def toolheight(img_left,img_right):
-   warped_left,framew_left,frameh_left=warp_img(img_left,150,1,False)
-   warped_right,framew_right,fdrameh_left=warp_img(img_right,150,1,False)
-  
-   cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
-   cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
-  
-   print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
-   print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
+    warped_left,framew_left,frameh_left=warp_img(img_left,150,1,False)
+    warped_right,framew_right,fdrameh_left=warp_img(img_right,150,1,False)
+    
+    cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
+    cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
+    stack=np.vstack((cropped_left,cropped_right))
+    cv2.imshow('height',stack)
+    print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
+    print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
 
 def rotate_img(img,x_angle,y_angle,z_angle):
    #From yt: v=bbSFk4vTXSI

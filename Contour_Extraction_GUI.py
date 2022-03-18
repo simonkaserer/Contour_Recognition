@@ -120,7 +120,7 @@ class MainWindow():
         self.slider_nth_point.setGeometry(QtCore.QRect(590, 225, 236, 40))
         self.slider_nth_point.setOrientation(QtCore.Qt.Horizontal)
         self.slider_nth_point.setMinimum(1)
-        self.slider_nth_point.setMaximum(50)
+        self.slider_nth_point.setMaximum(20)
         self.slider_nth_point.setValue(self.prefs['nth_point'])
         self.slider_nth_point.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_nth_point.valueChanged.connect(self.slider3_changed)
@@ -415,6 +415,8 @@ class MainWindow():
             self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
             self.prefs['framewidth']=self.framewidth
             self.prefs['frameheight']=self.frameheight
+            self.prefs['toolwidth']=self.toolwidth
+            self.prefs['toolheight']=self.toolheight
             self.prefs['x']=self.tool_pos_x
             self.prefs['y']=self.tool_pos_y
             self.prefs['scaling_width']=self.scaling_width
@@ -753,8 +755,6 @@ class MainWindow():
         edgeRight=edgeRightQueue.get()
         img_left=edgeLeft.getFrame()
         img_right=edgeRight.getFrame()
-        #img_left=cv2.cvtColor(img_left,cv2.COLOR_BGR2GRAY)
-        #img_right=cv2.cvtColor(img_right,cv2.COLOR_BGR2GRAY)
 
         img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
         img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
