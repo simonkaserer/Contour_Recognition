@@ -263,7 +263,7 @@ def toolheight(img_left,img_right):
     
     cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
     cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
-    stack=np.vstack((cropped_left,cropped_right))
+    stack=np.vstack((cv2.resize(img_left,(400,300)),cv2.resize(img_right,(400,300))))
     cv2.imshow('height',stack)
     print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
     print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
