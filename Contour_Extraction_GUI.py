@@ -850,19 +850,44 @@ class MainWindow():
         dlg=QtWidgets.QMessageBox(self.centralwidget)
         dlg.setWindowTitle('Info')
         if self.language=='German':
-            dlg.setText('Methoden:\nblablabla\n\nsdanfklöasdjfijoöasf')
+            dlg.setText('Methods:\nPolyDP - Diese Funktion verwendet den Douglas-Peucker-Algorithmus um eine Kurve durch eine Kurve mit weniger Punkten auszudrücken. Der Faktor bestimmt um wieviel die neue Kurve vereinfacht werden darf.\n\n'
+            'NoApprox - Gibt sämtliche als Konturpunkte identifizierten Pixel zurück.\n\n'
+            'ConvexHull - Extrahiert die Hülle des Werkzeugs. Kann bei kleinen Werkzeugen oder Teilen nützlich sein.\n\n'
+            'TehChin - Verwendet die Teh Chin Approximation um die Kontur zu finden. Hier werden Bereiche mit großer Richtungsänderung mit vielen Punkten aufgelöst und Bereiche mit wenig Änderung mit wenigen Punkten.\n\n'
+            'Spline - Diese Funktion verwendet alle Punkte der Kontur und verbindet sie mit einem Spline.\n\n'
+            'Spline TehChin - Diese Funktion verwendet die Teh Chin Approximation und verbindet die Konturpunkte durch einen Spline.')
         else:
-            dlg.setText('Methods:\nblablabla\n\nsdanfklöasdjfijoöasf')
+            dlg.setText('Methods:\nPolyDP - This function uses the Douglas-Peucker algorithm to simplify a curve with fewer points. The parameter factor determines how much the new curve can be simplified.\n\n'
+            'NoApprox - Returns every found pixel of the contour\n\n'
+            'ConvexHull - Finds the hull of the tool. Can be used for small tools or things.\n\n'
+            'TehChin - Uses the Teh Chin approximation to find the contour. This algorithm varies the number of found edgepoints according to the change of the direction\n\n'
+            'Spline - This function finds the edge with no approximation and connects the contour points with a spline.\n\n'
+            'Spline TehChin - This function uses the Teh Chin approximation and connects the contour points with a spline.')
         dlg.exec()
     def info_general(self):
         dlg=QtWidgets.QMessageBox(self.centralwidget)
         dlg.setWindowTitle('Info')
         if self.language=='German':
-            dlg.setText('Dieses Programm verwendet die Bilder der OAK-D Kamera und '
-                        'dsjakflö ksdöafjk')
+            dlg.setText('Dieses Programm verwendet die Bilder der OAK-D Kamera und extrahiert die Kontur eines Werkzeuges. Um die besten Ergebnisse zu erzielen sollte das Werkzeug möglichst nahe der Mitte positioniert werden.'
+                        'Sobald der Rahmen der beleuchteten Fläche erkannt wird, kann die Kontur extrahiert werden. Dazu wird der Knopf Kontur anzeigen gedrückt.'
+                        'Wird eine Kontur erkannt, so wird sie angezeigt. \nÜber die Schieberegler kann der Grenzwert der Binarisierung eingestellt werden: Dieser ermöglicht das anpassen an durchsichtige oder helle Werkzeuge.\n'
+                        'Mit der Punkteverringerung kann die Anzahl der verwendeten Punkte verringert werden. Dadurch verringert sich aber auch die Genauigkeit.\n'
+                        '\nWird nun ein Speicherpfad ausgewählt und ein Dateiname vergeben, kann die Kontur im .dxf-Format gespeichert werden'
+                        'Die Auswahlboxen beinhalten Vorschläge für die Namensgebung und damit kann ein Dateiname zusammengesetzt werden. Zum Beispiel: KombizangeKlein3 durch auswählen der jeweiligen Bausteine.'
+                        'Auch kann der Dateiname direkt mit der Tastatur/Bildschirmtastatur eingegeben werden. Sollte ein neuer Textbaustein gespeichert werden, kann dieser in die dafür vorgesehene Zeile geschrieben werden und per Drag-and-Drop in die jeweilige Box'
+                        'hinzugefügt werden. Auch durch das betätigen des + Knopfes kann der Textbaustein zur gewünschten Gruppe hinzugefügt werden.\n'
+                        'Sollten Einträge gelöscht werden, kann dies nur über die \'items_german.yaml\'-Datei erfolgen.')
         else:
-            dlg.setText('This is a contour extraction program that takes the images from the OAK-D camera and '
-                        'dsjakflö ksdöafjk')
+            dlg.setText('This program uses the images from the OAK-D camera and extracts the contour of a tool. For best results, the tool should be positioned as close to the center as possible.'
+                        'Once the frame of the illuminated surface is detected, the contour can be extracted. This is done by pressing the Get Contour button.'
+                        'If a contour is detected, it will be displayed. \nThe sliders can be used to set the threshold of the binarization: This allows to adapt to transparent or light tools.\n'
+                        'With the \'nth point\' slider the number of used points can be reduced. However, this also reduces the accuracy.'
+                        '\nWhen a save path is selected and a file name is assigned, the contour can be saved in .dxf format'
+                        'The selection boxes contain suggestions for naming and thus a file name can be composed. For example: CombinationPlierSmall3 by selecting the respective blocks.'
+                        'Also, the file name can be entered directly with the keyboard/screen keypad. If a new text block should be saved, it can be written in the line provided and dragged and dropped into the respective box'
+                        'to be added. The text module can also be added to the desired group by pressing the + button.'
+                        'Should entries be deleted, this can only be done via the \'items_english.yaml\' file.')
+
         dlg.exec()         
 
     def closeEvent(self):
