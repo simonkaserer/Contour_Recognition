@@ -64,7 +64,7 @@ class MainWindow():
         self.button_getContour.setObjectName("button_getContour")
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
-        self.Button_Path.setGeometry(QtCore.QRect(512, 100, 28, 30))
+        self.Button_Path.setGeometry(QtCore.QRect(512, 40, 28, 30))
         self.Button_Path.clicked.connect(self.open_folder)
         self.Button_Path.setObjectName("Button_Path")
 
@@ -134,6 +134,7 @@ class MainWindow():
         self.comboBox_method.addItem('ConvexHull')
         self.comboBox_method.addItem('TehChin')
         self.comboBox_method.addItem('Spline')
+        self.comboBox_method.addItem('Spline TehChin')
         self.comboBox_method.setCurrentText(self.prefs['method'])
         self.comboBox_method.currentTextChanged.connect(self.method_changed)
 
@@ -149,7 +150,7 @@ class MainWindow():
         self.lineEdit_filename.setObjectName("lineEdit_filename")
 
         self.lineEdit_Path = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_Path.setGeometry(QtCore.QRect(40, 100, 470, 30))
+        self.lineEdit_Path.setGeometry(QtCore.QRect(40, 40, 470, 30))
         self.lineEdit_Path.setObjectName("lineEdit_Path")
 
         self.lineEdit_newItem = QtWidgets.QLineEdit(self.centralwidget)
@@ -192,12 +193,23 @@ class MainWindow():
         self.label_method.setObjectName("label_method")
 
         self.Label_Path = QtWidgets.QLabel(self.centralwidget)
-        self.Label_Path.setGeometry(QtCore.QRect(40, 72, 333, 22))
+        self.Label_Path.setGeometry(QtCore.QRect(40, 20, 333, 22))
         self.Label_Path.setObjectName("Label_Path")
 
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
         self.label_newitem.setGeometry(QtCore.QRect(880, 190, 371, 51))
         self.label_newitem.setObjectName("label_newitem")
+
+        self.label_hint = QtWidgets.QLabel(self.centralwidget)
+        self.label_hint.setGeometry(QtCore.QRect(40, 80, 500, 30))
+        self.label_hint.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_hint.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_hint.setObjectName("label_hint")
+
+        self.label_position = QtWidgets.QLabel(self.centralwidget)
+        self.label_position.setGeometry(QtCore.QRect(40, 115, 500, 31))
+        self.label_position.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_position.setObjectName("label_position")
 
         # Grid Layout for combo boxes ###############################################
         self.widget = QtWidgets.QWidget(self.centralwidget)
@@ -292,6 +304,8 @@ class MainWindow():
         self.menuLanguage.setObjectName("menuLanguage")
         self.menuExtras = QtWidgets.QMenu(self.menuBar)
         self.menuExtras.setObjectName("menuExtras")
+        self.menuInfo = QtWidgets.QMenu(self.menuBar)
+        self.menuInfo.setObjectName("menuInfo")
         self.actionEnglish = QtWidgets.QAction(ContourExtraction)
         self.actionEnglish.setObjectName("actionEnglish")
         self.actionGerman = QtWidgets.QAction(ContourExtraction)
@@ -300,6 +314,10 @@ class MainWindow():
         self.actionSave_Metadata.setObjectName("actionSave_Metadata")
         self.actionSave_Contour_Image = QtWidgets.QAction(ContourExtraction)
         self.actionSave_Contour_Image.setObjectName("actionSave_Contour_Image")
+        self.actionMethods = QtWidgets.QAction(ContourExtraction)
+        self.actionMethods.setObjectName("actionMethods")
+        self.actionGeneral = QtWidgets.QAction(ContourExtraction)
+        self.actionGeneral.setObjectName("actionGeneral")
         ContourExtraction.setMenuBar(self.menuBar)
         self.menuLanguage.addAction(self.actionEnglish)
         self.menuLanguage.addAction(self.actionGerman)
@@ -307,10 +325,15 @@ class MainWindow():
         self.menuExtras.addAction(self.actionSave_Contour_Image)
         self.menuBar.addAction(self.menuLanguage.menuAction())
         self.menuBar.addAction(self.menuExtras.menuAction())
+        self.menuBar.addAction(self.menuInfo.menuAction())
+        self.menuInfo.addAction(self.actionMethods)
+        self.menuInfo.addAction(self.actionGeneral)
         self.actionEnglish.triggered.connect(self.lang_english)
         self.actionGerman.triggered.connect(self.lang_german)
         self.actionSave_Contour_Image.triggered.connect(self.save_img)
         self.actionSave_Metadata.triggered.connect(self.save_meta)
+        self.actionMethods.triggered.connect(self.info_methos)
+        self.actionGeneral.triggered.connect(self.info_general)
         #################################################################################
        
         ContourExtraction.setCentralWidget(self.centralwidget)
@@ -374,6 +397,9 @@ class MainWindow():
             self.label_numbers.setText( "Nummern")
             self.label_tools_misc.setText( "Diverse")
             self.label_custom.setText( "Spezial") 
+            self.label_hint.setText("Legen Sie das Werkzeug in die Mitte für die besten Ergebnisse")
+            self.actionMethods.setText("Methoden")
+            self.actionGeneral.setText("Allgemein")
         else:
             self.Button_Path.setText( "...")
             self.ContourView.setToolTip( "Contour view")
@@ -399,6 +425,9 @@ class MainWindow():
             self.label_numbers.setText( "Numbers")
             self.label_tools_misc.setText( "Tools")
             self.label_custom.setText( "Custom") 
+            self.label_hint.setText("For best results place the tool in the middle of the plate")
+            self.actionMethods.setText("Methods")
+            self.actionGeneral.setText("General")
         # Not affected by the language change
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
@@ -406,6 +435,8 @@ class MainWindow():
         self.menuExtras.setTitle("Extras")
         self.actionSave_Metadata.setText("Save Metadata")
         self.actionSave_Contour_Image.setText("Save Contour Image")
+        self.menuInfo.setTitle("Info")
+        
 
     def save_meta(self):
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
@@ -722,7 +753,7 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
-        if self.comboBox_method.currentText()=='Spline':
+        if self.comboBox_method.currentText()=='Spline' or self.comboBox_method.currentText()=='Spline TehChin':
             self.checkBox_connectpoints.hide()
         else:
             self.checkBox_connectpoints.show()
@@ -782,10 +813,58 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'Spline':
                 self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+            elif self.comboBox_method.currentText() == 'Spline TehChin':
+                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
+            # Check if the tool is near the middle of the board and
+            # give an information that the tool center is not in the middle:
+            if self.tool_pos_x < self.framewidth/2-10:
+                if self.language=='German':
+                    self.label_position.setText("Nach rechts verschieben")
+                else:
+                    self.label_position.setText("Move towards the right")
+            elif self.tool_pos_x > self.framewidth/2+10:
+                if self.language=='German':
+                    self.label_position.setText("Nach links verschieben")
+                else:
+                    self.label_position.setText("Move towards the left")
+            else:
+                self.label_position.setText('')
+            if self.tool_pos_y < self.frameheight/2-10:
+                if self.language=='German':
+                    self.label_position.setText("Nach unten verschieben")
+                else:
+                    self.label_position.setText("Move towards the bottom")
+            elif self.tool_pos_y > self.frameheight/2+10:
+                if self.language=='German':
+                    self.label_position.setText("Nach oben verschieben")
+                else:
+                    self.label_position.setText("Move towards the top")
+            else:
+                self.label_position.setText('')
+            
+    def info_methos(self):
+        dlg=QtWidgets.QMessageBox(self.centralwidget)
+        dlg.setWindowTitle('Info')
+        if self.language=='German':
+            dlg.setText('Methoden:\nblablabla\n\nsdanfklöasdjfijoöasf')
+        else:
+            dlg.setText('Methods:\nblablabla\n\nsdanfklöasdjfijoöasf')
+        dlg.exec()
+    def info_general(self):
+        dlg=QtWidgets.QMessageBox(self.centralwidget)
+        dlg.setWindowTitle('Info')
+        if self.language=='German':
+            dlg.setText('Dieses Programm verwendet die Bilder der OAK-D Kamera und '
+                        'dsjakflö ksdöafjk')
+        else:
+            dlg.setText('This is a contour extraction program that takes the images from the OAK-D camera and '
+                        'dsjakflö ksdöafjk')
+        dlg.exec()         
+
     def closeEvent(self):
         self.worker.stop()
         self.save_prefs()
@@ -895,7 +974,7 @@ class UpdatePreview_worker(QtCore.QThread):
             image=edgeRgb.getFrame()
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
             # Warp the image
-            warped_image,framewidth,frameheigth=Functions.warp_img(image_undistorted,self.threshold,1,False)
+            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,1,False)
             if warped_image is not None:
                 self.widthUpdate.emit(framewidth)
                 self.heightUpdate.emit(frameheigth)
