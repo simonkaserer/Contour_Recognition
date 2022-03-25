@@ -1,6 +1,9 @@
 # Author: Simon Kaserer
 # MCI Bachelor Thesis 2022
 
+#The shadowboards are eliminated - only the 550x550mm lamp perimeter is valid
+
+# Import the needed libraries 
 from genericpath import exists
 import subprocess
 import sys
@@ -11,31 +14,35 @@ import Functions
 import os
 import numpy as np
 import time
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-#from QtImageViewer import QtImageViewer
+
 
 class MainWindow():
+    # Define the main window class of the GUI. Here the appearance and the methods are defined
     def __init__(self, ContourExtraction):
+        # The init function sets up the GUI when the MainWindow class is initialized in the main programme
         super(MainWindow,self).__init__()
+        # some variables are defined that the methods can initialize them properly
         self.filename=''
-        #self.bufferFilename=''
         self.contour=None
         self.image=None
         self.warped_image=None
         self.cropped_image=None
         self.extraction_image=None
-        #The shadowboards are eliminated - only the 550x550mm is valid
         self.scaling_width=1.0
         self.scaling_height=1.0
         self.height=0
 
+        # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
         self.language=self.prefs['language']
+        # Load the filename parts, sort them and then fill the comboboxes
         self.load_items_boxes()
         self.sort_items_boxes()
+        # Load the calibration data out of the CalData folder from the Camera_Calibration.py output
         self.load_cal_data()
-    
+
+        # Set up the GUI with a Main window QTWidget
         ContourExtraction.setObjectName("ContourExtraction")
         ContourExtraction.setWindowModality(QtCore.Qt.WindowModal)
         ContourExtraction.resize(1280, 710)
@@ -45,13 +52,14 @@ class MainWindow():
         self.centralwidget = QtWidgets.QWidget(ContourExtraction)
         self.centralwidget.setObjectName("centralwidget")
 
-        # Create the Widgets for the GUI
+        # Create the contour view panel. This is a label that gets a picture loaded in with the pixmap function
         self.ContourView = QtWidgets.QLabel(self.centralwidget)
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
         self.ContourView.setScaledContents(False)
         self.ContourView.setObjectName("ContourView")
 
+        # The preview panel is also a label that gets filled with a picture
         self.Preview = QtWidgets.QLabel(self.centralwidget)
         self.Preview.setGeometry(QtCore.QRect(590, 450, 200, 200))
         self.Preview.setToolTip("Contour Preview")
@@ -59,6 +67,7 @@ class MainWindow():
         self.Preview.setScaledContents(True)
         self.Preview.setObjectName("Preview")
 
+        # Setup of the buttons:
         self.button_getContour = QtWidgets.QPushButton(self.centralwidget)
         self.button_getContour.setGeometry(QtCore.QRect(590, 420, 200, 30))
         self.button_getContour.clicked.connect(self.get_contour)
@@ -99,6 +108,7 @@ class MainWindow():
         self.Button_addNewItem.setText('+')
         self.Button_addNewItem.clicked.connect(self.save_new_item_dialog)
 
+        # Setup of the sliders:
         self.slider_thresh = QtWidgets.QSlider(self.centralwidget)
         self.slider_thresh.setGeometry(QtCore.QRect(590, 175, 236, 40))
         self.slider_thresh.setOrientation(QtCore.Qt.Horizontal)
@@ -127,6 +137,7 @@ class MainWindow():
         self.slider_nth_point.valueChanged.connect(self.slider3_changed)
         self.slider_nth_point.setObjectName("slider3")
 
+        # Setup of the combobox for the method 
         self.comboBox_method = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_method.setGeometry(QtCore.QRect(590, 100, 236, 30))
         self.comboBox_method.setObjectName("comboBox_method")
@@ -139,6 +150,7 @@ class MainWindow():
         self.comboBox_method.setCurrentText(self.prefs['method'])
         self.comboBox_method.currentTextChanged.connect(self.method_changed)
 
+        # Set up the two checkboxes for connecting the points and using the height information in the filename
         self.checkBox_connectpoints = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_connectpoints.setGeometry(QtCore.QRect(590, 320, 141, 28))
         self.checkBox_connectpoints.stateChanged.connect(self.connectpoints_changed)
@@ -150,6 +162,7 @@ class MainWindow():
         self.checkBox_height.setChecked(self.prefs['save_height'])
         self.checkBox_height.setObjectName("checkBox_height")
 
+        # Set up the text input lines for the filename, the path and the new item
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_filename.setGeometry(QtCore.QRect(880, 110, 340, 30))
         self.lineEdit_filename.textChanged.connect(self.filename_manual)
@@ -174,6 +187,7 @@ class MainWindow():
         self.lineEdit_newItem.setClearButtonEnabled(False)
         self.lineEdit_newItem.setObjectName("lineEdit_newItem")
 
+        # Set up the labels:
         self.label_filename = QtWidgets.QLabel(self.centralwidget)
         self.label_filename.setGeometry(QtCore.QRect(880, 90, 90, 22))
         self.label_filename.setObjectName("label_filename")
@@ -226,7 +240,8 @@ class MainWindow():
         self.label_height.setGeometry(QtCore.QRect(590,385,60,28))
         self.label_height.setObjectName("label_height")
 
-        # Grid Layout for combo boxes ###############################################
+        # The filename comboboxes are placed into a grid layout for a tidy look
+        ###############################################################################
         self.widget = QtWidgets.QWidget(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(880, 250, 370, 310))
         self.widget.setObjectName("widget")
@@ -304,14 +319,13 @@ class MainWindow():
         self.comboBox_custom = combo(self.widget)
         self.comboBox_custom.setObjectName("comboBox_custom")
         self.comboBox_custom.currentTextChanged.connect(self.change_filename)
-        self.comboBox_custom.setAcceptDrops(True)
-
-        self.fill_comboBoxes()
-
         self.gridLayout.addWidget(self.comboBox_custom, 7, 1, 1, 1)
+
+        # Fill the comboboxes with the filename pieces
+        self.fill_comboBoxes()
         #################################################################################
 
-        #Menu bar:#######################################################################
+        # Setup the Menu bar:#######################################################################
         self.menuBar = QtWidgets.QMenuBar(ContourExtraction)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
         self.menuBar.setObjectName("menuBar")
@@ -352,7 +366,6 @@ class MainWindow():
         #################################################################################
        
         ContourExtraction.setCentralWidget(self.centralwidget)
-
         #Check which method is currently set and show/hide the corresponding sliders
         if self.comboBox_method.currentText()=='PolyDP':
             self.slider_factor.show()
@@ -360,8 +373,7 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
-        
-        # Deactivate the saving and get contour Button:
+        # Deactivate the saving- and the get contour- Button:
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
         #Start an instance of the worker object to update the preview
@@ -375,18 +387,24 @@ class MainWindow():
         self.worker.start()
 
     def lang_english(self):
+        # This method saves the current filename pieces into the current active language and then changes the 
+        # language, retranslates the GUI and loads the filename pieces into the comboboxes
         self.save_items_boxes()
         self.language='English'
         self.retranslateUi()
         self.load_items_boxes()
         self.fill_comboBoxes()
     def lang_german(self):
+        # This method saves the current filename pieces into the current active language and then changes the 
+        # language, retranslates the GUI and loads the filename pieces into the comboboxes
         self.save_items_boxes()
         self.language='German'
         self.retranslateUi()
         self.load_items_boxes()
         self.fill_comboBoxes()
     def retranslateUi(self):
+        # This method checks the currently active language and sets the texts of all translated widgets
+        # The default language is English, the only other implemented language is German
         if self.language == 'German':
             self.Button_Path.setText( "...")
             self.ContourView.setToolTip( "Konturvorschau")
@@ -447,7 +465,7 @@ class MainWindow():
             self.actionMethods.setText("Methods")
             self.actionGeneral.setText("General")
             self.label_height.setText("Height:")
-        # Not affected by the language change
+        # These texts are not affected by the language change:
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
         self.actionGerman.setText( "German")
@@ -456,7 +474,8 @@ class MainWindow():
         self.actionSave_Contour_Image.setText("Save Contour Image")
         self.menuInfo.setTitle("Info")
         
-    def save_meta(self):
+    def save_meta(self): # This is a method for testing purposes where the current settings and some other informations are saved under the 
+        # selected path and filename but in a .yaml format
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             self.prefs['threshold']=self.slider_thresh.value()
             self.prefs['factor']=self.slider_factor.value()/10000
@@ -473,7 +492,7 @@ class MainWindow():
             path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
             with open(path,'w') as f:
                 yaml.safe_dump(self.prefs,f)
-    def save_img(self):
+    def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             path=self.lineEdit_Path.text()+'/'+self.filename+'.jpg'
             pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
@@ -485,35 +504,39 @@ class MainWindow():
             edgeRight = edgeRightQueue.get()
             image=edgeRight.getFrame()
             cv2.imwrite(pathright,image)   
-    def open_keyboard(self):
+    def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
-    def close_keyboard(self):
+    def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
         subprocess.call('./close_keyboard.sh')
-    def filename_manual(self):
+    def filename_manual(self): # Checks if a path is selected and a contour is detected when a 
+        # filename is typed in the line edit directly and enables the button for saving the contour
         self.filename=self.lineEdit_filename.text()
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             self.button_savedxf.setEnabled(True)
         else:
             self.button_savedxf.setEnabled(False)
-    def change_filename(self):
+    def change_filename(self): # Checks all of the comboboxes for a selected filename piece and cumulates them
         self.filename=''
+        # All of the box objects are put into an array to have easy access to them in a for-loop
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         for box in boxes:
+            # Every string is added to the filename. If nothing is selected the string is empty and doesn't affect the filename
             str=box.currentText()
             self.filename+=str
         self.lineEdit_filename.setText(self.filename) 
+        # If the contour extists, the path is selected and the filename is not empty the button for saving the contour is enabled
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             self.button_savedxf.setEnabled(True)
         else:
             self.button_savedxf.setEnabled(False)
-    def reset_filename(self):
+    def reset_filename(self): # Deletes the current filename and sets the text of all comboboxes to an empty string
         self.lineEdit_filename.setText('')
         self.filename=''
+        # All of the box objects are put into an array to ease the resetting
         boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         for box in boxes:
             box.setCurrentText('')
-        self.save_items_boxes()
-    def load_cal_data(self):
+    def load_cal_data(self): # This method tries to load the numpy arrays from the Camera_Calibration.py output in the CalData folder
         try:
             self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
             self.dist_Rgb=np.load('./CalData/dist_Rgb.npy')
@@ -524,15 +547,16 @@ class MainWindow():
             self.mtx_left=np.load('./CalData/mtx_left.npy')
             self.dist_left=np.load('./CalData/dist_left.npy')
             self.newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
-        except FileNotFoundError as exc:
+        except FileNotFoundError as exc: # If the data can't be loaded a Message Box appears and tells the user to 
+            # run the Camera_Calibration.py program in order to calibrate the cameras. This prevents the main program from starting
             msg=QtWidgets.QMessageBox()
             msg.setWindowTitle('Error')
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.setText('Calibration Data not found - please run CameraCalibration.py through the Terminal inside the workspace of the contour extraction program.')
             msg.exec_()
             msg.buttonClicked.connect(quit())
-    def load_items_boxes(self):
-        
+    def load_items_boxes(self): # Tries to load the filename pieces from the items_language.yaml files
+        # both language items get loaded. If they are not found a default set of items is loaded.
         try:
             with open('items_german.yaml','r') as f:
                 self.items_german=yaml.safe_load(f)
@@ -560,7 +584,9 @@ class MainWindow():
             'number_parts':['','2pieces','3pieces','4pieces'],
             'sizes':['','Small','Medium','Large'],
             'numbers':['','1','2','3','4','5','6','7','8','9','10']} 
-    def sort_items_boxes(self):
+    def sort_items_boxes(self): # Sprts the items in a alphabetical way. The numbers are extracted
+        # and every non-numeric item gets deleted to ensure that the sorting with numeric key is done properly
+        # The empty string '' is inserted in the first position that the combobox has the empty string as default item
         for i in self.items_german:
             items=self.items_german[i]
             items.sort()
@@ -1016,8 +1042,13 @@ class UpdatePreview_worker(QtCore.QThread):
     def run(self):
         self.ThreadActive=True
         while self.ThreadActive:
+            # Get the latest data in the data queue of the OAK-D 
             edgeRgb = edgeRgbQueue.get()
             image=edgeRgb.getFrame()
+            # Also get the latest data of the mono cameras to ensure the queue holds the lates picture
+            edgeLeftQueue.get()
+            edgeRightQueue.get()
+            
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
             # Warp the image
             warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,1,False)
