@@ -28,7 +28,8 @@ class MainWindow():
         #The shadowboards are eliminated - only the 550x550mm is valid
         self.scaling_width=1.0
         self.scaling_height=1.0
-                
+        self.height=0
+
         self.load_prefs()
         self.language=self.prefs['language']
         self.load_items_boxes()
@@ -64,7 +65,7 @@ class MainWindow():
         self.button_getContour.setObjectName("button_getContour")
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
-        self.Button_Path.setGeometry(QtCore.QRect(512, 40, 28, 30))
+        self.Button_Path.setGeometry(QtCore.QRect(1222, 40, 28, 30))
         self.Button_Path.clicked.connect(self.open_folder)
         self.Button_Path.setObjectName("Button_Path")
 
@@ -75,17 +76,17 @@ class MainWindow():
         self.button_savedxf.setObjectName("button_savedxf")
 
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_openKeypad.setGeometry(QtCore.QRect(920, 20, 150, 30))
+        self.Button_openKeypad.setGeometry(QtCore.QRect(40, 20, 150, 30))
         self.Button_openKeypad.setObjectName("Button_openKeypad")
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_closeKeypad.setGeometry(QtCore.QRect(1070, 20, 150, 30))
+        self.Button_closeKeypad.setGeometry(QtCore.QRect(190, 20, 150, 30))
         self.Button_closeKeypad.setObjectName("Button_closeKeypad")
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
-        self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 70, 180, 30))
+        self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 80, 180, 30))
         self.Button_resetFilename.setObjectName("Button_resetFilename")
         self.Button_resetFilename.clicked.connect(self.reset_filename)
 
@@ -144,13 +145,18 @@ class MainWindow():
         self.checkBox_connectpoints.setChecked(self.prefs['connectpoints'])
         self.checkBox_connectpoints.setObjectName("checkBox_connectpoints")
 
+        self.checkBox_height = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox_height.setGeometry(QtCore.QRect(590, 360, 250, 28))
+        self.checkBox_height.setChecked(self.prefs['save_height'])
+        self.checkBox_height.setObjectName("checkBox_height")
+
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_filename.setGeometry(QtCore.QRect(880, 100, 340, 30))
+        self.lineEdit_filename.setGeometry(QtCore.QRect(880, 110, 340, 30))
         self.lineEdit_filename.textChanged.connect(self.filename_manual)
         self.lineEdit_filename.setObjectName("lineEdit_filename")
 
         self.lineEdit_Path = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_Path.setGeometry(QtCore.QRect(40, 40, 470, 30))
+        self.lineEdit_Path.setGeometry(QtCore.QRect(880, 40, 340, 30)) #?
         self.lineEdit_Path.setObjectName("lineEdit_Path")
 
         self.lineEdit_newItem = QtWidgets.QLineEdit(self.centralwidget)
@@ -169,11 +175,11 @@ class MainWindow():
         self.lineEdit_newItem.setObjectName("lineEdit_newItem")
 
         self.label_filename = QtWidgets.QLabel(self.centralwidget)
-        self.label_filename.setGeometry(QtCore.QRect(880, 72, 90, 22))
+        self.label_filename.setGeometry(QtCore.QRect(880, 90, 90, 22))
         self.label_filename.setObjectName("label_filename")
 
         self.label_dxfEnding = QtWidgets.QLabel(self.centralwidget)
-        self.label_dxfEnding.setGeometry(QtCore.QRect(1222, 100, 68, 30))
+        self.label_dxfEnding.setGeometry(QtCore.QRect(1222, 110, 68, 30))
         self.label_dxfEnding.setObjectName("label_dxfEnding")
 
         self.label_slider_thresh = QtWidgets.QLabel(self.centralwidget)
@@ -193,7 +199,7 @@ class MainWindow():
         self.label_method.setObjectName("label_method")
 
         self.Label_Path = QtWidgets.QLabel(self.centralwidget)
-        self.Label_Path.setGeometry(QtCore.QRect(40, 20, 333, 22))
+        self.Label_Path.setGeometry(QtCore.QRect(880, 20, 333, 22))
         self.Label_Path.setObjectName("Label_Path")
 
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
@@ -210,6 +216,15 @@ class MainWindow():
         self.label_position.setGeometry(QtCore.QRect(40, 115, 500, 31))
         self.label_position.setAlignment(QtCore.Qt.AlignCenter)
         self.label_position.setObjectName("label_position")
+        
+        self.label_height_value =QtWidgets.QLabel(self.centralwidget)
+        self.label_height_value.setGeometry(QtCore.QRect(650,385,141,28))
+        self.label_height_value.setText(f'{round(self.height,0)}mm')
+        self.label_height_value.setObjectName("label_height")
+
+        self.label_height =QtWidgets.QLabel(self.centralwidget)
+        self.label_height.setGeometry(QtCore.QRect(590,385,60,28))
+        self.label_height.setObjectName("label_height")
 
         # Grid Layout for combo boxes ###############################################
         self.widget = QtWidgets.QWidget(self.centralwidget)
@@ -383,6 +398,7 @@ class MainWindow():
             self.label_slider_factor.setText( "Faktor Epsilon")
             self.label_slider3.setText( "Punktverringerung")
             self.checkBox_connectpoints.setText( "Punkte verbinden")
+            self.checkBox_height.setText("Höhe in Dateiname speichern")
             self.label_filename.setText( "Dateiname")
             self.label_dxfEnding.setText( ".dxf")
             self.Button_openKeypad.setText( "Tastatur öffnen")
@@ -400,6 +416,7 @@ class MainWindow():
             self.label_hint.setText("Legen Sie das Werkzeug in die Mitte für die besten Ergebnisse")
             self.actionMethods.setText("Methoden")
             self.actionGeneral.setText("Allgemein")
+            self.label_height.setText("Höhe:")
         else:
             self.Button_Path.setText( "...")
             self.ContourView.setToolTip( "Contour view")
@@ -411,6 +428,7 @@ class MainWindow():
             self.label_slider_factor.setText( "Factor Epsilon")
             self.label_slider3.setText( "Every nth point")
             self.checkBox_connectpoints.setText( "Connect points")
+            self.checkBox_height.setText("Save height in filename")
             self.label_filename.setText( "Filename")
             self.label_dxfEnding.setText( ".dxf")
             self.Button_openKeypad.setText( "Open Keypad")
@@ -428,6 +446,7 @@ class MainWindow():
             self.label_hint.setText("For best results place the tool in the middle of the plate")
             self.actionMethods.setText("Methods")
             self.actionGeneral.setText("General")
+            self.label_height.setText("Height:")
         # Not affected by the language change
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
@@ -437,7 +456,6 @@ class MainWindow():
         self.actionSave_Contour_Image.setText("Save Contour Image")
         self.menuInfo.setTitle("Info")
         
-
     def save_meta(self):
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             self.prefs['threshold']=self.slider_thresh.value()
@@ -466,8 +484,7 @@ class MainWindow():
             cv2.imwrite(pathleft,image)
             edgeRight = edgeRightQueue.get()
             image=edgeRight.getFrame()
-            cv2.imwrite(pathright,image)
-    
+            cv2.imwrite(pathright,image)   
     def open_keyboard(self):
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self):
@@ -693,7 +710,10 @@ class MainWindow():
                 self.button_savedxf.setEnabled(False)
     def save_dxf_button(self):
         if self.lineEdit_Path.text() != '' and self.filename !='':
-            path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
+            if self.checkBox_height.isChecked():
+                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{round(self.height,0)}mm.dxf'
+            else:
+                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             #remove eventual whitespaces in the filename:
             path_and_filename.replace(' ','')
             if self.contour is not None:
@@ -724,7 +744,7 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline'}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True}  
     def save_prefs(self):
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
@@ -732,6 +752,7 @@ class MainWindow():
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
+        self.prefs['save_height']=self.checkBox_height.isChecked()
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def threshold_changed(self):
