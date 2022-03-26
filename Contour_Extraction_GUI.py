@@ -113,6 +113,7 @@ class MainWindow():
         self.slider_thresh.setGeometry(QtCore.QRect(590, 175, 236, 40))
         self.slider_thresh.setOrientation(QtCore.Qt.Horizontal)
         self.slider_thresh.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
+        self.slider_thresh.setMinimum(10) 
         self.slider_thresh.setMaximum(254)
         self.slider_thresh.setValue(self.prefs['threshold'])
         self.slider_thresh.valueChanged.connect(self.threshold_changed)
@@ -139,7 +140,7 @@ class MainWindow():
 
         # Setup of the combobox for the method 
         self.comboBox_method = QtWidgets.QComboBox(self.centralwidget)
-        self.comboBox_method.setGeometry(QtCore.QRect(590, 100, 236, 30))
+        self.comboBox_method.setGeometry(QtCore.QRect(590, 110, 236, 30))
         self.comboBox_method.setObjectName("comboBox_method")
         self.comboBox_method.addItem('PolyDP')
         self.comboBox_method.addItem('NoApprox')
@@ -169,7 +170,8 @@ class MainWindow():
         self.lineEdit_filename.setObjectName("lineEdit_filename")
 
         self.lineEdit_Path = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_Path.setGeometry(QtCore.QRect(880, 40, 340, 30)) #?
+        self.lineEdit_Path.setGeometry(QtCore.QRect(590, 40, 630, 30)) 
+        self.lineEdit_Path.setReadOnly(True) # Set the lineEdit to read only mode to avoid wrong paths typed in via keyboard
         self.lineEdit_Path.setObjectName("lineEdit_Path")
 
         self.lineEdit_newItem = QtWidgets.QLineEdit(self.centralwidget)
@@ -209,11 +211,11 @@ class MainWindow():
         self.label_slider3.setObjectName("label_slider3")
         
         self.label_method = QtWidgets.QLabel(self.centralwidget)
-        self.label_method.setGeometry(QtCore.QRect(590, 72, 150, 22))
+        self.label_method.setGeometry(QtCore.QRect(590, 85, 150, 22))
         self.label_method.setObjectName("label_method")
 
         self.Label_Path = QtWidgets.QLabel(self.centralwidget)
-        self.Label_Path.setGeometry(QtCore.QRect(880, 20, 333, 22))
+        self.Label_Path.setGeometry(QtCore.QRect(590, 20, 333, 22))
         self.Label_Path.setObjectName("Label_Path")
 
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
@@ -789,7 +791,8 @@ class MainWindow():
             yaml.safe_dump(self.prefs,f)
     def threshold_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['threshold']=self.slider_thresh.value()
-        self.process()
+        # Update the new threshold value in the worker thread
+        self.worker.update_threshold(self.prefs['threshold'])
     def factor_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['factor']=float(self.slider_factor.value())/10000
         self.process()
@@ -1045,7 +1048,10 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
         self.ThreadActive=False
         self.quit()
     
-    def run(self):
+    def update_threshold(self,threshold): # Updates the threshold value in the worker thread
+        self.threshold=threshold
+
+    def run(self): # This sets up a while loop that runs until the ThreadActive boolean is disabled
         self.ThreadActive=True
         while self.ThreadActive:
             # Get the latest data in the data queue of the OAK-D 
@@ -1056,14 +1062,13 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
             edgeRightQueue.get()
             
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
-            # Warp the image
+            # Warp the image and emit the values and the image to be processed in the GUI class
             warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,1,False)
             if warped_image is not None:
                 self.widthUpdate.emit(framewidth)
                 self.heightUpdate.emit(frameheigth)
                 self.imageUpdate.emit(warped_image)
             time.sleep(0.5)
-       
         
   
 
