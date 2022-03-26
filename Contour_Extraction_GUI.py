@@ -584,7 +584,7 @@ class MainWindow():
             'number_parts':['','2pieces','3pieces','4pieces'],
             'sizes':['','Small','Medium','Large'],
             'numbers':['','1','2','3','4','5','6','7','8','9','10']} 
-    def sort_items_boxes(self): # Sprts the items in a alphabetical way. The numbers are extracted
+    def sort_items_boxes(self): # Sorts the items in a alphabetical way. The numbers are extracted
         # and every non-numeric item gets deleted to ensure that the sorting with numeric key is done properly
         # The empty string '' is inserted in the first position that the combobox has the empty string as default item
         for i in self.items_german:
@@ -609,7 +609,7 @@ class MainWindow():
         numbers=sorted(numbers,key=int)
         numbers.insert(0,'')
         self.items_english['numbers']=numbers
-    def save_items_boxes(self):
+    def save_items_boxes(self): # Saves the items inside the comboboxes of the current language when called.
         if self.language=='German':
             self.items_german['Zangen']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
             self.items_german['Schraubenzieher']=[self.comboBox_screwdrivers.itemText(i) for i in range(self.comboBox_screwdrivers.count())]
@@ -634,9 +634,10 @@ class MainWindow():
         
             with open('items_english.yaml','w') as f:
                 yaml.safe_dump(self.items_english,f)
-    def fill_comboBoxes(self):
+    def fill_comboBoxes(self): # First clear all the current items of the comboboxes, adds the loaded filename pieces into each combobox and sets the text as an empty string.
+        # The instances are written in an array to index them in the for loop:
+        boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
         if self.language=='German':
-            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
             for box in boxes:
                 box.clear()
             self.comboBox_pliers.addItems(self.items_german['Zangen'])
@@ -656,7 +657,6 @@ class MainWindow():
             self.comboBox_custom.addItems(self.items_german['Spezial'])
             self.comboBox_custom.setCurrentText('')
         else:
-            boxes=[self.comboBox_pliers,self.comboBox_screwdrivers,self.comboBox_measTools,self.comboBox_tools_misc,self.comboBox_custom,self.comboBox_numberParts,self.comboBox_sizes,self.comboBox_numbers]
             for box in boxes:
                 box.clear()
             self.comboBox_pliers.addItems(self.items_english['pliers'])
@@ -675,39 +675,40 @@ class MainWindow():
             self.comboBox_tools_misc.setCurrentText('')
             self.comboBox_custom.addItems(self.items_english['custom'])
             self.comboBox_custom.setCurrentText('')
-    def on_button_savePliers(self):
+    def on_button_savePliers(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveScrewdrivers(self):
+    def on_button_saveScrewdrivers(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_screwdrivers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveMeasTools(self):
+    def on_button_saveMeasTools(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_measTools.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveMisc(self):
+    def on_button_saveMisc(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_tools_misc.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveCustom(self):
+    def on_button_saveCustom(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_custom.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveNumberParts(self):
+    def on_button_saveNumberParts(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveSizes(self):
+    def on_button_saveSizes(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_sizes.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def on_button_saveNumbers(self):
+    def on_button_saveNumbers(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
         self.comboBox_numbers.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
-    def save_new_item_dialog(self):
+    def save_new_item_dialog(self): # Creates an instance of the Dialog class if the text in the input line is not empty
+        # This class has 8 Buttons that save the filename piece into the chosen combobox
         if self.lineEdit_newItem.text() != '':
             self.Dialog = QtWidgets.QDialog()
             self.ui = Dialog()
@@ -721,27 +722,31 @@ class MainWindow():
             self.ui.Button_NumberParts.clicked.connect(self.on_button_saveNumberParts)
             self.ui.Button_sizes.clicked.connect(self.on_button_saveSizes)
             self.ui.Button_numbers.clicked.connect(self.on_button_saveNumbers)
-    def open_folder(self):
+    def open_folder(self): # Initiates a file dialog class from PyQT5 for chosing a path.
+        # This function limits the selection to folders or directories only
         folderpath=''
         if self.language=='German':
             open_str='Zielordner auswählen'
         else:
             open_str='Select the path to save the contours'
         folderpath=QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget,open_str)
+        # If a path is selected it is shown in the text input line
         if folderpath !='':
             self.lineEdit_Path.setText(folderpath)
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
                 self.button_savedxf.setEnabled(True)
             else:
                 self.button_savedxf.setEnabled(False)
-    def save_dxf_button(self):
+    def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
             if self.checkBox_height.isChecked():
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{round(self.height,0)}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
-            #remove eventual whitespaces in the filename:
+            # Remove eventual whitespaces in the filename:
             path_and_filename.replace(' ','')
+            # The dxf_exporter function is called and after a check if the file exists, a message window appears with the confirmation
+            # If something goes wrong while saving or the contour, the path or the filename are missing then a error message appears.
             if self.contour is not None:
                 Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_width,self.scaling_height)
                 success=os.path.exists(path_and_filename)
@@ -765,13 +770,13 @@ class MainWindow():
             dlg.setWindowTitle(' ')
             dlg.setText('No path or filename selected!')
             dlg.exec()
-    def load_prefs(self):
+    def load_prefs(self): # This function loads the preferences, if the file can't be found a set of default values are loaded.
         try:
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True}  
-    def save_prefs(self):
+    def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
         self.prefs['nth_point']=self.slider_nth_point.value()
@@ -779,21 +784,22 @@ class MainWindow():
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
         self.prefs['save_height']=self.checkBox_height.isChecked()
+        # the with statement prevents the file from staying opened if a exception occurs during the saving process
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
-    def threshold_changed(self):
+    def threshold_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['threshold']=self.slider_thresh.value()
         self.process()
-    def factor_changed(self):
+    def factor_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['factor']=float(self.slider_factor.value())/10000
         self.process()
-    def slider3_changed(self):
+    def slider3_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['nth_point']=self.slider_nth_point.value()
         self.process()
-    def connectpoints_changed(self):
+    def connectpoints_changed(self): # Updates the status of the checkbox in the preferences and starts the process again
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.process()
-    def method_changed(self):
+    def method_changed(self): # Checks which method is selected and hides or shows the assigned sliders and checkboxes and starts the process again.
         if self.comboBox_method.currentText()=='PolyDP':
             self.slider_factor.show()
             self.label_slider_factor.show()
@@ -807,11 +813,13 @@ class MainWindow():
         
         self.process()
 
-    def update_frameheight(self,height):
+    def update_frameheight(self,height): # This function is called when the worker class in the seperate thread emits the values of the frameheight
         self.frameheight=height
-    def update_framewidth(self,width):
+    def update_framewidth(self,width): # This function is called when the worker class in the seperate thread emits the values of the framewidth
         self.framewidth=width
-    def update_preview(self,warped_image):   
+    def update_preview(self,warped_image): # When the perimeter of the lamp is found, the worker class emits the image. This function checks the size of 
+        # the image and sets the contour preview to the given image with the pixmap routing. Here the image is converted to a Qimage format and then to a
+        # Pixmap format. Also the scaling factor is calculated and saved in the according variables.
         if warped_image is not None:
             if warped_image.shape[0]>500:
                 self.warped_image=warped_image
@@ -820,36 +828,33 @@ class MainWindow():
                 self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
                 self.scaling_height=float(self.frameheight/550)
                 self.scaling_width=float(self.framewidth/550)
-
         # Activate the button if a processable image was warped
-        if self.warped_image is not None:    
-            
+        if self.warped_image is not None:      
             self.button_getContour.setEnabled(True)
-            
         else:
             self.button_getContour.setEnabled(False)
-    def get_contour(self):
+    def get_contour(self): # This method extracts the contour out of the warped image
+        # To get the images for the height-function the frames of the left and right camera queue are loaded
         edgeLeft=edgeLeftQueue.get()
         edgeRight=edgeRightQueue.get()
         img_left=edgeLeft.getFrame()
         img_right=edgeRight.getFrame()
-
+        # The images get undistorted 
         img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
         img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
-
+        # The toolheigt function is called
         Functions.toolheight(img_left,img_right)
-
+        # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image
         while self.cropped_image is None:
             if self.extraction_image is not None:
                 self.cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.extraction_image)
         self.process()    
-    def process(self):
-        
+    def process(self): # This method chooses the called extraction function according to the selected method.
+        # The needed parameters are provided to the function
         contour_image=None
         if self.cropped_image is not None:
-        #while contour_image is None:
             if self.comboBox_method.currentText() == 'PolyDP':
                 self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'NoApprox':
@@ -862,6 +867,7 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'Spline TehChin':
                 self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+        # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
@@ -893,7 +899,7 @@ class MainWindow():
             else:
                 self.label_position.setText('')
             
-    def info_methos(self):
+    def info_methos(self): # Provides the user with information regarding the used methods when clicking on the info menu bar
         dlg=QtWidgets.QMessageBox(self.centralwidget)
         dlg.setWindowTitle('Info')
         if self.language=='German':
@@ -911,7 +917,7 @@ class MainWindow():
             'Spline - This function finds the edge with no approximation and connects the contour points with a spline.\n\n'
             'Spline TehChin - This function uses the Teh Chin approximation and connects the contour points with a spline.')
         dlg.exec()
-    def info_general(self):
+    def info_general(self): # Provides the user with information regarding the structure and the workflow of the program
         dlg=QtWidgets.QMessageBox(self.centralwidget)
         dlg.setWindowTitle('Info')
         if self.language=='German':
@@ -934,45 +940,45 @@ class MainWindow():
                         'Also, the file name can be entered directly with the keyboard/screen keypad. If a new text block should be saved, it can be written in the line provided and dragged and dropped into the respective box'
                         'to be added. The text module can also be added to the desired group by pressing the + button.'
                         'Should entries be deleted, this can only be done via the \'items_english.yaml\' file.')
-
+        # After setting the text the dialog window is executed
         dlg.exec()         
 
-    def closeEvent(self):
+    def closeEvent(self): # stops the worker thread and saves the preferences and the filename pieces
         self.worker.stop()
         self.save_prefs()
         self.save_items_boxes()
 
-class combo(QtWidgets.QComboBox):
-   def __init__(self, parent):
+class combo(QtWidgets.QComboBox): # Class definition of the combobox dialog for saving new filename pieces
+   def __init__(self, parent): # the initialization is inherited and the AcceptDrops-flag is activated
       super(combo, self).__init__( parent)
       self.setAcceptDrops(True)
 
-   def dragEnterEvent(self, e):
-      #print (e)
-
+   def dragEnterEvent(self, e): # If data is dragged onto the combobox it will accept the data if it is text
       if e.mimeData().hasText():
          e.accept()
       else:
          e.ignore()
 
-   def dropEvent(self, e):
+   def dropEvent(self, e): # If the data is accepted, the text is added as item in the combobox
       self.addItem(e.mimeData().text())      
-class Dialog(object):
+class Dialog(object): # Definition of the dialog class for the filename piece saving
     def __init__(self):
         super(Dialog,self).__init__()
         
-    def setupUi(self, Dialog,language):
+    def setupUi(self, Dialog,language): # Here the appearance of the dialog is created
         self.language=language
         Dialog.setObjectName("Dialog")
         Dialog.setWindowModality(QtCore.Qt.NonModal)
         Dialog.resize(300, 360)
-        if self.language =='English':
-            Dialog.setWindowTitle("Save new item")
-        elif self.language=='German':
+        # The title is named according to the language chosen
+        if self.language =='German':
             Dialog.setWindowTitle("Textbaustein speichern")
+        else:
+            Dialog.setWindowTitle("Save new item")
         self.widget = QtWidgets.QWidget(Dialog)
         self.widget.setGeometry(QtCore.QRect(10, 20, 271, 301))
         self.widget.setObjectName("widget")
+        # The buttons are added to a grid layout to ensure a tidy appearance
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
@@ -999,13 +1005,12 @@ class Dialog(object):
         self.gridLayout.addWidget(self.Butto_misc, 3, 0, 1, 1)
         self.Button_custom = QtWidgets.QPushButton(self.widget)
         self.Button_custom.setObjectName("Button_custom")
-        
         self.gridLayout.addWidget(self.Button_custom, 3, 1, 1, 1)
-
+        # The buttons are labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-    def retranslateUi(self, language):
+    def retranslateUi(self, language): # Labels the button according to the passed language
         if language == 'German':
             self.Button_pliers.setText("Zangen")
             self.Button_sizes.setText("Größen")
@@ -1024,18 +1029,19 @@ class Dialog(object):
             self.Button_numbers.setText("Numbers")
             self.Butto_misc.setText("Tools misc")
             self.Button_custom.setText("Custom")
-class UpdatePreview_worker(QtCore.QThread):
-    imageUpdate=QtCore.pyqtSignal(np.ndarray)
+class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
+    # Define the signals that are emitted during the run of the worker thread
+    imageUpdate=QtCore.pyqtSignal(np.ndarray) 
     widthUpdate=QtCore.pyqtSignal(int)
     heightUpdate=QtCore.pyqtSignal(int)
-    def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold):
+    def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold): # Saves the passed values into variables during the initialization
         super().__init__()
         self.mtx=mtx_Rgb
         self.dist=dist_Rgb
         self.newmtx=newcameramtx_Rgb
         self.threshold=threshold
     
-    def stop(self):
+    def stop(self): # Stops the while loop and quits the worker thread
         self.ThreadActive=False
         self.quit()
     
@@ -1061,16 +1067,15 @@ class UpdatePreview_worker(QtCore.QThread):
         
   
 
-if __name__ == '__main__':
+if __name__ == '__main__': # Main program
     sys._excepthook=sys.excepthook
-
+    # Define a new exception hook:
     def exception_hook(exctype,value,traceback):
         sys._excepthook(exctype,value,traceback)
         sys.exit(1)
-    
     sys.excepthook=exception_hook
 
-    # Create pipeline
+    # Create the pipeline for the OAK-D
     pipeline = dai.Pipeline()
 
     # Define sources and outputs
@@ -1086,7 +1091,7 @@ if __name__ == '__main__':
     xoutEdgeRight = pipeline.create(dai.node.XLinkOut)
     xoutEdgeRgb = pipeline.create(dai.node.XLinkOut)
     xinEdgeCfg = pipeline.create(dai.node.XLinkIn)
-
+    
     edgeLeftStr = "edge left"
     edgeRightStr = "edge right"
     edgeRgbStr = "edge rgb"
@@ -1097,7 +1102,7 @@ if __name__ == '__main__':
     xoutEdgeRgb.setStreamName(edgeRgbStr)
     xinEdgeCfg.setStreamName(edgeCfgStr)
 
-    # Properties
+    # Properties of the cameras
     camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
     camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
     monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
@@ -1106,7 +1111,7 @@ if __name__ == '__main__':
     monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
     edgeDetectorRgb.setMaxOutputFrameSize(camRgb.getVideoWidth() * camRgb.getVideoHeight())
 
-    # Linking
+    # Linking of the OAK-D nodes
     monoLeft.out.link(edgeDetectorLeft.inputImage)
     monoRight.out.link(edgeDetectorRight.inputImage)
     camRgb.video.link(edgeDetectorRgb.inputImage)
@@ -1120,14 +1125,14 @@ if __name__ == '__main__':
     xinEdgeCfg.out.link(edgeDetectorRgb.inputConfig)
 
  
-    # Connect to device and start pipeline
+    # Connect to the device and start the pipeline
     with dai.Device(pipeline) as device:
         # Output/input queues                (name,maxSize,blocking)
         edgeLeftQueue = device.getOutputQueue(edgeLeftStr, 1, False)
         edgeRightQueue = device.getOutputQueue(edgeRightStr, 1, False)
         edgeRgbQueue = device.getOutputQueue(edgeRgbStr, 1, False)
         edgeCfgQueue = device.getInputQueue(edgeCfgStr)
-
+        # Set an instance of the GUI
         app = QtWidgets.QApplication(sys.argv)
         ContourExtraction = QtWidgets.QMainWindow()
         gui = MainWindow(ContourExtraction)
@@ -1135,7 +1140,7 @@ if __name__ == '__main__':
 
         # Save the preferences and the items of the ComboBoxes before closing
         app.aboutToQuit.connect(gui.closeEvent)
-        
+        # Start the execution of the GUI
         sys.exit(app.exec_())
             
             
