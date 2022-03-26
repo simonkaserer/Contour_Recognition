@@ -549,6 +549,10 @@ class MainWindow():
             self.mtx_left=np.load('./CalData/mtx_left.npy')
             self.dist_left=np.load('./CalData/dist_left.npy')
             self.newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
+            self.stereoMapL_x=np.load('./CalData/stereoMapL_x.npy')
+            self.stereoMapL_y=np.load('./CalData/stereoMapL_y.npy')
+            self.stereoMapR_x=np.load('./CalData/stereoMapR_x.npy')
+            self.stereoMapR_y=np.load('./CalData/stereoMapR_y.npy')
         except FileNotFoundError as exc: # If the data can't be loaded a Message Box appears and tells the user to 
             # run the Camera_Calibration.py program in order to calibrate the cameras. This prevents the main program from starting
             msg=QtWidgets.QMessageBox()
@@ -842,9 +846,12 @@ class MainWindow():
         edgeRight=edgeRightQueue.get()
         img_left=edgeLeft.getFrame()
         img_right=edgeRight.getFrame()
-        # The images get undistorted 
-        img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
-        img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
+        # # Undistort the images
+        # img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
+        # img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
+        # Undistort and rectify the images
+        img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
+        img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheigt function is called
         Functions.toolheight(img_left,img_right)
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
