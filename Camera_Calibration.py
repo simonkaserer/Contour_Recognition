@@ -1,4 +1,4 @@
-# This code calibrates the three cameras with OpenCV and a 7x6 chessboard pattern and 
+# This code calibrates the three cameras with OpenCV and a 8x6 chessboard pattern and 
 # saves the camera parameters into configuration files
 
 # This has to be executed in the Terminal since it has no GUI!
@@ -116,21 +116,17 @@ def main():
         # termination criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-        objp_left = np.zeros((6*8,3), np.float32)
-        objp_left[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
-        objp_right = np.zeros((6*8,3), np.float32)
-        objp_right[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
-        objp_Rgb = np.zeros((6*8,3), np.float32)
+        objp = np.zeros((8*6,3), np.float32)
+        objp[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
+        objp_Rgb = np.zeros((8*6,3), np.float32)
         objp_Rgb[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
 
-        objp_left*=squaresize
-        objp_right*=squaresize
+        objp*=squaresize
         objp_Rgb*=squaresize
 
         # Arrays to store object points and image points from all the images.
-        objpoints_left = [] # 3d point in real world space
+        objpoints = [] # 3d point in real world space
         imgpoints_left = [] # 2d points in image plane.
-        objpoints_right = []
         imgpoints_right = []
         objpoints_Rgb = []
         imgpoints_Rgb = []
@@ -152,41 +148,39 @@ def main():
             quit()
 
 
+        for imgLeft, imgRight in zip(images_left, images_right):
 
-        for fname in images_left[:11:]:
-            img = cv2.imread(fname)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            imgL = cv2.imread(imgLeft)
+            imgR = cv2.imread(imgRight)
+            grayL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
+            grayR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
+
             # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (8,6), None)
+            retL, cornersL = cv2.findChessboardCorners(grayL, (8,6), None)
+            retR, cornersR = cv2.findChessboardCorners(grayR, (8,6), None)
+
             # If found, add object points, image points (after refining them)
-            if ret == True:
-                objpoints_left.append(objp_left)
-                corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
-                imgpoints_left.append(corners)
-            print(f'{fname} processed!')
-        ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints_left, imgpoints_left, gray.shape[::-1], None, None)
+            if retL and retR == True:
+                objpoints.append(objp)
+                # Append the found corners to the imagepoint array
+                cornersL = cv2.cornerSubPix(grayL, cornersL, (11,11), (-1,-1), criteria)
+                imgpoints_left.append(cornersL)
+                cornersR = cv2.cornerSubPix(grayR, cornersR, (11,11), (-1,-1), criteria)
+                imgpoints_right.append(cornersR)
+        # Calibrate the left camera
+        ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints, imgpoints_left, grayL.shape[::-1], None, None)
         #Take an unused picture for the optimal camera matrix
-        img=cv2.imread('./CalPicsLeft/CalLeft9.jpg')
-        h,w=img.shape[:2]
+        imgL=cv2.imread('./CalPicsLeft/CalLeft9.jpg')
+        h,w=imgL.shape[:2]
         # Get the new camera matrix
         newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
         # save the matrices to .npy files
         np.save('./CalData/mtx_left.npy',mtx_left)
         np.save('./CalData/dist_left.npy',dist_left)
         np.save('./CalData/newcameramtx_left.npy',newcameramtx_left)
-        print('                           Left camera calibrated!')
-        for fname in images_right[:11:]:
-            img = cv2.imread(fname)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (8,6), None)
-            # If found, add object points, image points (after refining them)
-            if ret == True:
-                objpoints_right.append(objp_right)
-                corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
-                imgpoints_right.append(corners)
-            print(f'{fname} processed!')
-        ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints_right, imgpoints_right, gray.shape[::-1], None, None)
+        print('Left camera calibrated!')
+        # Calibrate the right camera
+        ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints, imgpoints_right, grayR.shape[::-1], None, None)
         #Take an unused picture for the optimal camera matrix
         img=cv2.imread('./CalPicsRight/CalRight9.jpg')
         h,w=img.shape[:2]
@@ -195,7 +189,25 @@ def main():
         np.save('./CalData/mtx_right.npy',mtx_right)
         np.save('./CalData/dist_right.npy',dist_right)
         np.save('./CalData/newcameramtx_right.npy',newcameramtx_right)
-        print('                                       Right camera calibrated!')
+        print('Right camera calibrated!')
+
+        # Stereo Calibration
+        flags=0
+        # Fix the intrinsic camera matrices
+        flags|=cv2.CALIB_FIX_INTRINSIC
+        criteria_stereo=(cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER,30,0.001)
+        ret_stereo,newCameraMtxL,distL,newCameraMtxR,distR,rot,trans,eMtx,fMtx=cv2.stereoCalibrate(objpoints,imgpoints_left,imgpoints_right,newcameramtx_left,dist_left,newcameramtx_right,dist_right,(w,h),criteria_stereo,flags)
+        # Stereo Rectification
+        rectL,rectR,projMtxL,projMtxR,Q,roi_L,roi_R=cv2.stereoRectify(newCameraMtxL,distL,newCameraMtxR,distR,(w,h),rot,trans,1,(0,0))
+        stereoMapL=cv2.initUndistortRectifyMap(newCameraMtxL,distL,rectL,projMtxL,grayL.shape[::-1],cv2.CV_16SC2)
+        stereoMapR=cv2.initUndistortRectifyMap(newCameraMtxR,distR,rectR,projMtxR,grayR.shape[::-1],cv2.CV_16SC2)
+        #Saving Parameters
+        np.save('./CalData/stereoMapL_x.npy',stereoMapL[0])
+        np.save('./CalData/stereoMapL_y.npy',stereoMapL[1])
+        np.save('./CalData/stereoMapR_x.npy',stereoMapR[0])
+        np.save('./CalData/stereoMapR_y.npy',stereoMapR[1])
+        print("Stereo Camera calibrated!")
+        # Calibrate the Rgb camera
         for fname in images_Rgb[:11:]:
             img = cv2.imread(fname)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -218,6 +230,8 @@ def main():
         np.save('./CalData/newcameramtx_Rgb.npy',newcameramtx_Rgb)
 
         print(                                      'Calibration process finished!')
+
+        
 
 if __name__=="__main__":
     main()
