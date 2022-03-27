@@ -846,9 +846,6 @@ class MainWindow():
         edgeRight=edgeRightQueue.get()
         img_left=edgeLeft.getFrame()
         img_right=edgeRight.getFrame()
-        # # Undistort the images
-        # img_left=cv2.undistort(img_left,self.mtx_left,self.dist_left,None,self.newcameramtx_left)
-        # img_right=cv2.undistort(img_right,self.mtx_right,self.dist_right,None,self.newcameramtx_right)
         # Undistort and rectify the images
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
@@ -876,7 +873,7 @@ class MainWindow():
             elif self.comboBox_method.currentText() == 'Spline':
                 self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'Spline TehChin':
-                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
         # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
@@ -884,31 +881,30 @@ class MainWindow():
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
             # Check if the tool is near the middle of the board and
             # give an information that the tool center is not in the middle:
-            if self.tool_pos_x < self.framewidth/2-10:
+            move_str=''
+            if self.tool_pos_x < self.framewidth/2-30:
                 if self.language=='German':
-                    self.label_position.setText("Nach rechts verschieben")
+                    move_str+="Nach rechts verschieben. "
                 else:
-                    self.label_position.setText("Move towards the right")
-            elif self.tool_pos_x > self.framewidth/2+10:
+                    move_str+="Move towards the right. "
+            elif self.tool_pos_x > self.framewidth/2+30:
                 if self.language=='German':
-                    self.label_position.setText("Nach links verschieben")
+                    move_str+="Nach links verschieben. "
                 else:
-                    self.label_position.setText("Move towards the left")
+                    move_str+="Move towards the left. "
+            if self.tool_pos_y < self.frameheight/2-30:
+                if self.language=='German':
+                    move_str+="Nach unten verschieben."
+                else:
+                    move_str+="Move towards the bottom."
+            elif self.tool_pos_y > self.frameheight/2+30:
+                if self.language=='German':
+                    move_str+="Nach oben verschieben."
+                else:
+                    move_str+="Move towards the top."
             else:
-                self.label_position.setText('')
-            if self.tool_pos_y < self.frameheight/2-10:
-                if self.language=='German':
-                    self.label_position.setText("Nach unten verschieben")
-                else:
-                    self.label_position.setText("Move towards the bottom")
-            elif self.tool_pos_y > self.frameheight/2+10:
-                if self.language=='German':
-                    self.label_position.setText("Nach oben verschieben")
-                else:
-                    self.label_position.setText("Move towards the top")
-            else:
-                self.label_position.setText('')
-            
+                move_str=''
+            self.label_position.setText(move_str)
     def info_methos(self): # Provides the user with information regarding the used methods when clicking on the info menu bar
         dlg=QtWidgets.QMessageBox(self.centralwidget)
         dlg.setWindowTitle('Info')
