@@ -850,7 +850,10 @@ class MainWindow():
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheigt function is called
-        Functions.toolheight(img_left,img_right)
+        self.depth=Functions.toolheight(img_left,img_right)
+        # Set the text to the passed toolheight
+        # umrechnen auf werkzeughöhe
+        self.label_height_value.setText(f'{self.depth}mm')
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image

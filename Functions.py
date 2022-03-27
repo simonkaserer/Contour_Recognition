@@ -286,14 +286,34 @@ def dxf_exporter(contour,path_and_name,scaling_width,scaling_height):
 
 def toolheight(img_left,img_right): # Experimental
     warped_left,framew_left,frameh_left,pts_left=warp_img(img_left,150,1,False)
-    warped_right,framew_right,fdrameh_left,pts_right=warp_img(img_right,150,1,False)
-    
-    cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
-    cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
-    stack=np.hstack((cv2.resize(img_left,(400,300)),cv2.resize(img_right,(400,300))))
-    stack2=np.hstack((cv2.resize(cropped_left,(400,300)),cv2.resize(cropped_right,(400,300))))
-    stack3=np.vstack((stack,stack2))
-    cv2.imshow('height',stack3)
+    warped_right,framew_right,frameh_right,pts_right=warp_img(img_right,150,1,False)
+    cropped_left=None
+    cropped_right=None
+    counter=1
+    while cropped_left is None and cropped_right is None:
+        cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
+        cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
+        counter+=1
+        if counter>10:
+            depth=0
+            return depth
+    if img_left is not None and img_right is not None and cropped_left is not None and cropped_right is not None:
+        stack=np.hstack((cv2.resize(img_left,(400,300)),cv2.resize(img_right,(400,300))))
+        #stack2=np.hstack((cv2.resize(cropped_left,(400,300)),cv2.resize(cropped_right,(400,300))))
+        #stack3=np.vstack((stack,stack2))
+        cv2.imshow('height',stack)
+    # With 800P mono camera resolution where HFOV=71.9 degrees
+    focal_length_in_pixels = 1280 * 0.5 / np.tan(71.9 * 0.5 * np.pi / 180)
+    baseline=75 #mm
+    disparity_in_pixels=abs(x_right-x_left)
+    depth = int(round((focal_length_in_pixels * baseline / disparity_in_pixels),0))
+
+    print(f'xL: {x_left}, xR: {x_right}')
+    print(f'yL: {y_left}, yR: {y_right}\n')
+    print(f'fwL: {framew_left}, fhL: {frameh_left}')
+    print(f'fwR: {framew_right}, fhR: {frameh_right}\n')
     print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
-    print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
+    #print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
     print(f'pts left: {pts_left}\npts right: {pts_right}')
+    print(f'depth: {depth}')
+    return depth
