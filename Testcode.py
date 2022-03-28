@@ -8,7 +8,6 @@ import Functions as fct
 
 def toolheight(img_left,img_right):
 
-   # cv2.waitKey(0)
    cnts_left,_=cv2.findContours(img_left,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
    cnts_right,_=cv2.findContours(img_right,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
    img_left=cv2.cvtColor(img_left,cv2.COLOR_GRAY2BGR)
@@ -45,6 +44,7 @@ def toolheight(img_left,img_right):
   
    height_frame=882.5*75/disp_frame[0]
    height_tool=height_frame-(882.5*75/disp_tool[0])
+   
    print(f'height tool: {height_tool}')
       
    contsleft=cv2.drawContours(img_left,toolL,-1,(255,0,0),2)
@@ -57,6 +57,7 @@ def toolheight(img_left,img_right):
    if key==ord('q'):
       quit()
    cv2.destroyAllWindows()
+   return height_tool
       
 
 

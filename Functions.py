@@ -285,35 +285,53 @@ def dxf_exporter(contour,path_and_name,scaling_width,scaling_height):
     file.saveas(path_and_name)
 
 def toolheight(img_left,img_right): # Experimental
-    warped_left,framew_left,frameh_left,pts_left=warp_img(img_left,150,1,False)
-    warped_right,framew_right,frameh_right,pts_right=warp_img(img_right,150,1,False)
-    cropped_left=None
-    cropped_right=None
-    counter=1
-    while cropped_left is None and cropped_right is None:
-        cropped_left,toolw_left,toolh_left,x_left,y_left=crop_image(warped_left)
-        cropped_right,toolw_right,toolh_right,x_right,y_right=crop_image(warped_right)
-        counter+=1
-        if counter>10:
-            depth=0
-            return depth
-    if img_left is not None and img_right is not None and cropped_left is not None and cropped_right is not None:
-        stack=np.hstack((cv2.resize(img_left,(400,300)),cv2.resize(img_right,(400,300))))
-        #stack2=np.hstack((cv2.resize(cropped_left,(400,300)),cv2.resize(cropped_right,(400,300))))
-        #stack3=np.vstack((stack,stack2))
-        cv2.imshow('height',stack)
-    # With 800P mono camera resolution where HFOV=71.9 degrees
-    focal_length_in_pixels = 1280 * 0.5 / np.tan(71.9 * 0.5 * np.pi / 180)
-    baseline=75 #mm
-    disparity_in_pixels=abs(x_right-x_left)
-    depth = int(round((focal_length_in_pixels * baseline / disparity_in_pixels),0))
-
-    print(f'xL: {x_left}, xR: {x_right}')
-    print(f'yL: {y_left}, yR: {y_right}\n')
-    print(f'fwL: {framew_left}, fhL: {frameh_left}')
-    print(f'fwR: {framew_right}, fhR: {frameh_right}\n')
-    print(f'dx:{x_right-x_left}, dy:{y_right-y_left}')
-    #print(f'squared sum:{(x_right-x_left)**2+(y_right-y_left)**2}')
-    print(f'pts left: {pts_left}\npts right: {pts_right}')
-    print(f'depth: {depth}')
-    return depth
+    cnts_left,_=cv2.findContours(img_left,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
+    cnts_right,_=cv2.findContours(img_right,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
+    img_left=cv2.cvtColor(img_left,cv2.COLOR_GRAY2BGR)
+    img_right=cv2.cvtColor(img_right,cv2.COLOR_GRAY2BGR)
+    
+        # Sort the contour by area
+    cntsL=sorted(cnts_left,key=cv2.contourArea)
+    cntsR=sorted(cnts_right,key=cv2.contourArea)
+    # choose the frame contour
+    frameL=cntsL[-1]
+    frameR=cntsR[-1]
+    # Calculate the average disparity
+    # disp_frame=0.0
+    # for ptL,ptR in zip(frameL,frameR):
+    #    disp_frame+=ptL[0]-ptR[0]
+    # disp_frame/=len(frameL)
+    meanL=np.mean(frameL,0)
+    meanR=np.mean(frameR,0)
+    disp_frame=abs(meanL-meanR)[0]
+    print(disp_frame)
+    # Choose the tool contour - the last two contours are the illuminated frame 
+    toolL=cntsL[-3]
+    toolR=cntsR[-3]
+    # disp_tool=0.0
+    # for ptL,ptR in zip(toolL,toolR):
+    #    disp_tool+=ptL[0]-ptR[0]
+    # disp_tool/=len(toolL)
+    mean_tool_left=np.mean(toolL,0)
+    mean_tool_right=np.mean(toolR,0)
+    disp_tool=abs(mean_tool_left-mean_tool_right)[0]
+    print(disp_tool)
+    
+    
+    
+    height_frame=882.5*75/disp_frame[0]
+    height_tool=height_frame-(882.5*75/disp_tool[0])
+    
+    print(f'height tool: {height_tool}')
+        
+    contsleft=cv2.drawContours(img_left,toolL,-1,(255,0,0),2)
+    contsright=cv2.drawContours(img_right,toolR,-1,(255,0,0),2)
+    contsleft=cv2.drawContours(contsleft,frameL,-1,(0,0,255),2)
+    contsright=cv2.drawContours(contsright,frameR,-1,(0,0,255),2)
+    stack_conts=np.hstack((cv2.resize(contsleft,(400,300)),cv2.resize(contsright,(400,300))))
+    cv2.imshow("contours",stack_conts)
+    key=cv2.waitKey(0)
+    if key==ord('q'):
+        quit()
+    cv2.destroyAllWindows()
+    return height_tool
