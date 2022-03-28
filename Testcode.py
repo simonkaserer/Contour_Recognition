@@ -1,159 +1,93 @@
-# This file is for testing code snippets before implementing into the main programme
-
 #!/usr/bin/env python3
-from json import tool
-#from pickletools import float8
+from itertools import combinations_with_replacement
 import sys
 import cv2
 import numpy as np
 import Functions as fct
-from scipy.interpolate import interp1d
 
 
-def smooth_contour(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int,printflag,smoothing):
+def toolheight(img_left,img_right):
+
+   # cv2.waitKey(0)
+   cnts_left,_=cv2.findContours(img_left,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
+   cnts_right,_=cv2.findContours(img_right,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
+   img_left=cv2.cvtColor(img_left,cv2.COLOR_GRAY2BGR)
+   img_right=cv2.cvtColor(img_right,cv2.COLOR_GRAY2BGR)
    
-   cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-   if len(cnts)>0:
-      cnt=max(cnts,key=cv2.contourArea)
-      cont=cnt.tolist()
-      cont=cont[::every_nth_point]
-      number_of_points=len(cont)
-      #cont.append(cont[0])
-      tool_contour=np.array(cont)
-      #Rearrange the points
-      points=np.array([[tool_contour[i][0][0],tool_contour[i][0][1]] for i in range(number_of_points)])
-
-      # Add the last point to the list by padding 
-      #pad=3
-      #points=np.pad(points,[(pad,pad),(0,0)],mode='wrap')
-      x,y=points.T
-      
-      i=np.arange(0,len(points))
-
-      interp_i=np.linspace(0,i.max(),smoothing*i.max())
-
-      x_new=interp1d(i,x,kind='cubic')(interp_i)
-      y_new=interp1d(i,y,kind='cubic')(interp_i)
-
-      cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
-
-      # create a black background
-      inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
-      if connectpoints:
-         img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),1)
-      else:
-         img_cont=cv2.drawContours(inv,cnt,-1,(0,255,0),1) #only points
-      # for i in range(number_of_points):
-      #    x=tool_contour[i][0][0]
-      #    y=tool_contour[i][0][1]
-         
-      #    x2=tool_contour[i+1][0][0]
-      #    y2=tool_contour[i+1][0][1]
-      #    x3=tool_contour[i+2][0][0]
-      #    y3=tool_contour[i+2][0][1]
-      #    direction0=np.arctan((x)/(y))*180/np.pi
-      #    direction1=np.arctan((x2-x)/(y2-y))*180/np.pi
-      #    direction2=np.arctan((x3-x)/(y3-y))*180/np.pi
-      #    direction[i][0]=direction1
-      #    direction[i][1]=direction2
-
-
-      # if printflag:
-      #    i=0
-      #    kinks=[0]
-      #    while True:
-      #       x=tool_contour[i][0][0]
-      #       y=tool_contour[i][0][1]
-      #       point_img=img_cont.copy()
-            
-      #       direction1=direction[i][0]
-      #       direction2=direction[i][1]
-      #       cv2.circle(point_img,(x,y),2,(150,30,255),-1)
-            
-      #       print(f'direction1:{direction1}')
-      #       print(f'direction2:{direction2}')
-      #       if direction[i][0]==-direction[i+1][0] :
-      #          print('Kink +1')
-      #          kinks.append(i)
-      #       if direction[i][1]==-direction[i+1][1]:
-      #          print('Kink +2')
-      #       if direction[i-1][0]==-direction[i][0]:
-      #          print('kink -1')
-      #       if direction[i-1][1]==-direction[i][1]:
-      #          print('kink -2')
-      #       print('')
-      #       cv2.imshow('points',point_img)
-      #       key=cv2.waitKey(0)
-      #       if key==ord('q'):
-      #          break
-      #       if key==ord('+'):
-      #          i+=1
-      #       if key==ord('-') and i > 0:
-      #          i-=1
-      #    print(f'kinks: {kinks}')
-      #    print(f'nth point: {nth_point}')
-      #    print(f'points: {len(tool_contour)}')
-      #    print(f'perimeter:{cv2.arcLength(cnt,True)}')
-          
-      
-      
-      # Scale the image to the width or height of the Contour View window
-      height,width,_=img_cont.shape
-      if width > height:
-            scale=500/width
-            
-      else:
-            scale=500/height
-      img_cont_scaled=cv2.resize(img_cont,(int(width*scale),int(height*scale)))
-      
-      return tool_contour,img_cont 
-   else:
-        return None,None
+    # Sort the contour by area
+   cntsL=sorted(cnts_left,key=cv2.contourArea)
+   cntsR=sorted(cnts_right,key=cv2.contourArea)
+   # choose the frame contour
+   frameL=cntsL[-1]
+   frameR=cntsR[-1]
+   # Calculate the average disparity
+   # disp_frame=0.0
+   # for ptL,ptR in zip(frameL,frameR):
+   #    disp_frame+=ptL[0]-ptR[0]
+   # disp_frame/=len(frameL)
+   meanL=np.mean(frameL,0)
+   meanR=np.mean(frameR,0)
+   disp_frame=abs(meanL-meanR)[0]
+   print(disp_frame)
+   # Choose the tool contour - the last two contours are the illuminated frame 
+   toolL=cntsL[-3]
+   toolR=cntsR[-3]
+   # disp_tool=0.0
+   # for ptL,ptR in zip(toolL,toolR):
+   #    disp_tool+=ptL[0]-ptR[0]
+   # disp_tool/=len(toolL)
+   mean_tool_left=np.mean(toolL,0)
+   mean_tool_right=np.mean(toolR,0)
+   disp_tool=abs(mean_tool_left-mean_tool_right)[0]
+   print(disp_tool)
+   
    
   
-   
+   height_frame=882.5*75/disp_frame[0]
+   height_tool=height_frame-(882.5*75/disp_tool[0])
+   print(f'height tool: {height_tool}')
+      
+   contsleft=cv2.drawContours(img_left,toolL,-1,(255,0,0),2)
+   contsright=cv2.drawContours(img_right,toolR,-1,(255,0,0),2)
+   contsleft=cv2.drawContours(contsleft,frameL,-1,(0,0,255),2)
+   contsright=cv2.drawContours(contsright,frameR,-1,(0,0,255),2)
+   stack_conts=np.hstack((cv2.resize(contsleft,(400,300)),cv2.resize(contsright,(400,300))))
+   cv2.imshow("contours",stack_conts)
+   key=cv2.waitKey(0)
+   if key==ord('q'):
+      quit()
+   cv2.destroyAllWindows()
+      
 
-   
+
+
 
 if __name__ == '__main__':
-  
+   mtx_right=np.load('./CalData/mtx_right.npy')
+   dist_right=np.load('./CalData/dist_right.npy')
+   newcameramtx_right=np.load('./CalData/newcameramtx_right.npy')
+   mtx_left=np.load('./CalData/mtx_left.npy')
+   dist_left=np.load('./CalData/dist_left.npy')
+   newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
+   stereoMapL_x=np.load('./CalData/stereoMapL_x.npy')
+   stereoMapL_y=np.load('./CalData/stereoMapL_y.npy')
+   stereoMapR_x=np.load('./CalData/stereoMapR_x.npy')
+   stereoMapR_y=np.load('./CalData/stereoMapR_y.npy')
+
+   str_left=('/home/pi/Desktop/Testcontours/InbusPolyLeft.jpg','/home/pi/Desktop/Testcontours/handleNoApprLeft.jpg','/home/pi/Desktop/Testcontours/PlumberPlierPolyLeft.jpg','/home/pi/Desktop/Testcontours/cuttingPlierPolyLeft.jpg','/home/pi/Desktop/Testcontours/ScissorNoApprLeft.jpg')
+   str_right=('/home/pi/Desktop/Testcontours/InbusPolyRight.jpg','/home/pi/Desktop/Testcontours/handleNoApprRight.jpg','/home/pi/Desktop/Testcontours/PlumberPlierPolyRight.jpg','/home/pi/Desktop/Testcontours/cuttingPlierPolyRight.jpg','/home/pi/Desktop/Testcontours/ScissorNoApprRight.jpg')
+   i=3 # 0 - 4
+   img_left=cv2.imread(str_left[i])
+   img_right=cv2.imread(str_right[i])
+   img_left=cv2.cvtColor(img_left,cv2.COLOR_BGR2GRAY)
+   img_right=cv2.cvtColor(img_right,cv2.COLOR_BGR2GRAY)
+
    
-   str=('/home/pi/Desktop/Testcontours/InbusPoly.jpg','/home/pi/Desktop/Testcontours/handleNoAppr.jpg','/home/pi/Desktop/Testcontours/PlumberPlierPoly.jpg','/home/pi/Desktop/Testcontours/cuttingPlierPoly.jpg','/home/pi/Desktop/Testcontours/ScissorNoAppr.jpg')
-   printflag=False
-   connectpoints=False
-   points=1
-   img=cv2.imread(str[1])
+
+   img_left=cv2.remap(img_left,stereoMapL_x,stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
+   img_right=cv2.remap(img_right,stereoMapR_x,stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
    
-   w=img.shape[1]
-   h=img.shape[0]
-   img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-   img=cv2.Canny(img,230,240,L2gradient=False)
-   smoothing=1
-   while True:
-      cnt,cnt_img=smooth_contour(img,points,connectpoints,w,h,printflag,smoothing)
-      printflag=False
-      cv2.imshow('contour',cnt_img)
-      key=cv2.waitKey(100)
-      if key==ord('q'):
-         cv2.destroyAllWindows
-         quit()
-      if key==ord('c'):
-         connectpoints = not connectpoints
-         print('toggle connectpoints')
-      if key==ord('+'):
-         points+=1
-         print(f'npoints:{points}')
-      if key==ord('-') and points >1:
-         points-=1
-         print(f'npoints:{points}')
-      if key==ord('p'):
-         printflag=True
-      if key==ord('s'):
-         cv2.imwrite('/home/pi/Desktop/points.png',cnt_img)
-      if key==ord('m'):
-         smoothing+=1
-         print(f'smoothing: {smoothing}')
-      if key==ord('n')and smoothing>1:
-         smoothing-=1
-         print(f'smoothing: {smoothing}')
-      
+   _,img_left=cv2.threshold(img_left,100,255,0)
+   _,img_right=cv2.threshold(img_right,100,255,0)
+
+   toolheight(img_left,img_right)
