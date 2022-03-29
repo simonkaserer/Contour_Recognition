@@ -746,7 +746,7 @@ class MainWindow():
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
             if self.checkBox_height.isChecked():
-                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{round(self.height,0)}mm.dxf'
+                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.height}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             # Remove eventual whitespaces in the filename:
@@ -850,9 +850,9 @@ class MainWindow():
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheigt function is called
-        self.depth=Functions.toolheight(img_left,img_right,self.prefs['threshold'])
+        self.height=Functions.toolheight(img_left,img_right,self.prefs['threshold'])
         # Set the text to the passed toolheight
-        self.label_height_value.setText(f'{self.depth}mm')
+        self.label_height_value.setText(f'{self.height}mm')
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image
