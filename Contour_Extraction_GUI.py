@@ -375,6 +375,10 @@ class MainWindow():
         else:
             self.slider_factor.hide()
             self.label_slider_factor.hide()
+        if self.comboBox_method.currentText()=='Spline' or self.comboBox_method.currentText()=='Spline TehChin':
+            self.checkBox_connectpoints.hide()
+        else:
+            self.checkBox_connectpoints.show()
         # Deactivate the saving- and the get contour- Button:
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
@@ -496,9 +500,10 @@ class MainWindow():
                 yaml.safe_dump(self.prefs,f)
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            path=self.lineEdit_Path.text()+'/'+self.filename+'.jpg'
+            path=self.lineEdit_Path.text()+'/'+self.filename+'Cropped.jpg'
             pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
             pathright=self.lineEdit_Path.text()+'/'+self.filename+'Right.jpg'
+            pathrgb=self.lineEdit_Path.text()+'/'+self.filename+'Rgb.jpg'
             cv2.imwrite(path,self.cropped_image)
             edgeLeft = edgeLeftQueue.get()
             image=edgeLeft.getFrame()
@@ -506,6 +511,9 @@ class MainWindow():
             edgeRight = edgeRightQueue.get()
             image=edgeRight.getFrame()
             cv2.imwrite(pathright,image)   
+            edgeRgb=edgeRgbQueue.get()
+            image=edgeRgb.getFrame()
+            cv2.imwrite(pathrgb,image)
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
@@ -851,8 +859,8 @@ class MainWindow():
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheigt function is called
         self.height=Functions.toolheight(img_left,img_right,self.prefs['threshold'])
-        # Set the text to the passed toolheight
-        self.label_height_value.setText(f'{self.height}mm')
+        # Set the text of the label to the toolheight
+        self.label_height_value.setText(f'{self.height}mm') 
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image
@@ -950,7 +958,6 @@ class MainWindow():
                         'Should entries be deleted, this can only be done via the \'items_english.yaml\' file.')
         # After setting the text the dialog window is executed
         dlg.exec()         
-
     def closeEvent(self): # stops the worker thread and saves the preferences and the filename pieces
         self.worker.stop()
         self.save_prefs()
