@@ -31,7 +31,7 @@ class MainWindow():
         self.extraction_image=None
         self.scaling_framewidth=1.0
         self.scaling_frameheight=1.0
-        self.height=0
+        self.thickness=0
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
@@ -230,7 +230,7 @@ class MainWindow():
         
         self.label_height_value =QtWidgets.QLabel(self.centralwidget)
         self.label_height_value.setGeometry(QtCore.QRect(650,385,141,28))
-        self.label_height_value.setText(f'{round(self.height,0)}mm')
+        self.label_height_value.setText(f'{round(self.thickness,0)}mm')
         self.label_height_value.setObjectName("label_height")
 
         self.label_height =QtWidgets.QLabel(self.centralwidget)
@@ -775,7 +775,7 @@ class MainWindow():
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
             if self.prefs['save_height'] is True:
-                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.height}mm.dxf'
+                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.thickness}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             # Remove eventual whitespaces in the filename:
@@ -783,7 +783,7 @@ class MainWindow():
             # The dxf_exporter function is called and after a check if the file exists, a message window appears with the confirmation
             # If something goes wrong while saving or the contour, the path or the filename are missing then a error message appears.
             if self.contour is not None:
-                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_framewidth,self.scaling_frameheight,self.prefs)
+                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_framewidth,self.scaling_frameheight,self.thickness,self.prefs)
                 success=os.path.exists(path_and_filename)
                 if success:
                     dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -876,10 +876,12 @@ class MainWindow():
         # Undistort and rectify the images
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
-        # The toolheigt function is called
-        self.height=Functions.toolheight(img_left,img_right,self.prefs['threshold'])
+        # The toolheight function is called
+        self.thickness=Functions.toolthickness(img_left,img_right,self.prefs['threshold'])
+        # Save the toolheight to the preferences
+        self.prefs['thickness']=self.thickness
         # Set the text of the label to the toolheight
-        self.label_height_value.setText(f'{self.height}mm') 
+        self.label_height_value.setText(f'{self.thickness}mm') 
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image
@@ -900,9 +902,9 @@ class MainWindow():
             elif self.comboBox_method.currentText() == 'TehChin':
                 self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'Spline':
-                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.toolwidth,self.toolheight)
             elif self.comboBox_method.currentText() == 'Spline TehChin':
-                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'],self.toolwidth,self.toolheight)
         # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None:    
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)

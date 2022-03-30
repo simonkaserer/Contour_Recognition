@@ -190,7 +190,7 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
     else:
         return None,None
 
-def extraction_spline(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
     # Extracts the contour and approximates it with a spline
     cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
@@ -229,7 +229,7 @@ def extraction_spline(cropped_image,every_nth_point:int,connectpoints:bool,toolw
     else:
         return None,None
 
-def extraction_spline_tehChin(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
    # Extracts the contour with the Teh Chin approximation and then approximates it with a spline
    cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
    if len(cnts)>0:
@@ -267,8 +267,14 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,connectpoints:bo
    else:
         return None,None
 
-def dxf_exporter(contour,path_and_name,scaling_width,scaling_height,prefs): 
-    # Exports the contour points and scales it 
+def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheight,thickness:int,prefs): # Exports the contour points and scales it
+    # Calculate the scaling factor
+    if prefs['use_heightscaling']:
+        factor_width= 1+prefs['scaling_width']*(1-(thickness/100))
+        factor_height= 1+prefs['scaling_height']*(1-(thickness/100))
+    else:
+        factor_width= 1+prefs['scaling_width']
+        factor_height= 1+prefs['scaling_height']
     # Create the file for ezdxf
     file=dxf.new('R2000')
     msp=file.modelspace()
@@ -278,13 +284,13 @@ def dxf_exporter(contour,path_and_name,scaling_width,scaling_height,prefs):
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
     for point in cnt:
-        points.append((point[0][0]/scaling_width*(1+prefs['scaling_width']),point[0][1]/scaling_height*(1+prefs['scaling_height'])))
+        points.append((point[0][0]/scaling_framewidth*factor_width,point[0][1]/scaling_frameheight*factor_height))
     # Add the points to the dxf geometry section
     msp.add_lwpolyline(points)
     # Save the file under the filename with absolute path
     file.saveas(path_and_name)
 
-def toolheight(img_left,img_right,threshold): # This function calculates the height of the tool
+def toolthickness(img_left,img_right,threshold:int): # This function calculates the thickness of the tool
     # The images get binarized with the passed threshold value:
     _,img_left=cv2.threshold(img_left,threshold,255,0)
     _,img_right=cv2.threshold(img_right,threshold,255,0)
@@ -324,6 +330,6 @@ def toolheight(img_left,img_right,threshold): # This function calculates the hei
         # depth = 882.5 * 75 / 10 = 6618.8 # mm
     depth_frame=882.5*75/disp_frame
     height_tool=depth_frame-(882.5*75/disp_tool)
-    # Round the heigt and convert it to an integer
+    # Round the thickness and convert it to an integer
     height_tool=int(round(height_tool,0))
     return height_tool
