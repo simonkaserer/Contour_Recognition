@@ -29,8 +29,8 @@ class MainWindow():
         self.warped_image=None
         self.cropped_image=None
         self.extraction_image=None
-        self.scaling_width=1.0
-        self.scaling_height=1.0
+        self.scaling_framewidth=1.0
+        self.scaling_frameheight=1.0
         self.height=0
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
@@ -157,11 +157,6 @@ class MainWindow():
         self.checkBox_connectpoints.stateChanged.connect(self.connectpoints_changed)
         self.checkBox_connectpoints.setChecked(self.prefs['connectpoints'])
         self.checkBox_connectpoints.setObjectName("checkBox_connectpoints")
-
-        self.checkBox_height = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox_height.setGeometry(QtCore.QRect(590, 360, 250, 28))
-        self.checkBox_height.setChecked(self.prefs['save_height'])
-        self.checkBox_height.setObjectName("checkBox_height")
 
         # Set up the text input lines for the filename, the path and the new item
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
@@ -345,6 +340,8 @@ class MainWindow():
         self.actionSave_Metadata.setObjectName("actionSave_Metadata")
         self.actionSave_Contour_Image = QtWidgets.QAction(ContourExtraction)
         self.actionSave_Contour_Image.setObjectName("actionSave_Contour_Image")
+        self.actionSettings= QtWidgets.QAction(ContourExtraction)
+        self.actionSettings.setObjectName("actionSettings")
         self.actionMethods = QtWidgets.QAction(ContourExtraction)
         self.actionMethods.setObjectName("actionMethods")
         self.actionGeneral = QtWidgets.QAction(ContourExtraction)
@@ -354,6 +351,7 @@ class MainWindow():
         self.menuLanguage.addAction(self.actionGerman)
         self.menuExtras.addAction(self.actionSave_Metadata)
         self.menuExtras.addAction(self.actionSave_Contour_Image)
+        self.menuExtras.addAction(self.actionSettings)
         self.menuBar.addAction(self.menuLanguage.menuAction())
         self.menuBar.addAction(self.menuExtras.menuAction())
         self.menuBar.addAction(self.menuInfo.menuAction())
@@ -363,6 +361,7 @@ class MainWindow():
         self.actionGerman.triggered.connect(self.lang_german)
         self.actionSave_Contour_Image.triggered.connect(self.save_img)
         self.actionSave_Metadata.triggered.connect(self.save_meta)
+        self.actionSettings.triggered.connect(self.open_settings)
         self.actionMethods.triggered.connect(self.info_methos)
         self.actionGeneral.triggered.connect(self.info_general)
         #################################################################################
@@ -422,7 +421,6 @@ class MainWindow():
             self.label_slider_factor.setText( "Faktor Epsilon")
             self.label_slider3.setText( "Punktverringerung")
             self.checkBox_connectpoints.setText( "Punkte verbinden")
-            self.checkBox_height.setText("Höhe in Dateiname speichern")
             self.label_filename.setText( "Dateiname")
             self.label_dxfEnding.setText( ".dxf")
             self.Button_openKeypad.setText( "Tastatur öffnen")
@@ -440,6 +438,7 @@ class MainWindow():
             self.label_hint.setText("Legen Sie das Werkzeug in die Mitte für die besten Ergebnisse")
             self.actionMethods.setText("Methoden")
             self.actionGeneral.setText("Allgemein")
+            self.actionSettings.setText("Einstellungen")
             self.label_height.setText("Höhe:")
         else:
             self.Button_Path.setText( "...")
@@ -452,7 +451,6 @@ class MainWindow():
             self.label_slider_factor.setText( "Factor Epsilon")
             self.label_slider3.setText( "Every nth point")
             self.checkBox_connectpoints.setText( "Connect points")
-            self.checkBox_height.setText("Save height in filename")
             self.label_filename.setText( "Filename")
             self.label_dxfEnding.setText( ".dxf")
             self.Button_openKeypad.setText( "Open Keypad")
@@ -471,6 +469,7 @@ class MainWindow():
             self.actionMethods.setText("Methods")
             self.actionGeneral.setText("General")
             self.label_height.setText("Height:")
+            self.actionSettings.setText("Settings")
         # These texts are not affected by the language change:
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
@@ -493,8 +492,8 @@ class MainWindow():
             self.prefs['toolheight']=self.toolheight
             self.prefs['x']=self.tool_pos_x
             self.prefs['y']=self.tool_pos_y
-            self.prefs['scaling_width']=self.scaling_width
-            self.prefs['scaling_height']=self.scaling_height
+            self.prefs['scaling_framewidth']=self.scaling_framewidth
+            self.prefs['scaling_frameheight']=self.scaling_frameheight
             path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
             with open(path,'w') as f:
                 yaml.safe_dump(self.prefs,f)
@@ -514,6 +513,28 @@ class MainWindow():
             edgeRgb=edgeRgbQueue.get()
             image=edgeRgb.getFrame()
             cv2.imwrite(pathrgb,image)
+    def open_settings(self):
+        self.Settings=QtWidgets.QDialog()
+        self.settings_ui=Settings()
+        self.settings_ui.setupUi(self.Settings,self.language,self.prefs)
+        self.Settings.show()
+        # Set the scaling value labels to the current value
+        self.settings_ui.label_value_slider_width.setText(str(round(self.prefs['scaling_width'],1))+'%')
+        self.settings_ui.label_value_slider_height.setText(str(round(self.prefs['scaling_height'],1))+'%')
+        self.settings_ui.checkBox_height.stateChanged.connect(self.checkbox_height_changed)
+        self.settings_ui.checkBox_heightscaling.stateChanged.connect(self.checkbox_heightscaling_changed)
+        self.settings_ui.slider_scaling_width.valueChanged.connect(self.slider_scaling_width_changed)
+        self.settings_ui.slider_scaling_height.valueChanged.connect(self.slider_scaling_height_changed)
+    def slider_scaling_width_changed(self): # Changes the value in the preferences according to the current value
+        self.prefs['scaling_width']=(self.settings_ui.slider_scaling_width.value()-50)*0.2
+        self.settings_ui.label_value_slider_width.setText(str(round(self.prefs['scaling_width'],1))+'%')
+    def slider_scaling_height_changed(self): # Changes the value in the preferences according to the current value
+        self.prefs['scaling_height']=(self.settings_ui.slider_scaling_height.value()-50)*0.2
+        self.settings_ui.label_value_slider_height.setText(str(round(self.prefs['scaling_height'],1))+'%')
+    def checkbox_heightscaling_changed(self): # Saves the status of the checkbox to the preferences
+        self.prefs['use_heightscaling']=self.settings_ui.checkBox_heightscaling.isChecked()
+    def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
+        self.prefs['save_height']=self.settings_ui.checkBox_height.isChecked()
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
@@ -726,7 +747,7 @@ class MainWindow():
         if self.lineEdit_newItem.text() != '':
             self.Dialog = QtWidgets.QDialog()
             self.ui = Dialog()
-            self.ui.setupUi(self.Dialog,self.language)
+            self.ui.setupUi(self.Dialog,self.language,self.prefs)
             self.Dialog.show()
             self.ui.Button_pliers.clicked.connect(self.on_button_savePliers)
             self.ui.Button_screwdrivers.clicked.connect(self.on_button_saveScrewdrivers)
@@ -753,7 +774,7 @@ class MainWindow():
                 self.button_savedxf.setEnabled(False)
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
-            if self.checkBox_height.isChecked():
+            if self.prefs['save_height'] is True:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.height}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
@@ -762,7 +783,7 @@ class MainWindow():
             # The dxf_exporter function is called and after a check if the file exists, a message window appears with the confirmation
             # If something goes wrong while saving or the contour, the path or the filename are missing then a error message appears.
             if self.contour is not None:
-                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_width,self.scaling_height)
+                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_framewidth,self.scaling_frameheight,self.prefs)
                 success=os.path.exists(path_and_filename)
                 if success:
                     dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -789,7 +810,7 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
@@ -797,7 +818,6 @@ class MainWindow():
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
-        self.prefs['save_height']=self.checkBox_height.isChecked()
         # the with statement prevents the file from staying opened if a exception occurs during the saving process
         with open('prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
@@ -827,7 +847,6 @@ class MainWindow():
             self.checkBox_connectpoints.show()
         
         self.process()
-
     def update_frameheight(self,height): # This function is called when the worker class in the seperate thread emits the values of the frameheight
         self.frameheight=height
     def update_framewidth(self,width): # This function is called when the worker class in the seperate thread emits the values of the framewidth
@@ -841,8 +860,8 @@ class MainWindow():
                 frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
                 img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
                 self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-                self.scaling_height=float(self.frameheight/550)
-                self.scaling_width=float(self.framewidth/550)
+                self.scaling_frameheight=float(self.frameheight/550)
+                self.scaling_framewidth=float(self.framewidth/550)
         # Activate the button if a processable image was warped
         if self.warped_image is not None:      
             self.button_getContour.setEnabled(True)
@@ -1044,6 +1063,72 @@ class Dialog(object): # Definition of the dialog class for the filename piece sa
             self.Button_numbers.setText("Numbers")
             self.Butto_misc.setText("Tools misc")
             self.Button_custom.setText("Custom")
+class Settings(object): # Definition of the settings class 
+    def __init__(self):
+        super(Settings,self).__init__()
+        
+    def setupUi(self, Settings,language,prefs): # Here the appearance of the dialog is created
+        self.language=language
+        Settings.setWindowModality(QtCore.Qt.NonModal)
+        Settings.resize(300, 360)
+        # The title is named according to the language chosen
+        if self.language =='German':
+            Settings.setWindowTitle("Einstellungen")
+        else:
+            Settings.setWindowTitle("Settings")
+        self.widget = QtWidgets.QWidget(Settings)
+        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 301))
+        # Add the widgets to the page:
+        self.checkBox_height = QtWidgets.QCheckBox(self.widget)
+        self.checkBox_height.setGeometry(QtCore.QRect(10, 20, 250, 28))
+        self.checkBox_height.setChecked(prefs['save_height'])
+        # Add a checkbox for using the height to scale the contour
+        self.checkBox_heightscaling=QtWidgets.QCheckBox(self.widget)
+        self.checkBox_heightscaling.setGeometry(QtCore.QRect(10,55,250,28))
+        self.checkBox_heightscaling.setChecked(prefs['use_heightscaling'])
+        # Add a slider for the width scaling
+        self.slider_scaling_width=QtWidgets.QSlider(self.widget)
+        self.slider_scaling_width.setGeometry(QtCore.QRect(10,110,200,40))
+        self.slider_scaling_width.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_scaling_width.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
+        self.slider_scaling_width.setMinimum(0) 
+        self.slider_scaling_width.setMaximum(100)
+        self.slider_scaling_width.setValue(int(prefs['scaling_width']/0.2)+50)
+        # Add a label fot the width slider
+        self.label_slider_scaling_width=QtWidgets.QLabel(self.widget)
+        self.label_slider_scaling_width.setGeometry(QtCore.QRect(10,90,250,20))
+        # Add a label for the value of the width slider
+        self.label_value_slider_width=QtWidgets.QLabel(self.widget)
+        self.label_value_slider_width.setGeometry(QtCore.QRect(210,110,60,40))
+        # Add a slider for the height scaling
+        self.slider_scaling_height=QtWidgets.QSlider(self.widget)
+        self.slider_scaling_height.setGeometry(QtCore.QRect(10,170,200,40))
+        self.slider_scaling_height.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_scaling_height.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
+        self.slider_scaling_height.setMinimum(0) 
+        self.slider_scaling_height.setMaximum(100)
+        self.slider_scaling_height.setValue(int(prefs['scaling_height']/0.2+50))
+        # Add a label for the value of the height slider
+        self.label_value_slider_height=QtWidgets.QLabel(self.widget)
+        self.label_value_slider_height.setGeometry(QtCore.QRect(210,170,60,40))
+        # Add a label for the height slider
+        self.label_slider_scaling_height=QtWidgets.QLabel(self.widget)
+        self.label_slider_scaling_height.setGeometry(QtCore.QRect(10,150,250,20))
+        # The GUI is labelled in the chosen language in this seperate function
+        self.retranslateUi(self.language)
+        QtCore.QMetaObject.connectSlotsByName(Settings)
+
+    def retranslateUi(self, language): # Labels the GUI according to the passed language
+        if language == 'German':
+            self.checkBox_height.setText("Höhe in Dateiname speichern")
+            self.checkBox_heightscaling.setText("Höhe für Skalierung verwenden")
+            self.label_slider_scaling_width.setText("Skalierung Breite")
+            self.label_slider_scaling_height.setText("Skalierung Höhe")
+        else:
+            self.checkBox_height.setText("Save height in filename")
+            self.checkBox_heightscaling.setText("Use height for scaling")
+            self.label_slider_scaling_width.setText("Scaling widht")
+            self.label_slider_scaling_height.setText("Scaling height")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 
