@@ -267,7 +267,7 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,connectpoints:bo
    else:
         return None,None
 
-def dxf_exporter(contour,path_and_name,scaling_width,scaling_height): 
+def dxf_exporter(contour,path_and_name,scaling_width,scaling_height,prefs): 
     # Exports the contour points and scales it 
     # Create the file for ezdxf
     file=dxf.new('R2000')
@@ -278,7 +278,7 @@ def dxf_exporter(contour,path_and_name,scaling_width,scaling_height):
     #add the first entry of the contour to the end for a closed contour in dxf
     cnt.append(cnt[0])
     for point in cnt:
-        points.append((point[0][0]/scaling_width,point[0][1]/scaling_height))
+        points.append((point[0][0]/scaling_width*(1+prefs['scaling_width']),point[0][1]/scaling_height*(1+prefs['scaling_height'])))
     # Add the points to the dxf geometry section
     msp.add_lwpolyline(points)
     # Save the file under the filename with absolute path
