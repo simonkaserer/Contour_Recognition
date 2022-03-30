@@ -513,7 +513,7 @@ class MainWindow():
             edgeRgb=edgeRgbQueue.get()
             image=edgeRgb.getFrame()
             cv2.imwrite(pathrgb,image)
-    def open_settings(self):
+    def open_settings(self): # This method initiates the Settings widget
         self.Settings=QtWidgets.QDialog()
         self.settings_ui=Settings()
         self.settings_ui.setupUi(self.Settings,self.language,self.prefs)
@@ -747,7 +747,7 @@ class MainWindow():
         if self.lineEdit_newItem.text() != '':
             self.Dialog = QtWidgets.QDialog()
             self.ui = Dialog()
-            self.ui.setupUi(self.Dialog,self.language,self.prefs)
+            self.ui.setupUi(self.Dialog,self.language)
             self.Dialog.show()
             self.ui.Button_pliers.clicked.connect(self.on_button_savePliers)
             self.ui.Button_screwdrivers.clicked.connect(self.on_button_saveScrewdrivers)
@@ -1244,7 +1244,7 @@ if __name__ == '__main__': # Main program
 
         # Save the preferences and the items of the ComboBoxes before closing
         app.aboutToQuit.connect(gui.closeEvent)
-        # Start the execution of the GUI
+        # Start the execution of the GUI  
         sys.exit(app.exec_())
             
             
