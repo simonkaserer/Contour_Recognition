@@ -1206,7 +1206,7 @@ if __name__ == '__main__': # Main program
     xoutEdgeRgb.setStreamName(edgeRgbStr)
     xinEdgeCfg.setStreamName(edgeCfgStr)
 
-    # Properties of the cameras
+    # Properties of the cameras (inputControl)
     camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
     camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
     monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
