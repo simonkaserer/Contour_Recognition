@@ -962,7 +962,7 @@ class MainWindow():
                         'Sobald der Rahmen der beleuchteten Fläche erkannt wird, kann die Kontur extrahiert werden. Dazu wird der Knopf Kontur anzeigen gedrückt.'
                         'Wird eine Kontur erkannt, so wird sie angezeigt. \nÜber die Schieberegler kann der Grenzwert der Binarisierung eingestellt werden: Dieser ermöglicht das anpassen an durchsichtige oder helle Werkzeuge.\n'
                         'Mit der Punkteverringerung kann die Anzahl der verwendeten Punkte verringert werden. Dadurch verringert sich aber auch die Genauigkeit.\n'
-                        '\nWird nun ein Speicherpfad ausgewählt und ein Dateiname vergeben, kann die Kontur im .dxf-Format gespeichert werden'
+                        '\nWird nun ein Speicherpfad ausgewählt und ein Dateiname vergeben, kann die Kontur im .dxf-Format gespeichert werden. '
                         'Die Auswahlboxen beinhalten Vorschläge für die Namensgebung und damit kann ein Dateiname zusammengesetzt werden. Zum Beispiel: KombizangeKlein3 durch auswählen der jeweiligen Bausteine.'
                         'Auch kann der Dateiname direkt mit der Tastatur/Bildschirmtastatur eingegeben werden. Sollte ein neuer Textbaustein gespeichert werden, kann dieser in die dafür vorgesehene Zeile geschrieben werden und per Drag-and-Drop in die jeweilige Box'
                         'hinzugefügt werden. Auch durch das betätigen des + Knopfes kann der Textbaustein zur gewünschten Gruppe hinzugefügt werden.\n'
