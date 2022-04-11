@@ -78,7 +78,7 @@ with dai.Device(pipeline) as device:
         # Show the frame
         cv2.imshow(edgeLeftStr, edgeLeftFrame)
         cv2.imshow(edgeRightStr, edgeRightFrame)
-        cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(600,450)))
+        cv2.imshow(edgeRgbStr, cv2.resize(edgeRgbFrame,(600,450))) 
 
         key = cv2.waitKey(1)
         if key == ord('q'):
