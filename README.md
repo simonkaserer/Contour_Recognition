@@ -6,3 +6,4 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 * OAK-D camera
 * 10" Touch Display
 * Homogeneous backlight
+![Construction](/Construction.png)
