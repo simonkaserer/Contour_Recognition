@@ -315,11 +315,9 @@ def toolthickness(img_left,img_right,threshold:int): # This function calculates 
     # Calculate the moments for the tool contours
     ML=cv2.moments(toolL)
     MR=cv2.moments(toolR)
-    # Find the centroids of the tools by divideing the spatial moments m10 and m01 by m00 which is the area
+    # Find the centroids of the tools by divideing the spatial moment m10 by m00 which is the area
     xL=ML['m10']/ML['m00']
-    yL=ML['m01']/ML['m00']
     xR=MR['m10']/MR['m00']
-    yR=MR['m01']/MR['m00']
     # Calculate the value of the disparity of the tool
     disp_tool=abs(xL-xR)    
     # And convert the disparity from pixel to mm with the formulas:
