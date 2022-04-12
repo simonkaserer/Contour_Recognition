@@ -269,7 +269,7 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,to
 
 def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheight,thickness:int,prefs): # Exports the contour points and scales it
     # Calculate the scaling factor
-    if prefs['use_heightscaling']:
+    if prefs['use_thickness_scaling']:
         factor_width= 1+prefs['scaling_width']*(1-(thickness/100))
         factor_height= 1+prefs['scaling_height']*(1-(thickness/100))
     else:
