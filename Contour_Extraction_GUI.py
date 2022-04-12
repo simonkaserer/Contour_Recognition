@@ -439,7 +439,7 @@ class MainWindow():
             self.actionMethods.setText("Methoden")
             self.actionGeneral.setText("Allgemein")
             self.actionSettings.setText("Einstellungen")
-            self.label_height.setText("Höhe:")
+            self.label_height.setText("Dicke:")
         else:
             self.Button_Path.setText( "...")
             self.ContourView.setToolTip( "Contour view")
@@ -468,7 +468,7 @@ class MainWindow():
             self.label_hint.setText("For best results place the tool in the middle of the plate")
             self.actionMethods.setText("Methods")
             self.actionGeneral.setText("General")
-            self.label_height.setText("Height:")
+            self.label_height.setText("Thickness:")
             self.actionSettings.setText("Settings")
         # These texts are not affected by the language change:
         self.menuLanguage.setTitle( "Language")
@@ -494,6 +494,7 @@ class MainWindow():
             self.prefs['y']=self.tool_pos_y
             self.prefs['scaling_framewidth']=self.scaling_framewidth
             self.prefs['scaling_frameheight']=self.scaling_frameheight
+            self.prefs['toolthickness']=self.thickness
             path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
             with open(path,'w') as f:
                 yaml.safe_dump(self.prefs,f)
@@ -1124,13 +1125,13 @@ class Settings(object): # Definition of the settings class
 
     def retranslateUi(self, language): # Labels the GUI according to the passed language
         if language == 'German':
-            self.checkBox_height.setText("Höhe in Dateiname speichern")
-            self.checkBox_heightscaling.setText("Höhe für Skalierung verwenden")
+            self.checkBox_height.setText("Dicke in Dateiname speichern")
+            self.checkBox_heightscaling.setText("Dicke für Skalierung verwenden")
             self.label_slider_scaling_width.setText("Skalierung Breite")
             self.label_slider_scaling_height.setText("Skalierung Höhe")
         else:
-            self.checkBox_height.setText("Save height in filename")
-            self.checkBox_heightscaling.setText("Use height for scaling")
+            self.checkBox_height.setText("Save thickness in filename")
+            self.checkBox_heightscaling.setText("Use thickness for scaling")
             self.label_slider_scaling_width.setText("Scaling widht")
             self.label_slider_scaling_height.setText("Scaling height")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
