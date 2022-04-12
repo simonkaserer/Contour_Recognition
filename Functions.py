@@ -330,4 +330,7 @@ def toolthickness(img_left,img_right,threshold:int): # This function calculates 
     height_tool=depth_frame-(882.5*75/disp_tool)
     # Round the thickness and convert it to an integer
     height_tool=int(round(height_tool,0))
+    # If the integer is smaller than 1 the value given back is set to 0:
+    if height_tool <1:
+        height_tool=0
     return height_tool
