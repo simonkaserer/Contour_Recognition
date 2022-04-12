@@ -525,7 +525,7 @@ class MainWindow():
         self.settings_ui.label_value_slider_width.setText(str(round(self.prefs['scaling_width'],1))+'%')
         self.settings_ui.label_value_slider_height.setText(str(round(self.prefs['scaling_height'],1))+'%')
         self.settings_ui.checkBox_height.stateChanged.connect(self.checkbox_height_changed)
-        self.settings_ui.checkBox_heightscaling.stateChanged.connect(self.checkbox_heightscaling_changed)
+        self.settings_ui.checkBox_thickness_scaling.stateChanged.connect(self.checkbox_heightscaling_changed)
         self.settings_ui.slider_scaling_width.valueChanged.connect(self.slider_scaling_width_changed)
         self.settings_ui.slider_scaling_height.valueChanged.connect(self.slider_scaling_height_changed)
     def slider_scaling_width_changed(self): # Changes the value in the preferences according to the current value
@@ -535,7 +535,7 @@ class MainWindow():
         self.prefs['scaling_height']=(self.settings_ui.slider_scaling_height.value()-50)*0.2
         self.settings_ui.label_value_slider_height.setText(str(round(self.prefs['scaling_height'],1))+'%')
     def checkbox_heightscaling_changed(self): # Saves the status of the checkbox to the preferences
-        self.prefs['use_heightscaling']=self.settings_ui.checkBox_heightscaling.isChecked()
+        self.prefs['use_thickness_scaling']=self.settings_ui.checkBox_thickness_scaling.isChecked()
     def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
         self.prefs['save_height']=self.settings_ui.checkBox_height.isChecked()
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
@@ -1088,9 +1088,9 @@ class Settings(object): # Definition of the settings class
         self.checkBox_height.setGeometry(QtCore.QRect(10, 20, 250, 28))
         self.checkBox_height.setChecked(prefs['save_height'])
         # Add a checkbox for using the height to scale the contour
-        self.checkBox_heightscaling=QtWidgets.QCheckBox(self.widget)
-        self.checkBox_heightscaling.setGeometry(QtCore.QRect(10,55,250,28))
-        self.checkBox_heightscaling.setChecked(prefs['use_heightscaling'])
+        self.checkBox_thickness_scaling=QtWidgets.QCheckBox(self.widget)
+        self.checkBox_thickness_scaling.setGeometry(QtCore.QRect(10,55,250,28))
+        self.checkBox_thickness_scaling.setChecked(prefs['use_heightscaling'])
         # Add a slider for the width scaling
         self.slider_scaling_width=QtWidgets.QSlider(self.widget)
         self.slider_scaling_width.setGeometry(QtCore.QRect(10,110,200,40))
@@ -1126,12 +1126,12 @@ class Settings(object): # Definition of the settings class
     def retranslateUi(self, language): # Labels the GUI according to the passed language
         if language == 'German':
             self.checkBox_height.setText("Dicke in Dateiname speichern")
-            self.checkBox_heightscaling.setText("Dicke für Skalierung verwenden")
+            self.checkBox_thickness_scaling.setText("Dicke für Skalierung verwenden")
             self.label_slider_scaling_width.setText("Skalierung Breite")
             self.label_slider_scaling_height.setText("Skalierung Höhe")
         else:
             self.checkBox_height.setText("Save thickness in filename")
-            self.checkBox_heightscaling.setText("Use thickness for scaling")
+            self.checkBox_thickness_scaling.setText("Use thickness for scaling")
             self.label_slider_scaling_width.setText("Scaling widht")
             self.label_slider_scaling_height.setText("Scaling height")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
