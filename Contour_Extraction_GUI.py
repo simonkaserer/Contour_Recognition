@@ -500,10 +500,12 @@ class MainWindow():
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             path=self.lineEdit_Path.text()+'/'+self.filename+'Cropped.jpg'
+            pathwarped=self.lineEdit_Path.text()+'/'+self.filename+'Warped.jpg'
             pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
             pathright=self.lineEdit_Path.text()+'/'+self.filename+'Right.jpg'
             pathrgb=self.lineEdit_Path.text()+'/'+self.filename+'Rgb.jpg'
             cv2.imwrite(path,self.cropped_image)
+            cv2.imwrite(pathwarped,self.warped_image)
             edgeLeft = edgeLeftQueue.get()
             image=edgeLeft.getFrame()
             cv2.imwrite(pathleft,image)
