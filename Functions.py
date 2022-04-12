@@ -85,7 +85,7 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
         # Draw the contour
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
@@ -114,7 +114,7 @@ def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,tool
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
         # Draw the contour
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
@@ -214,7 +214,7 @@ def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight
         # Rearrange the points to fit the np.array format
         cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
         # create a black background
-        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
         # Draw the contour
         img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),2)
         # Scale the image to the width or height of the Contour View window
@@ -252,7 +252,7 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,to
       # Rearrange the points in np.array format
       cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
       # create a black background
-      inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+      inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
       # Draw the contour
       img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),2)
       # Scale the image to the width or height of the Contour View window
