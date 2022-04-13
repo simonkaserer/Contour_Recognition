@@ -4,6 +4,9 @@ import ezdxf as dxf
 from scipy.interpolate import interp1d
 
 def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool): # This function finds the corners of the lamp perimeter and warps it to a straight image
+    # Parameters: img = captured image as numpy array, threshold_value = value for threshold from 0 to 255, border_offset_px = amount of pixel that are cropped from the 
+    # border, show_outer_edge = for debugging (shows the whole picture with the found shading board highlighted)
+    
     # Threshold the image to binarize it
     _,thresh=cv2.threshold(img,threshold_value,255,0)
     # Find the contours in the image to select the biggest one
@@ -53,6 +56,8 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
         return None,None,None,None
 
 def crop_image(warped_image): # Search a tool contour and crop the image by using the minAreaRect function of OpenCV
+    # warped_image = image in npy array that is already warped and cropped to the inside of the shading board
+    
     # Look for the contour of the tool:
     cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
@@ -72,6 +77,10 @@ def crop_image(warped_image): # Search a tool contour and crop the image by usin
 
 def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
     # This function extracts the contour with the Douglas Peucker Algorithm
+    # cropped_image = image containing only the tool, factor_epsilon = factor for the DP algorithm, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+    # connectpoints = draw the contour as closed line or only the points
+    
+    # Find the contour of the outer perimeter
     cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     # Find the biggest area contour
     if len(cnts)>0:
@@ -80,19 +89,19 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
         epsilon=factor_epsilon*cv2.arcLength(cnt,True)
         # Find the contour of the tool
         cont=cv2.approxPolyDP(cnt,epsilon,True)
-        # Decimate the points if selected via the slider
+        # Decimate the points according to the slider
         cont=cont.tolist()
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
+        height,width,_=cropped_image.shape
+        inv=np.zeros((int(height),int(width),3),dtype='uint8')
         # Draw the contour
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
             img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) #only points
         # Scale the image to the width or height of the Contour View window
-        height,width,_=img_cont.shape
         if width > height:
             scale=500/width
         else:
@@ -105,6 +114,10 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
 
 def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
     # Extracts the contour with the Teh Chin approximation
+    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+    # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
+    
+    # Look for the outer perimeter of the contour with the Teh Chin chain approximation
     cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
     if len(cnts)>0:
         # Find the maximum area contour
@@ -134,6 +147,9 @@ def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,tool
 
 def extraction_convexHull(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int): 
     # This function creates the hull of the tool
+    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+    # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
+    
     cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         # Find the maximum area contour
@@ -164,6 +180,9 @@ def extraction_convexHull(cropped_image,every_nth_point:int,connectpoints:bool,t
 
 def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
     # Find the rotated and cropped tool contour with no chain approximation 
+    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+    # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
+    
     cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
@@ -192,6 +211,9 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
 
 def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
     # Extracts the contour and approximates it with a spline
+    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+    # toolwidth & toolheight = size of the tool
+    
     cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
@@ -231,6 +253,9 @@ def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight
 
 def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
    # Extracts the contour with the Teh Chin approximation and then approximates it with a spline
+   # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
+   # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
+    
    cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_TC89_L1)
    if len(cnts)>0:
       cnt=max(cnts,key=cv2.contourArea)
@@ -268,6 +293,9 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,to
         return None,None
 
 def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheight,thickness:int,prefs): # Exports the contour points and scales it
+    # contour = array of contour points, path_and_name = the absolute path to the desired file, scaling_framewidth & scaling_frameheight = scaling factors
+    # for the global scaling in the two dimensions, thickness = thickness in mm, prefs = preferences dictionary that stores the metadata of the image and settings
+    
     # Calculate the scaling factor
     if prefs['use_thickness_scaling']:
         factor_width= 1+prefs['scaling_width']*(1-(thickness/100))
