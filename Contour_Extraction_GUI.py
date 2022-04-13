@@ -500,12 +500,14 @@ class MainWindow():
                 yaml.safe_dump(self.prefs,f)
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            path=self.lineEdit_Path.text()+'/'+self.filename+'Cropped.jpg'
+            pathcnt=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.jpg'
+            pathcropped=self.lineEdit_Path.text()+'/'+self.filename+'Cropped.jpg'
             pathwarped=self.lineEdit_Path.text()+'/'+self.filename+'Warped.jpg'
             pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
             pathright=self.lineEdit_Path.text()+'/'+self.filename+'Right.jpg'
             pathrgb=self.lineEdit_Path.text()+'/'+self.filename+'Rgb.jpg'
-            cv2.imwrite(path,self.cropped_image)
+            cv2.imwrite(pathcnt,self.contour_image)
+            cv2.imwrite(pathcropped,self.cropped_image)
             cv2.imwrite(pathwarped,self.warped_image)
             edgeLeft = edgeLeftQueue.get()
             image=edgeLeft.getFrame()
@@ -909,7 +911,8 @@ class MainWindow():
             elif self.comboBox_method.currentText() == 'Spline TehChin':
                 self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'],self.toolwidth,self.toolheight)
         # If a contour is found, it is showed on the big contour view panel
-        if contour_image is not None:    
+        if contour_image is not None: 
+            self.contour_image=contour_image
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
