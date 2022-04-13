@@ -600,28 +600,28 @@ class MainWindow():
                 self.items_german=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.items_german={
-            'Zangen':['','Kombizange','Crimpzange'],
-            'Schraubenzieher':['','Pozi','Philips','Schlitz'],
-            'Messwerkzeuge':['','Geodreieck','Rollmaßband','Lineal'],
-            'Diverse':[''],
+            'Zangen':['','Kombizange','Crimpzange','Seitenschneider','Rohrzange','Spitzzange'],
+            'Schraubenzieher':['','Pozi','Philips','Schlitz','Torx','Kreuzschlitz'],
+            'Messwerkzeuge':['','Geodreieck','Rollmaßband','Lineal','Messschieber'],
+            'Diverse':['','Klebefilmhalter'],
             'Spezial':[''],
             'Teileanzahl':['','2teilig','3teilig','4teilig'],
             'Groessen':['','Klein','Mittel','Groß'],
-            'Nummern':['','1','2','3','4','5','6','7','8','9','10']}  
+            'Nummern':['','1','2','3','4','5','6','7','8','9','10','15','20','25','30','35','40','45','50']}  
     
         try:
             with open('items_english.yaml','r') as f:
                 self.items_english=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.items_english={
-            'pliers':['','CombinationPliers','CrimpingPliers'],
-            'screwdrivers':['','PoziDriver','PhilipsDriver','FlatDriver'],
-            'meas_tools':['','Ruler','Measuringtape','TriangleRuler'],
+            'pliers':['','CombinationPliers','CrimpingPliers','CuttingPliers','PlumbingPliers','NeedleNosePliers'],
+            'screwdrivers':['','Pozi','Philips','Flat','Torx','FlatPozi','Hex'],
+            'meas_tools':['','Ruler','Measuringtape','TriangleRuler','VernierCalliper'],
             'tools_misc':[''],
             'custom':[''],
             'number_parts':['','2pieces','3pieces','4pieces'],
             'sizes':['','Small','Medium','Large'],
-            'numbers':['','1','2','3','4','5','6','7','8','9','10']} 
+            'numbers':['','1','2','3','4','5','6','7','8','9','10','15','20','25','30','35','40','45','50']} 
     def sort_items_boxes(self): # Sorts the items in a alphabetical way. The numbers are extracted
         # and every non-numeric item gets deleted to ensure that the sorting with numeric key is done properly
         # The empty string '' is inserted in the first position that the combobox has the empty string as default item
