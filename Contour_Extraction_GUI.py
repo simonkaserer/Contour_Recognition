@@ -498,6 +498,9 @@ class MainWindow():
             path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
             with open(path,'w') as f:
                 yaml.safe_dump(self.prefs,f)
+            # Save the contour array into a textfile
+            path=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.txt'
+            np.savetxt(path,self.contour)
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             pathcnt=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.jpg'
