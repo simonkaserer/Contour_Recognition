@@ -826,7 +826,7 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0,'use_thickness_scaling':False}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
