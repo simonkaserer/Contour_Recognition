@@ -46,6 +46,7 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             # Warp the image using the warpPerspective function with the Area interpolation flag
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
+            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
             # crop the image to remove the outer edge
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
             # Return the warped image along with the framsize and the points of the input images
@@ -75,7 +76,7 @@ def crop_image(warped_image): # Search a tool contour and crop the image by usin
     else:
         return None,None,None,None,None
 
-def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,connectpoints:bool):
     # This function extracts the contour with the Douglas Peucker Algorithm
     # cropped_image = image containing only the tool, factor_epsilon = factor for the DP algorithm, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # connectpoints = draw the contour as closed line or only the points
@@ -94,7 +95,7 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        height,width,_=cropped_image.shape
+        height,width=cropped_image.shape
         inv=np.zeros((int(height),int(width),3),dtype='uint8')
         # Draw the contour
         if connectpoints:
@@ -112,7 +113,7 @@ def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,con
     else:
         return None,None
 
-def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool):
     # Extracts the contour with the Teh Chin approximation
     # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
@@ -127,14 +128,14 @@ def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,tool
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
+        height,width=cropped_image.shape
+        inv=np.zeros((int(height),int(width),3),dtype='uint8')
         # Draw the contour
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
             img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) 
         # Scale the image to the width or height of the Contour View window
-        height,width,_=img_cont.shape
         if width > height:
             scale=500/width
         else:
@@ -145,7 +146,7 @@ def extraction_TehChin(cropped_image,every_nth_point:int,connectpoints:bool,tool
     else:
         return None,None
 
-def extraction_convexHull(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int): 
+def extraction_convexHull(cropped_image,every_nth_point:int,connectpoints:bool): 
     # This function creates the hull of the tool
     # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
@@ -178,12 +179,12 @@ def extraction_convexHull(cropped_image,every_nth_point:int,connectpoints:bool,t
     else:
         return None,None
 
-def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwidth:int,toolheight:int):
+def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool):
     # Find the rotated and cropped tool contour with no chain approximation 
     # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
     
-    cnts,hierarchy=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
         cont=cnt.tolist()
@@ -191,14 +192,14 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
         cont=cont[::every_nth_point]
         tool_contour=np.array(cont)
         # create a black background
-        inv=np.zeros((int(toolheight+2),int(toolwidth+2),3),dtype='uint8')
+        height,width=cropped_image.shape
+        inv=np.zeros((int(height),int(width),3),dtype='uint8')
         # Draw the points connected or unconnected according to the checkbox parameter
         if connectpoints:
             img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
         else:
             img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) #only points
         # Scale the image to the width or height of the Contour View window
-        height,width,_=img_cont.shape
         if width > height:
             scale=500/width
         else:
@@ -209,7 +210,7 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool,toolwid
     else:
         return None,None
 
-def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
+def extraction_spline(cropped_image,every_nth_point:int):
     # Extracts the contour and approximates it with a spline
     # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # toolwidth & toolheight = size of the tool
@@ -236,11 +237,11 @@ def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight
         # Rearrange the points to fit the np.array format
         cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
         # create a black background
-        inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
+        height,width=cropped_image.shape
+        inv=np.zeros((int(height),int(width),3),dtype='uint8')
         # Draw the contour
         img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),2)
         # Scale the image to the width or height of the Contour View window
-        height,width,_=img_cont.shape
         if width > height:
                 scale=500/width
         else:
@@ -251,7 +252,7 @@ def extraction_spline(cropped_image,every_nth_point:int,toolwidth:int,toolheight
     else:
         return None,None
 
-def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,toolheight:int):
+def extraction_spline_tehChin(cropped_image,every_nth_point:int):
    # Extracts the contour with the Teh Chin approximation and then approximates it with a spline
    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
    # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
@@ -277,11 +278,11 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int,toolwidth:int,to
       # Rearrange the points in np.array format
       cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
       # create a black background
-      inv=np.zeros((int(toolheight),int(toolwidth),3),dtype='uint8')
+      height,width=cropped_image.shape
+      inv=np.zeros((int(height),int(width),3),dtype='uint8')
       # Draw the contour
       img_cont=cv2.drawContours(inv,[cnt],-1,(0,255,0),2)
       # Scale the image to the width or height of the Contour View window
-      height,width,_=img_cont.shape
       if width > height:
             scale=500/width
       else:
