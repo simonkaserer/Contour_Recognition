@@ -32,6 +32,7 @@ class MainWindow():
         self.scaling_framewidth=1.0
         self.scaling_frameheight=1.0
         self.thickness=0
+        self.toolCentered=False
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
@@ -229,12 +230,12 @@ class MainWindow():
         self.label_position.setObjectName("label_position")
         
         self.label_height_value =QtWidgets.QLabel(self.centralwidget)
-        self.label_height_value.setGeometry(QtCore.QRect(650,385,141,28))
+        self.label_height_value.setGeometry(QtCore.QRect(695,385,141,28))
         self.label_height_value.setText(f'{round(self.thickness,0)}mm')
         self.label_height_value.setObjectName("label_height")
 
         self.label_height =QtWidgets.QLabel(self.centralwidget)
-        self.label_height.setGeometry(QtCore.QRect(590,385,60,28))
+        self.label_height.setGeometry(QtCore.QRect(590,385,100,28))
         self.label_height.setObjectName("label_height")
 
         # The filename comboboxes are placed into a grid layout for a tidy look
@@ -378,6 +379,13 @@ class MainWindow():
             self.checkBox_connectpoints.hide()
         else:
             self.checkBox_connectpoints.show()
+        if self.comboBox_method.currentText()=='ConvexHull':
+            self.slider_nth_point.hide()
+            self.label_slider3.hide()
+        else:
+            self.slider_nth_point.show()
+            self.label_slider3.show()
+        
         # Deactivate the saving- and the get contour- Button:
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
@@ -500,7 +508,7 @@ class MainWindow():
                 yaml.safe_dump(self.prefs,f)
             # Save the contour array into a textfile
             path=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.txt'
-            np.savetxt(path,self.contour)
+            np.savetxt(path,self.contour[0])
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             pathcnt=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.jpg'
@@ -853,7 +861,12 @@ class MainWindow():
             self.checkBox_connectpoints.hide()
         else:
             self.checkBox_connectpoints.show()
-        
+        if self.comboBox_method.currentText()=='ConvexHull':
+            self.slider_nth_point.hide()
+            self.label_slider3.hide()
+        else:
+            self.slider_nth_point.show()
+            self.label_slider3.show()
         self.process()
     def update_frameheight(self,height): # This function is called when the worker class in the seperate thread emits the values of the frameheight
         self.frameheight=height
@@ -902,17 +915,17 @@ class MainWindow():
         contour_image=None
         if self.cropped_image is not None:
             if self.comboBox_method.currentText() == 'PolyDP':
-                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'NoApprox':
-                self.contour,contour_image=Functions.extraction_None(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_None(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'ConvexHull':
-                self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'TehChin':
-                self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked(),self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'Spline':
-                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'],self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'])
             elif self.comboBox_method.currentText() == 'Spline TehChin':
-                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'],self.toolwidth,self.toolheight)
+                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'])
         # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None: 
             self.contour_image=contour_image
@@ -922,28 +935,36 @@ class MainWindow():
             # Check if the tool is near the middle of the board and
             # give an information that the tool center is not in the middle:
             move_str=''
-            if self.tool_pos_x < self.framewidth/2-30:
+            if self.tool_pos_x < self.framewidth/2-20:
                 if self.language=='German':
                     move_str+="Nach rechts verschieben. "
                 else:
                     move_str+="Move towards the right. "
-            elif self.tool_pos_x > self.framewidth/2+30:
+                self.toolCentered=False
+            elif self.tool_pos_x > self.framewidth/2+20:
                 if self.language=='German':
                     move_str+="Nach links verschieben. "
                 else:
                     move_str+="Move towards the left. "
-            if self.tool_pos_y < self.frameheight/2-30:
+                self.toolCentered=False
+            if self.tool_pos_y < self.frameheight/2-20:
+                self.toolCentered=False
                 if self.language=='German':
                     move_str+="Nach unten verschieben."
                 else:
                     move_str+="Move towards the bottom."
-            elif self.tool_pos_y > self.frameheight/2+30:
+            elif self.tool_pos_y > self.frameheight/2+20:
+                self.toolCentered=False
                 if self.language=='German':
                     move_str+="Nach oben verschieben."
                 else:
                     move_str+="Move towards the top."
             else:
-                move_str=''
+                self.toolCentered=True
+                if self.language=='German':
+                    move_str+="Werkzeug ist zentriert."
+                else:
+                    move_str+="Tool is centered."
             self.label_position.setText(move_str)
     def info_methos(self): # Provides the user with information regarding the used methods when clicking on the info menu bar
         dlg=QtWidgets.QMessageBox(self.centralwidget)
