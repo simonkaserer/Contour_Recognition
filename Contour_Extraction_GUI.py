@@ -58,7 +58,6 @@ class MainWindow():
         self.ContourView.setGeometry(QtCore.QRect(40, 150, 500, 500))
         self.ContourView.setText("")
         self.ContourView.setScaledContents(False)
-        self.ContourView.setObjectName("ContourView")
 
         # The preview panel is also a label that gets filled with a picture
         self.Preview = QtWidgets.QLabel(self.centralwidget)
@@ -66,43 +65,35 @@ class MainWindow():
         self.Preview.setToolTip("Contour Preview")
         self.Preview.setText("")
         self.Preview.setScaledContents(True)
-        self.Preview.setObjectName("Preview")
 
         # Setup of the buttons:
         self.button_getContour = QtWidgets.QPushButton(self.centralwidget)
         self.button_getContour.setGeometry(QtCore.QRect(590, 420, 200, 30))
         self.button_getContour.clicked.connect(self.get_contour)
-        self.button_getContour.setObjectName("button_getContour")
         
         self.Button_Path = QtWidgets.QToolButton(self.centralwidget)
         self.Button_Path.setGeometry(QtCore.QRect(1222, 40, 28, 30))
         self.Button_Path.clicked.connect(self.open_folder)
-        self.Button_Path.setObjectName("Button_Path")
 
         self.button_savedxf = QtWidgets.QPushButton(self.centralwidget)
         self.button_savedxf.setGeometry(QtCore.QRect(1170, 590, 80, 60))
         self.button_savedxf.clicked.connect(self.save_dxf_button)
         self.button_savedxf.setStyleSheet("background-color:green")
-        self.button_savedxf.setObjectName("button_savedxf")
 
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_openKeypad.setGeometry(QtCore.QRect(40, 20, 150, 30))
-        self.Button_openKeypad.setObjectName("Button_openKeypad")
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_closeKeypad.setGeometry(QtCore.QRect(190, 20, 150, 30))
-        self.Button_closeKeypad.setObjectName("Button_closeKeypad")
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
         self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 80, 180, 30))
-        self.Button_resetFilename.setObjectName("Button_resetFilename")
         self.Button_resetFilename.clicked.connect(self.reset_filename)
 
         self.Button_addNewItem= QtWidgets.QPushButton(self.centralwidget)
         self.Button_addNewItem.setGeometry(QtCore.QRect(1180, 160, 30, 30))
-        self.Button_addNewItem.setObjectName("Button_addNewItem")
         font=QtGui.QFont()
         font.setPointSize(15)
         self.Button_addNewItem.setFont(font)
@@ -118,7 +109,6 @@ class MainWindow():
         self.slider_thresh.setMaximum(254)
         self.slider_thresh.setValue(self.prefs['threshold'])
         self.slider_thresh.valueChanged.connect(self.threshold_changed)
-        self.slider_thresh.setObjectName("slider_thresh")
 
         self.slider_factor = QtWidgets.QSlider(self.centralwidget)
         self.slider_factor.setGeometry(QtCore.QRect(590, 275, 236, 40))
@@ -127,7 +117,6 @@ class MainWindow():
         self.slider_factor.setMaximum(100)
         self.slider_factor.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_factor.valueChanged.connect(self.factor_changed)
-        self.slider_factor.setObjectName("Slider_factor")
 
         self.slider_nth_point = QtWidgets.QSlider(self.centralwidget)
         self.slider_nth_point.setGeometry(QtCore.QRect(590, 225, 236, 40))
@@ -137,12 +126,10 @@ class MainWindow():
         self.slider_nth_point.setValue(self.prefs['nth_point'])
         self.slider_nth_point.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_nth_point.valueChanged.connect(self.slider3_changed)
-        self.slider_nth_point.setObjectName("slider3")
 
         # Setup of the combobox for the method 
         self.comboBox_method = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_method.setGeometry(QtCore.QRect(590, 110, 236, 30))
-        self.comboBox_method.setObjectName("comboBox_method")
         self.comboBox_method.addItem('PolyDP')
         self.comboBox_method.addItem('NoApprox')
         self.comboBox_method.addItem('Hull')
@@ -157,18 +144,15 @@ class MainWindow():
         self.checkBox_connectpoints.setGeometry(QtCore.QRect(590, 320, 141, 28))
         self.checkBox_connectpoints.stateChanged.connect(self.connectpoints_changed)
         self.checkBox_connectpoints.setChecked(self.prefs['connectpoints'])
-        self.checkBox_connectpoints.setObjectName("checkBox_connectpoints")
 
         # Set up the text input lines for the filename, the path and the new item
         self.lineEdit_filename = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_filename.setGeometry(QtCore.QRect(880, 110, 340, 30))
         self.lineEdit_filename.textChanged.connect(self.filename_manual)
-        self.lineEdit_filename.setObjectName("lineEdit_filename")
 
         self.lineEdit_Path = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_Path.setGeometry(QtCore.QRect(590, 40, 630, 30)) 
         self.lineEdit_Path.setReadOnly(True) # Set the lineEdit to read only mode to avoid wrong paths typed in via keyboard
-        self.lineEdit_Path.setObjectName("lineEdit_Path")
 
         self.lineEdit_newItem = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_newItem.setGeometry(QtCore.QRect(880, 160, 290, 30))
@@ -183,139 +167,108 @@ class MainWindow():
         self.lineEdit_newItem.setCursorPosition(0)
         self.lineEdit_newItem.setDragEnabled(True)
         self.lineEdit_newItem.setClearButtonEnabled(False)
-        self.lineEdit_newItem.setObjectName("lineEdit_newItem")
 
         # Set up the labels:
         self.label_filename = QtWidgets.QLabel(self.centralwidget)
         self.label_filename.setGeometry(QtCore.QRect(880, 90, 90, 22))
-        self.label_filename.setObjectName("label_filename")
 
         self.label_dxfEnding = QtWidgets.QLabel(self.centralwidget)
         self.label_dxfEnding.setGeometry(QtCore.QRect(1222, 110, 68, 30))
-        self.label_dxfEnding.setObjectName("label_dxfEnding")
 
         self.label_slider_thresh = QtWidgets.QLabel(self.centralwidget)
         self.label_slider_thresh.setGeometry(QtCore.QRect(590, 160, 180, 22))
-        self.label_slider_thresh.setObjectName("label_slider_thresh")
 
         self.label_slider_factor = QtWidgets.QLabel(self.centralwidget)
         self.label_slider_factor.setGeometry(QtCore.QRect(590, 260, 180, 22))
-        self.label_slider_factor.setObjectName("label_slider_factor")
 
         self.label_slider3 = QtWidgets.QLabel(self.centralwidget)
         self.label_slider3.setGeometry(QtCore.QRect(590, 210, 180, 22))
-        self.label_slider3.setObjectName("label_slider3")
         
         self.label_method = QtWidgets.QLabel(self.centralwidget)
         self.label_method.setGeometry(QtCore.QRect(590, 85, 150, 22))
-        self.label_method.setObjectName("label_method")
 
         self.Label_Path = QtWidgets.QLabel(self.centralwidget)
         self.Label_Path.setGeometry(QtCore.QRect(590, 20, 333, 22))
-        self.Label_Path.setObjectName("Label_Path")
 
         self.label_newitem = QtWidgets.QLabel(self.centralwidget)
         self.label_newitem.setGeometry(QtCore.QRect(880, 190, 371, 51))
-        self.label_newitem.setObjectName("label_newitem")
 
         self.label_hint = QtWidgets.QLabel(self.centralwidget)
         self.label_hint.setGeometry(QtCore.QRect(40, 80, 500, 30))
         self.label_hint.setFrameShape(QtWidgets.QFrame.Box)
         self.label_hint.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_hint.setObjectName("label_hint")
 
         self.label_position = QtWidgets.QLabel(self.centralwidget)
         self.label_position.setGeometry(QtCore.QRect(40, 115, 500, 31))
         self.label_position.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_position.setObjectName("label_position")
         
         self.label_height_value =QtWidgets.QLabel(self.centralwidget)
         self.label_height_value.setGeometry(QtCore.QRect(695,385,141,28))
         self.label_height_value.setText(f'{round(self.thickness,0)}mm')
-        self.label_height_value.setObjectName("label_height")
 
         self.label_height =QtWidgets.QLabel(self.centralwidget)
         self.label_height.setGeometry(QtCore.QRect(590,385,100,28))
-        self.label_height.setObjectName("label_height")
 
         # The filename comboboxes are placed into a grid layout for a tidy look
         ###############################################################################
         self.widget = QtWidgets.QWidget(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(880, 250, 370, 310))
-        self.widget.setObjectName("widget")
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.gridLayout.setObjectName("gridLayout")
         self.label_pliers = QtWidgets.QLabel(self.widget)
-        self.label_pliers.setObjectName("label_pliers")
         self.gridLayout.addWidget(self.label_pliers, 0, 0, 1, 1)
 
         self.label_sizes = QtWidgets.QLabel(self.widget)
-        self.label_sizes.setObjectName("label_sizes")
         self.gridLayout.addWidget(self.label_sizes, 0, 1, 1, 1)
 
         self.comboBox_pliers = combo(self.widget)
-        self.comboBox_pliers.setObjectName("comboBox_pliers")
         self.comboBox_pliers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_pliers, 1, 0, 1, 1)
 
         self.comboBox_sizes = combo(self.widget)
-        self.comboBox_sizes.setObjectName("comboBox_sizes")
         self.comboBox_sizes.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_sizes, 1, 1, 1, 1)
 
         self.label_measTools = QtWidgets.QLabel(self.widget)
-        self.label_measTools.setObjectName("label_measTools")
         self.gridLayout.addWidget(self.label_measTools, 2, 0, 1, 1)
 
         self.label_numberParts = QtWidgets.QLabel(self.widget)
-        self.label_numberParts.setObjectName("label_numberParts")
         self.gridLayout.addWidget(self.label_numberParts, 2, 1, 1, 1)
 
         self.comboBox_measTools = combo(self.widget)
-        self.comboBox_measTools.setObjectName("comboBox_measTools")
         self.comboBox_measTools.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_measTools, 3, 0, 1, 1)
 
         self.comboBox_numberParts = combo(self.widget)
-        self.comboBox_numberParts.setObjectName("comboBox_numberParts")
         self.comboBox_numberParts.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_numberParts, 3, 1, 1, 1)
 
         self.label_screwdrivers = QtWidgets.QLabel(self.widget)
-        self.label_screwdrivers.setObjectName("label_screwdrivers")
         self.gridLayout.addWidget(self.label_screwdrivers, 4, 0, 1, 1)
 
         self.label_numbers = QtWidgets.QLabel(self.widget)
-        self.label_numbers.setObjectName("label_numbers")
         self.gridLayout.addWidget(self.label_numbers, 4, 1, 1, 1)
 
         self.comboBox_screwdrivers = combo(self.widget)
-        self.comboBox_screwdrivers.setObjectName("comboBox_screwdrivers")
         self.comboBox_screwdrivers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_screwdrivers, 5, 0, 1, 1)
 
         self.comboBox_numbers = combo(self.widget)
-        self.comboBox_numbers.setObjectName("comboBox_numbers")
         self.comboBox_numbers.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_numbers, 5, 1, 1, 1)
 
         self.label_tools_misc = QtWidgets.QLabel(self.widget)
-        self.label_tools_misc.setObjectName("label_tools_misc")
         self.gridLayout.addWidget(self.label_tools_misc, 6, 0, 1, 1)
 
         self.label_custom = QtWidgets.QLabel(self.widget)
-        self.label_custom.setObjectName("label_custom")
         self.gridLayout.addWidget(self.label_custom, 6, 1, 1, 1)
 
         self.comboBox_tools_misc = combo(self.widget)
-        self.comboBox_tools_misc.setObjectName("comboBox_tools_misc")
         self.comboBox_tools_misc.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_tools_misc, 7, 0, 1, 1)
 
         self.comboBox_custom = combo(self.widget)
-        self.comboBox_custom.setObjectName("comboBox_custom")
         self.comboBox_custom.currentTextChanged.connect(self.change_filename)
         self.gridLayout.addWidget(self.comboBox_custom, 7, 1, 1, 1)
 
@@ -326,27 +279,16 @@ class MainWindow():
         # Setup the Menu bar:#######################################################################
         self.menuBar = QtWidgets.QMenuBar(ContourExtraction)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
-        self.menuBar.setObjectName("menuBar")
         self.menuLanguage = QtWidgets.QMenu(self.menuBar)
-        self.menuLanguage.setObjectName("menuLanguage")
         self.menuExtras = QtWidgets.QMenu(self.menuBar)
-        self.menuExtras.setObjectName("menuExtras")
         self.menuInfo = QtWidgets.QMenu(self.menuBar)
-        self.menuInfo.setObjectName("menuInfo")
         self.actionEnglish = QtWidgets.QAction(ContourExtraction)
-        self.actionEnglish.setObjectName("actionEnglish")
         self.actionGerman = QtWidgets.QAction(ContourExtraction)
-        self.actionGerman.setObjectName("actionGerman")
         self.actionSave_Metadata = QtWidgets.QAction(ContourExtraction)
-        self.actionSave_Metadata.setObjectName("actionSave_Metadata")
         self.actionSave_Contour_Image = QtWidgets.QAction(ContourExtraction)
-        self.actionSave_Contour_Image.setObjectName("actionSave_Contour_Image")
         self.actionSettings= QtWidgets.QAction(ContourExtraction)
-        self.actionSettings.setObjectName("actionSettings")
         self.actionMethods = QtWidgets.QAction(ContourExtraction)
-        self.actionMethods.setObjectName("actionMethods")
         self.actionGeneral = QtWidgets.QAction(ContourExtraction)
-        self.actionGeneral.setObjectName("actionGeneral")
         ContourExtraction.setMenuBar(self.menuBar)
         self.menuLanguage.addAction(self.actionEnglish)
         self.menuLanguage.addAction(self.actionGerman)
@@ -1069,30 +1011,21 @@ class Dialog(object): # Definition of the dialog class for the filename piece sa
         # The buttons are added to a grid layout to ensure a tidy appearance
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout.setObjectName("gridLayout")
         self.Button_pliers = QtWidgets.QPushButton(self.widget)
-        self.Button_pliers.setObjectName("Button_pliers")
         self.gridLayout.addWidget(self.Button_pliers, 0, 0, 1, 1)
         self.Button_sizes = QtWidgets.QPushButton(self.widget)
-        self.Button_sizes.setObjectName("Button_sizes")
         self.gridLayout.addWidget(self.Button_sizes, 0, 1, 1, 1)
         self.Button_MeasTools = QtWidgets.QPushButton(self.widget)
-        self.Button_MeasTools.setObjectName("Button_MeasTools")
         self.gridLayout.addWidget(self.Button_MeasTools, 1, 0, 1, 1)
         self.Button_NumberParts = QtWidgets.QPushButton(self.widget)
-        self.Button_NumberParts.setObjectName("Button_NumberParts")
         self.gridLayout.addWidget(self.Button_NumberParts, 1, 1, 1, 1)
         self.Button_screwdrivers = QtWidgets.QPushButton(self.widget)
-        self.Button_screwdrivers.setObjectName("Button_screwdrivers")
         self.gridLayout.addWidget(self.Button_screwdrivers, 2, 0, 1, 1)
         self.Button_numbers = QtWidgets.QPushButton(self.widget)
-        self.Button_numbers.setObjectName("Button_numbers")
         self.gridLayout.addWidget(self.Button_numbers, 2, 1, 1, 1)
         self.Butto_misc = QtWidgets.QPushButton(self.widget)
-        self.Butto_misc.setObjectName("Butto_misc")
         self.gridLayout.addWidget(self.Butto_misc, 3, 0, 1, 1)
         self.Button_custom = QtWidgets.QPushButton(self.widget)
-        self.Button_custom.setObjectName("Button_custom")
         self.gridLayout.addWidget(self.Button_custom, 3, 1, 1, 1)
         # The buttons are labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
