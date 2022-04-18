@@ -65,7 +65,7 @@ def crop_image(warped_image): # Search a tool contour and crop the image by usin
         # Find the minimum enclosing rectangle
         x,y,w,h=cv2.boundingRect(cnt)
         # Crop the tool
-        cropped_image=rotated_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
+        cropped_image=warped_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
         # Return the cropped image along with the size and the position
         return cropped_image,w+4,h+4,x,y
     else:
