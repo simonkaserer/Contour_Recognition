@@ -432,10 +432,12 @@ class MainWindow():
     def save_meta(self): # This is a method for testing purposes where the current settings and some other informations are saved under the 
         # selected path and filename but in a .yaml format
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            self.prefs['threshold']=self.slider_thresh.value()
+             self.prefs['threshold']=self.slider_thresh.value()
             self.prefs['factor']=self.slider_factor.value()/10000
             self.prefs['nth_point']=self.slider_nth_point.value()
             self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
+            self.prefs['language']=self.language
+            self.prefs['method']=self.comboBox_method.currentText()
             self.prefs['framewidth']=self.framewidth
             self.prefs['frameheight']=self.frameheight
             self.prefs['toolwidth']=self.toolwidth
