@@ -145,7 +145,7 @@ class MainWindow():
         self.comboBox_method.setObjectName("comboBox_method")
         self.comboBox_method.addItem('PolyDP')
         self.comboBox_method.addItem('NoApprox')
-        self.comboBox_method.addItem('ConvexHull')
+        self.comboBox_method.addItem('Hull')
         self.comboBox_method.addItem('TehChin')
         self.comboBox_method.addItem('Spline')
         self.comboBox_method.addItem('Spline TehChin')
@@ -379,7 +379,7 @@ class MainWindow():
             self.checkBox_connectpoints.hide()
         else:
             self.checkBox_connectpoints.show()
-        if self.comboBox_method.currentText()=='ConvexHull':
+        if self.comboBox_method.currentText()=='Hull':
             self.slider_nth_point.hide()
             self.label_slider3.hide()
         else:
@@ -861,7 +861,7 @@ class MainWindow():
             self.checkBox_connectpoints.hide()
         else:
             self.checkBox_connectpoints.show()
-        if self.comboBox_method.currentText()=='ConvexHull':
+        if self.comboBox_method.currentText()=='Hull':
             self.slider_nth_point.hide()
             self.label_slider3.hide()
         else:
@@ -918,7 +918,7 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'NoApprox':
                 self.contour,contour_image=Functions.extraction_None(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
-            elif self.comboBox_method.currentText() == 'ConvexHull':
+            elif self.comboBox_method.currentText() == 'Hull':
                 self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'TehChin':
                 self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
@@ -928,43 +928,63 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'])
         # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None: 
+            # Enable the save dxf-button:
+            if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
+                self.button_savedxf.setEnabled(True)
+            else:
+                self.button_savedxf.setEnabled(False)
+            # Update the contour view
             self.contour_image=contour_image
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
-            # Check if the tool is near the middle of the board and
+            # Chack if the tool is in the center
+            self.check_tool_centered()
+    def check_tool_centered(self):
+        # Check if the tool is near the middle of the board and
             # give an information that the tool center is not in the middle:
             move_str=''
-            if self.tool_pos_x < self.framewidth/2-20:
+            centered_hor=False
+            centered_ver=False
+            # Check in horizontal direction:
+            if self.tool_pos_x < self.framewidth/2-30:
+                centered_hor=False
                 if self.language=='German':
                     move_str+="Nach rechts verschieben. "
                 else:
                     move_str+="Move towards the right. "
-                self.toolCentered=False
-            elif self.tool_pos_x > self.framewidth/2+20:
+            elif self.tool_pos_x > self.framewidth/2+30:
+                centered_hor=False
                 if self.language=='German':
                     move_str+="Nach links verschieben. "
                 else:
                     move_str+="Move towards the left. "
-                self.toolCentered=False
-            if self.tool_pos_y < self.frameheight/2-20:
-                self.toolCentered=False
+            else:
+                centered_hor=True
+            # Check in the vertical direction:
+            if self.tool_pos_y < self.frameheight/2-30:
+                centered_ver=False
                 if self.language=='German':
                     move_str+="Nach unten verschieben."
                 else:
                     move_str+="Move towards the bottom."
-            elif self.tool_pos_y > self.frameheight/2+20:
-                self.toolCentered=False
+            elif self.tool_pos_y > self.frameheight/2+30:
+                centered_ver=False
                 if self.language=='German':
                     move_str+="Nach oben verschieben."
                 else:
                     move_str+="Move towards the top."
             else:
+                centered_ver=True
+            # If both bools are true the tool is in the middle
+            if centered_hor is True and centered_ver is True:
                 self.toolCentered=True
                 if self.language=='German':
                     move_str+="Werkzeug ist zentriert."
                 else:
                     move_str+="Tool is centered."
+            else:
+                self.toolCentered=False
             self.label_position.setText(move_str)
     def info_methos(self): # Provides the user with information regarding the used methods when clicking on the info menu bar
         dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -972,14 +992,14 @@ class MainWindow():
         if self.language=='German':
             dlg.setText('Methods:\nPolyDP - Diese Funktion verwendet den Douglas-Peucker-Algorithmus um eine Kurve durch eine Kurve mit weniger Punkten auszudrücken. Der Faktor bestimmt um wieviel die neue Kurve vereinfacht werden darf.\n\n'
             'NoApprox - Gibt sämtliche als Konturpunkte identifizierten Pixel zurück.\n\n'
-            'ConvexHull - Extrahiert die Hülle des Werkzeugs. Kann bei kleinen Werkzeugen oder Teilen nützlich sein.\n\n'
+            'Hull - Extrahiert die Hülle des Werkzeugs. Kann bei kleinen Werkzeugen oder Teilen nützlich sein.\n\n'
             'TehChin - Verwendet die Teh Chin Approximation um die Kontur zu finden. Hier werden Bereiche mit großer Richtungsänderung mit vielen Punkten aufgelöst und Bereiche mit wenig Änderung mit wenigen Punkten.\n\n'
             'Spline - Diese Funktion verwendet alle Punkte der Kontur und verbindet sie mit einem Spline.\n\n'
             'Spline TehChin - Diese Funktion verwendet die Teh Chin Approximation und verbindet die Konturpunkte durch einen Spline.')
         else:
             dlg.setText('Methods:\nPolyDP - This function uses the Douglas-Peucker algorithm to simplify a curve with fewer points. The parameter factor determines how much the new curve can be simplified.\n\n'
             'NoApprox - Returns every found pixel of the contour\n\n'
-            'ConvexHull - Finds the hull of the tool. Can be used for small tools or things.\n\n'
+            'Hull - Finds the hull of the tool. Can be used for small tools or things.\n\n'
             'TehChin - Uses the Teh Chin approximation to find the contour. This algorithm varies the number of found edgepoints according to the change of the direction\n\n'
             'Spline - This function finds the edge with no approximation and connects the contour points with a spline.\n\n'
             'Spline TehChin - This function uses the Teh Chin approximation and connects the contour points with a spline.')
