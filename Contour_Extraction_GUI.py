@@ -749,7 +749,7 @@ class MainWindow():
         self.Dialog.close()
         self.save_items_boxes()
     def on_button_saveNumberParts(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
-        self.comboBox_pliers.addItem(self.lineEdit_newItem.text())
+        self.comboBox_numberParts.addItem(self.lineEdit_newItem.text())
         self.Dialog.close()
         self.save_items_boxes()
     def on_button_saveSizes(self): # Function for adding a filename piece to the chosen combobox when a button in the dialog window is pressed
