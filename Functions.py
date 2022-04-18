@@ -46,7 +46,6 @@ def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool):
             transf_matrix=cv2.getPerspectiveTransform(input_pts,output_pts,)
             # Warp the image using the warpPerspective function with the Area interpolation flag
             warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_AREA)
-            #warped_image=cv2.warpPerspective(thresh,transf_matrix,(width,height),flags=cv2.INTER_LINEAR)
             # crop the image to remove the outer edge
             warped_image=warped_image[0+border_offset_px:width-border_offset_px,0+border_offset_px:height-border_offset_px]
             # Return the warped image along with the framsize and the points of the input images
@@ -232,8 +231,8 @@ def extraction_spline(cropped_image,every_nth_point:int):
         # Creates a evenly spaced vector with 2 points in between each given point
         interp_i=np.linspace(0,i.max(),2*i.max())
         # Interpolate the contour points
-        x_new=interp1d(i,x,kind='cubic')(interp_i)
-        y_new=interp1d(i,y,kind='cubic')(interp_i)
+        x_new=interp1d(i,x,kind='slinear')(interp_i)
+        y_new=interp1d(i,y,kind='slinear')(interp_i)
         # Rearrange the points to fit the np.array format
         cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
         # create a black background
@@ -273,8 +272,8 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int):
       # Create a evenly spreaded vector with 2 points per step
       interp_i=np.linspace(0,i.max(),2*i.max())
       # Interpolate the points
-      x_new=interp1d(i,x,kind='cubic')(interp_i)
-      y_new=interp1d(i,y,kind='cubic')(interp_i)
+      x_new=interp1d(i,x,kind='slinear')(interp_i)
+      y_new=interp1d(i,y,kind='slinear')(interp_i)
       # Rearrange the points in np.array format
       cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
       # create a black background
