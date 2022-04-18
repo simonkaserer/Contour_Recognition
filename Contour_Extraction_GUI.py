@@ -471,7 +471,7 @@ class MainWindow():
             self.label_numberParts.setText( "Number of parts")
             self.label_screwdrivers.setText( "Screwdrivers")
             self.label_numbers.setText( "Numbers")
-            self.label_tools_misc.setText( "Tools")
+            self.label_tools_misc.setText( "Tools misc")
             self.label_custom.setText( "Custom") 
             self.label_hint.setText("For best results place the tool in the middle of the plate")
             self.actionMethods.setText("Methods")
