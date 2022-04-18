@@ -298,11 +298,11 @@ def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheigh
     
     # Calculate the scaling factor
     if prefs['use_thickness_scaling']:
-        factor_width= 1+prefs['scaling_width']*(1-(thickness/10000)) #100mm = 1% smaller scaling
-        factor_height= 1+prefs['scaling_height']*(1-(thickness/10000))
+        factor_width= 1+(prefs['scaling_width']/100)*(1-(thickness/10000)) #100mm = 1% smaller scaling
+        factor_height= 1+(prefs['scaling_height']/100)*(1-(thickness/10000))
     else:
-        factor_width= 1+prefs['scaling_width']
-        factor_height= 1+prefs['scaling_height']
+        factor_width= 1+(prefs['scaling_width']/100)
+        factor_height= 1+(prefs['scaling_height']/100)
     # Create the file for ezdxf
     file=dxf.new('R2000')
     msp=file.modelspace()
