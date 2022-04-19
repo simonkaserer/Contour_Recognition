@@ -65,29 +65,12 @@ def crop_image(warped_image): # Search a tool contour and crop the image by usin
         # Find the minimum enclosing rectangle
         x,y,w,h=cv2.boundingRect(cnt)
         # Crop the tool
-        cropped_image=warped_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
+        cropped_image=warped_image[int((y)-2):int((y+h)+2),int((x)-2):int((x+w)+2)]
+        #Calculate the tool center point:
+        toolx=x+w/2
+        tooly=y+h/2
         # Return the cropped image along with the size and the position
-        return cropped_image,w+4,h+4,x,y
-    else:
-        return None,None,None,None,None
-
-def crop_image_old_evtl_not_used(warped_image): # Search a tool contour and crop the image by using the minAreaRect function of OpenCV
-    # warped_image = image in npy array that is already warped and cropped to the inside of the shading board
-    
-    # Look for the contour of the tool:
-    cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-    if len(cnts)>0:
-        cnt=max(cnts,key=cv2.contourArea)
-        # Find the minimum enclosing rectangle
-        (x,y),(w,h),a=cv2.minAreaRect(cnt)
-        # Get the rotation matrix to rotate the tool
-        rot_mat=cv2.getRotationMatrix2D((x,y),a,1)
-        # Rotate the tool with respect to the angle
-        rotated_image=cv2.warpAffine(warped_image,rot_mat,(int(w+x),int(h+y)))
-        # Crop the tool
-        cropped_image=rotated_image[int((y-h/2)-2):int((y+h/2)+2),int((x-w/2)-2):int((x+w/2)+2)]
-        # Return the cropped image along with the size and the position
-        return cropped_image,w+4,h+4,x,y
+        return cropped_image,w+4,h+4,toolx,tooly
     else:
         return None,None,None,None,None
 

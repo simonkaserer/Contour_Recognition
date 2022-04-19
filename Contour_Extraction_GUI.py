@@ -892,14 +892,16 @@ class MainWindow():
             move_str=''
             centered_hor=False
             centered_ver=False
+            pos_x=self.tool_pos_x
+            pos_y=self.tool_pos_y
             # Check in horizontal direction:
-            if self.tool_pos_x < self.framewidth/2-30:
+            if pos_x < self.framewidth/2-30:
                 centered_hor=False
                 if self.language=='German':
                     move_str+="Nach rechts verschieben. "
                 else:
                     move_str+="Move towards the right. "
-            elif self.tool_pos_x > self.framewidth/2+30:
+            elif pos_x > self.framewidth/2+30:
                 centered_hor=False
                 if self.language=='German':
                     move_str+="Nach links verschieben. "
@@ -908,13 +910,13 @@ class MainWindow():
             else:
                 centered_hor=True
             # Check in the vertical direction:
-            if self.tool_pos_y < self.frameheight/2-30:
+            if pos_y < self.frameheight/2-30:
                 centered_ver=False
                 if self.language=='German':
                     move_str+="Nach unten verschieben."
                 else:
                     move_str+="Move towards the bottom."
-            elif self.tool_pos_y > self.frameheight/2+30:
+            elif pos_y > self.frameheight/2+30:
                 centered_ver=False
                 if self.language=='German':
                     move_str+="Nach oben verschieben."
