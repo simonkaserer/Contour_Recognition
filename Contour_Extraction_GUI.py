@@ -879,6 +879,8 @@ class MainWindow():
                 self.button_savedxf.setEnabled(True)
             else:
                 self.button_savedxf.setEnabled(False)
+            # Flip the image back
+            contour_image=cv2.flip(contour_image,0)
             # Update the contour view
             self.contour_image=contour_image
             frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)

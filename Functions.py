@@ -69,6 +69,8 @@ def crop_image(warped_image): # Search a tool contour and crop the image by usin
         #Calculate the tool center point:
         toolx=x+w/2
         tooly=y+h/2
+        # Flip the cropped image to save the dxf in the right orientation
+        cropped_image=cv2.flip(cropped_image,0)
         # Return the cropped image along with the size and the position
         return cropped_image,w+4,h+4,toolx,tooly
     else:
@@ -306,8 +308,6 @@ def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheigh
     file=dxf.new('R2000')
     msp=file.modelspace()
     points=[]
-    # Flip the contour in the x-axis to save it in the right orientation
-    contour=cv2.flip(contour,0)
     #convert the contour to a list:
     cnt=contour.tolist()
     #add the first entry of the contour to the end for a closed contour in dxf
