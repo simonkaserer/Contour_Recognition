@@ -184,7 +184,11 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool):
     # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
     # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
     
-    cnts,_=cv2.findContours(cropped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    # Testcode dilating
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (40,40))
+    dilate = cv2.morphologyEx(cropped_image, cv2.MORPH_DILATE, kernel)
+    
+    cnts,_=cv2.findContours(dilate,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
         cont=cnt.tolist()
