@@ -455,6 +455,9 @@ class MainWindow():
             data=self.contour
             reshaped=data.reshape(data.shape[0],-1)
             np.savetxt(path, reshaped)
+            # Save the contour as npy-file:
+            path=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.npy'
+            np.save(path,self.contour)
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             pathcnt=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.jpg'
