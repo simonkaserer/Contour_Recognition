@@ -771,6 +771,18 @@ class MainWindow():
         try:
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
+                # Check if all needed keys exist and are in the right range:
+                if not 'threshold' in prefs or prefs['threshold']<10 or prefs['threshold']>254:  prefs['threshold']=150
+                if not 'factor' in prefs or prefs['factor']<0.0001 or prefs['factor']>0.01:  prefs['factor']=0.005
+                if not 'nth_point' in prefs or prefs['nth_point']<1 or prefs['nth_point']>20:  prefs['nth_point']=1
+                if not 'connectpoints' in prefs or (prefs['connectpoints'] is not False and prefs['connectpoints'] is not True):  prefs['connectpoints']=True
+                if not 'language' in prefs or (prefs['language']!='English' and prefs['language']!='German'):  prefs['language']='English'
+                if not 'method' in prefs or (prefs['method']!='PolyDP' and prefs['method'] != 'NoApprox' and prefs['method'] != 'Hull' and prefs['method'] != 'TehChin' and prefs['method'] != 'Spline' and prefs['method'] != 'Spline TehChin'):  prefs['method']='PolyDP'
+                if not 'save_height' in prefs or (prefs['save_height'] is not False and prefs['save_height'] is not True):  prefs['save_height']=True
+                if not 'use_heightscaling' in prefs or (prefs['use_heightscaling'] is not False and prefs['use_heightscaling'] is not True):  prefs['use_heightscaling']=False
+                if not 'scaling_width' in prefs or prefs['scaling_width']<-10 or prefs['scaling_width']>10:  prefs['scaling_width']=0
+                if not 'scaling_height' in prefs or prefs['scaling_height']<-10 or prefs['scaling_height']>10:  prefs['scaling_height']=0
+                if not 'use_thickness_scaling' in prefs or (prefs['use_thickness_scaling'] is not False and prefs['use_thickness_scaling'] is not True):  prefs['use_thickness_scaling']=False
         except FileNotFoundError as exc:
             self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0,'use_thickness_scaling':False}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
