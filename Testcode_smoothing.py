@@ -104,19 +104,17 @@ def smooth_contour(cropped_image,every_nth_point:int,connectpoints:bool,toolwidt
 if __name__ == '__main__':
   
 
-   str=('/home/pi/Desktop/Testcontours/InbusPoly.jpg','/home/pi/Desktop/Testcontours/handleNoAppr.jpg','/home/pi/Desktop/Testcontours/PlumberPlierPoly.jpg','/home/pi/Desktop/Testcontours/cuttingPlierPoly.jpg','/home/pi/Desktop/Testcontours/ScissorNoAppr.jpg')
+   str='/home/pi/Desktop/Testcontours/InbusPoly.jpg'
    printflag=False
    connectpoints=False
    points=3
-   img=cv2.imread(str[1])
-
-   w=img.shape[1]
-   h=img.shape[0]
-   img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-   img=cv2.Canny(img,230,240,L2gradient=False)
+   cnt=np.load(str)
+   w=
+   h=
+   
    direction=np.zeros((1000,2))
    while True:
-      cnt,cnt_img,directions=smooth_contour(img,points,connectpoints,w,h,printflag,direction)
+      cnt,cnt_img,directions=smooth_contour(cnt,points,connectpoints,w,h,printflag,direction)
       printflag=False
       cv2.imshow('contour',cnt_img)
       key=cv2.waitKey(100)
