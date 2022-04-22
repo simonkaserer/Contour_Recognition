@@ -362,4 +362,6 @@ def toolthickness(img_left,img_right,threshold:int): # This function calculates 
     # If the integer is smaller than 1 the value given back is set to 0:
     if height_tool <1:
         height_tool=0
+    if height_tool>600:
+        height_tool=0
     return height_tool
