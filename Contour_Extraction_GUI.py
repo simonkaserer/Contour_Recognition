@@ -32,6 +32,7 @@ class MainWindow():
         self.scaling_framewidth=1.0
         self.scaling_frameheight=1.0
         self.thickness=0
+        self.depth_frame=0
         self.toolCentered=False
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
@@ -859,7 +860,7 @@ class MainWindow():
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheight function is called
-        self.thickness=Functions.toolthickness(img_left,img_right,self.prefs['threshold'])
+        self.thickness,self.depth_frame=Functions.toolthickness(img_left,img_right,self.prefs['threshold'])
         # Save the toolheight to the preferences
         self.prefs['thickness']=self.thickness
         # Set the text of the label to the toolheight
