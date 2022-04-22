@@ -775,17 +775,17 @@ class MainWindow():
             with open('prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
                 # Check if all needed keys exist and are in the right range:
-                if not 'threshold' in prefs or prefs['threshold']<10 or prefs['threshold']>254:  prefs['threshold']=150
-                if not 'factor' in prefs or prefs['factor']<0.0001 or prefs['factor']>0.01:  prefs['factor']=0.005
-                if not 'nth_point' in prefs or prefs['nth_point']<1 or prefs['nth_point']>20:  prefs['nth_point']=1
-                if not 'connectpoints' in prefs or (prefs['connectpoints'] is not False and prefs['connectpoints'] is not True):  prefs['connectpoints']=True
-                if not 'language' in prefs or (prefs['language']!='English' and prefs['language']!='German'):  prefs['language']='English'
-                if not 'method' in prefs or (prefs['method']!='PolyDP' and prefs['method'] != 'NoApprox' and prefs['method'] != 'Hull' and prefs['method'] != 'TehChin' and prefs['method'] != 'Spline' and prefs['method'] != 'Spline TehChin'):  prefs['method']='PolyDP'
-                if not 'save_height' in prefs or (prefs['save_height'] is not False and prefs['save_height'] is not True):  prefs['save_height']=True
-                if not 'use_heightscaling' in prefs or (prefs['use_heightscaling'] is not False and prefs['use_heightscaling'] is not True):  prefs['use_heightscaling']=False
-                if not 'scaling_width' in prefs or prefs['scaling_width']<-10 or prefs['scaling_width']>10:  prefs['scaling_width']=0
-                if not 'scaling_height' in prefs or prefs['scaling_height']<-10 or prefs['scaling_height']>10:  prefs['scaling_height']=0
-                if not 'use_thickness_scaling' in prefs or (prefs['use_thickness_scaling'] is not False and prefs['use_thickness_scaling'] is not True):  prefs['use_thickness_scaling']=False
+                if not 'threshold' in self.prefs or self.prefs['threshold']<10 or self.prefs['threshold']>254:  self.prefs['threshold']=150
+                if not 'factor' in self.prefs or self.prefs['factor']<0.0001 or self.prefs['factor']>0.01:  self.prefs['factor']=0.005
+                if not 'nth_point' in self.prefs or self.prefs['nth_point']<1 or self.prefs['nth_point']>20:  self.prefs['nth_point']=1
+                if not 'connectpoints' in self.prefs or (self.prefs['connectpoints'] is not False and self.prefs['connectpoints'] is not True):  self.prefs['connectpoints']=True
+                if not 'language' in self.prefs or (self.prefs['language']!='English' and self.prefs['language']!='German'):  self.prefs['language']='English'
+                if not 'method' in self.prefs or (self.prefs['method']!='PolyDP' and self.prefs['method'] != 'NoApprox' and self.prefs['method'] != 'Hull' and self.prefs['method'] != 'TehChin' and self.prefs['method'] != 'Spline' and self.prefs['method'] != 'Spline TehChin'):  self.prefs['method']='PolyDP'
+                if not 'save_height' in self.prefs or (self.prefs['save_height'] is not False and self.prefs['save_height'] is not True):  self.prefs['save_height']=True
+                if not 'use_heightscaling' in self.prefs or (self.prefs['use_heightscaling'] is not False and self.prefs['use_heightscaling'] is not True):  self.prefs['use_heightscaling']=False
+                if not 'scaling_width' in self.prefs or self.prefs['scaling_width']<-10 or self.prefs['scaling_width']>10:  self.prefs['scaling_width']=0
+                if not 'scaling_height' in self.prefs or self.prefs['scaling_height']<-10 or self.prefs['scaling_height']>10:  self.prefs['scaling_height']=0
+                if not 'use_thickness_scaling' in self.prefs or (self.prefs['use_thickness_scaling'] is not False and self.prefs['use_thickness_scaling'] is not True):  self.prefs['use_thickness_scaling']=False
         except FileNotFoundError as exc:
             self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0,'use_thickness_scaling':False}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
@@ -867,9 +867,12 @@ class MainWindow():
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
         self.extraction_image=self.warped_image
+        counter=1
         while self.cropped_image is None:
             if self.extraction_image is not None:
                 self.cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.extraction_image)
+            counter+=1
+            if counter > 20:  break
         self.process()    
     def process(self): # This method chooses the called extraction function according to the selected method.
         # The needed parameters are provided to the function
