@@ -744,10 +744,10 @@ class MainWindow():
             else:
                 self.button_savedxf.setEnabled(False)
     def calc_thickness_scaling(self): # This method calculates the scaling factor resulting from the thickness of the tool
-        # The factor is 0.001585% per mm thickness + 2% Offset
+        # The factor is 0.001431% per mm thickness + 2% Offset
         # The factor is only applied if the tool is in the middle of the plate.
         if self.prefs['use_thickness_scaling'] is True and self.toolCentered is True: 
-            self.scaling_thickness=(1/(1+(self.thickness*0.001585)))+0.02
+            self.scaling_thickness=(1/(1+(self.thickness*0.001431)))+0.02
             if self.scaling_thickness > 1:
                 self.scaling_thickness=1.0 
         else:
