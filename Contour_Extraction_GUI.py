@@ -32,7 +32,7 @@ class MainWindow():
         self.scaling_framewidth=1.0
         self.scaling_frameheight=1.0
         self.thickness=0
-        self.depth_frame=0
+        self.scaling_thickness=0
         self.toolCentered=False
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
@@ -433,24 +433,27 @@ class MainWindow():
     def save_meta(self): # This is a method for testing purposes where the current settings and some other informations are saved under the 
         # selected path and filename but in a .yaml format
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
-            self.prefs['threshold']=self.slider_thresh.value()
-            self.prefs['factor']=self.slider_factor.value()/10000
-            self.prefs['nth_point']=self.slider_nth_point.value()
-            self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
-            self.prefs['language']=self.language
-            self.prefs['method']=self.comboBox_method.currentText()
-            self.prefs['framewidth']=self.framewidth
-            self.prefs['frameheight']=self.frameheight
-            self.prefs['toolwidth']=self.toolwidth
-            self.prefs['toolheight']=self.toolheight
-            self.prefs['x']=self.tool_pos_x
-            self.prefs['y']=self.tool_pos_y
-            self.prefs['scaling_framewidth']=self.scaling_framewidth
-            self.prefs['scaling_frameheight']=self.scaling_frameheight
-            self.prefs['toolthickness']=self.thickness
+            data=self.prefs
+            data['threshold']=self.slider_thresh.value()
+            data['factor']=self.slider_factor.value()/10000
+            data['nth_point']=self.slider_nth_point.value()
+            data['connectpoints']=self.checkBox_connectpoints.isChecked()
+            data['language']=self.language
+            data['method']=self.comboBox_method.currentText()
+            data['framewidth']=self.framewidth
+            data['frameheight']=self.frameheight
+            data['toolwidth']=self.toolwidth
+            data['toolheight']=self.toolheight
+            data['x']=self.tool_pos_x
+            data['y']=self.tool_pos_y
+            data['scaling_framewidth']=self.scaling_framewidth
+            data['scaling_frameheight']=self.scaling_frameheight
+            data['toolthickness']=self.thickness
+            data['scaling_thickness']=self.scaling_thickness
+            data['isCentered']=self.toolCentered
             path=self.lineEdit_Path.text()+'/'+self.filename+'.yaml'
             with open(path,'w') as f:
-                yaml.safe_dump(self.prefs,f)
+                yaml.safe_dump(data,f)
             # Save the contour array into a textfile
             path=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.txt'
             data=self.contour
@@ -499,8 +502,10 @@ class MainWindow():
         self.settings_ui.label_value_slider_height.setText(str(round(self.prefs['scaling_height'],1))+'%')
     def checkbox_heightscaling_changed(self): # Saves the status of the checkbox to the preferences
         self.prefs['use_thickness_scaling']=self.settings_ui.checkBox_thickness_scaling.isChecked()
+        # Calculate the thickness scaling again
+        self.calc_thickness_scaling()
     def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
-        self.prefs['save_height']=self.settings_ui.checkBox_height.isChecked()
+        self.prefs['save_thickness']=self.settings_ui.checkBox_height.isChecked()
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
@@ -738,9 +743,16 @@ class MainWindow():
                 self.button_savedxf.setEnabled(True)
             else:
                 self.button_savedxf.setEnabled(False)
+    def calc_thickness_scaling(self): # This method calculates the scaling factor resulting from the thickness of the tool
+        # The factor is 0.001585% per mm thickness
+        # The factor is only applied if the tool is in the middle of the plate.
+        if self.prefs['use_thickness_scaling'] is True and self.toolCentered is True: 
+            self.scaling_thickness=1/(1+(self.thickness*0.001585))
+        else:
+            self.scaling_thickness=1.0     
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
-            if self.prefs['save_height'] is True:
+            if self.prefs['save_thickness'] is True:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.thickness}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
@@ -749,7 +761,7 @@ class MainWindow():
             # The dxf_exporter function is called and after a check if the file exists, a message window appears with the confirmation
             # If something goes wrong while saving or the contour, the path or the filename are missing then a error message appears.
             if self.contour is not None:
-                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_framewidth,self.scaling_frameheight,self.thickness,self.prefs)
+                Functions.dxf_exporter(self.contour,path_and_filename,self.scaling_framewidth,self.scaling_frameheight,self.scaling_thickness,self.prefs['scaling_width'],self.prefs['scaling_height'])
                 success=os.path.exists(path_and_filename)
                 if success:
                     dlg=QtWidgets.QMessageBox(self.centralwidget)
@@ -782,13 +794,12 @@ class MainWindow():
                 if not 'connectpoints' in self.prefs or (self.prefs['connectpoints'] is not False and self.prefs['connectpoints'] is not True):  self.prefs['connectpoints']=True
                 if not 'language' in self.prefs or (self.prefs['language']!='English' and self.prefs['language']!='German'):  self.prefs['language']='English'
                 if not 'method' in self.prefs or (self.prefs['method']!='PolyDP' and self.prefs['method'] != 'NoApprox' and self.prefs['method'] != 'Hull' and self.prefs['method'] != 'TehChin' and self.prefs['method'] != 'Spline' and self.prefs['method'] != 'Spline TehChin'):  self.prefs['method']='PolyDP'
-                if not 'save_height' in self.prefs or (self.prefs['save_height'] is not False and self.prefs['save_height'] is not True):  self.prefs['save_height']=True
-                if not 'use_heightscaling' in self.prefs or (self.prefs['use_heightscaling'] is not False and self.prefs['use_heightscaling'] is not True):  self.prefs['use_heightscaling']=False
+                if not 'save_thickness' in self.prefs or (self.prefs['save_thickness'] is not False and self.prefs['save_thickness'] is not True):  self.prefs['save_thickness']=True
                 if not 'scaling_width' in self.prefs or self.prefs['scaling_width']<-10 or self.prefs['scaling_width']>10:  self.prefs['scaling_width']=0
                 if not 'scaling_height' in self.prefs or self.prefs['scaling_height']<-10 or self.prefs['scaling_height']>10:  self.prefs['scaling_height']=0
                 if not 'use_thickness_scaling' in self.prefs or (self.prefs['use_thickness_scaling'] is not False and self.prefs['use_thickness_scaling'] is not True):  self.prefs['use_thickness_scaling']=False
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_height':True,'use_heightscaling':False,'scaling_width':0,'scaling_height':0,'use_thickness_scaling':False}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_thickness':True,'use_thickness_scaling':False,'scaling_width':0,'scaling_height':0}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
@@ -860,7 +871,7 @@ class MainWindow():
         img_left=cv2.remap(img_left,self.stereoMapL_x,self.stereoMapL_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         img_right=cv2.remap(img_right,self.stereoMapR_x,self.stereoMapR_y,cv2.INTER_LANCZOS4,cv2.BORDER_CONSTANT,0)
         # The toolheight function is called
-        self.thickness,self.depth_frame=Functions.toolthickness(img_left,img_right,self.prefs['threshold'])
+        self.thickness=Functions.toolthickness(img_left,img_right,self.prefs['threshold'])
         # Save the toolheight to the preferences
         self.prefs['thickness']=self.thickness
         # Set the text of the label to the toolheight
@@ -907,6 +918,8 @@ class MainWindow():
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
             # Chack if the tool is in the center
             self.check_tool_centered()
+            # Run the thickness-scaling factor calcutation method:
+            self.calc_thickness_scaling()
     def check_tool_centered(self):
         # Check if the tool is near the middle of the board and
             # give an information that the tool center is not in the middle:
@@ -1089,32 +1102,35 @@ class Settings(object): # Definition of the settings class
         else:
             Settings.setWindowTitle("Settings")
         self.widget = QtWidgets.QWidget(Settings)
-        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 301))
+        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 400))
         # Add the widgets to the page:
         self.checkBox_height = QtWidgets.QCheckBox(self.widget)
-        self.checkBox_height.setGeometry(QtCore.QRect(10, 20, 250, 28))
-        self.checkBox_height.setChecked(prefs['save_height'])
+        self.checkBox_height.setGeometry(QtCore.QRect(10, 15, 250, 28))
+        self.checkBox_height.setChecked(prefs['save_thickness'])
         # Add a checkbox for using the height to scale the contour
         self.checkBox_thickness_scaling=QtWidgets.QCheckBox(self.widget)
-        self.checkBox_thickness_scaling.setGeometry(QtCore.QRect(10,55,250,28))
-        self.checkBox_thickness_scaling.setChecked(prefs['use_heightscaling'])
+        self.checkBox_thickness_scaling.setGeometry(QtCore.QRect(10,175,250,28))
+        self.checkBox_thickness_scaling.setChecked(prefs['use_thickness_scaling'])
+        # Add a description label for the checkbox of thickness-scalling:
+        self.label_thickness_scaling=QtWidgets.QLabel(self.widget)
+        self.label_thickness_scaling.setGeometry(QtCore.QRect(10,200,250,120))
         # Add a slider for the width scaling
         self.slider_scaling_width=QtWidgets.QSlider(self.widget)
-        self.slider_scaling_width.setGeometry(QtCore.QRect(10,110,200,40))
+        self.slider_scaling_width.setGeometry(QtCore.QRect(10,75,200,40))
         self.slider_scaling_width.setOrientation(QtCore.Qt.Horizontal)
         self.slider_scaling_width.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_scaling_width.setMinimum(0) 
         self.slider_scaling_width.setMaximum(100)
         self.slider_scaling_width.setValue(int(prefs['scaling_width']/0.2)+50)
-        # Add a label fot the width slider
+        # Add a label for the width slider
         self.label_slider_scaling_width=QtWidgets.QLabel(self.widget)
-        self.label_slider_scaling_width.setGeometry(QtCore.QRect(10,90,250,20))
+        self.label_slider_scaling_width.setGeometry(QtCore.QRect(10,55,250,20))
         # Add a label for the value of the width slider
         self.label_value_slider_width=QtWidgets.QLabel(self.widget)
-        self.label_value_slider_width.setGeometry(QtCore.QRect(210,110,60,40))
+        self.label_value_slider_width.setGeometry(QtCore.QRect(210,75,60,40))
         # Add a slider for the height scaling
         self.slider_scaling_height=QtWidgets.QSlider(self.widget)
-        self.slider_scaling_height.setGeometry(QtCore.QRect(10,170,200,40))
+        self.slider_scaling_height.setGeometry(QtCore.QRect(10,135,200,40))
         self.slider_scaling_height.setOrientation(QtCore.Qt.Horizontal)
         self.slider_scaling_height.setStyleSheet("""QSlider::handle:horizontal {background-color: #3289a8; border: 1px solid #5c5c5c;  width:20px; height:40px; border-radius:5px;} """)
         self.slider_scaling_height.setMinimum(0) 
@@ -1122,13 +1138,12 @@ class Settings(object): # Definition of the settings class
         self.slider_scaling_height.setValue(int(prefs['scaling_height']/0.2+50))
         # Add a label for the value of the height slider
         self.label_value_slider_height=QtWidgets.QLabel(self.widget)
-        self.label_value_slider_height.setGeometry(QtCore.QRect(210,170,60,40))
+        self.label_value_slider_height.setGeometry(QtCore.QRect(210,135,60,40))
         # Add a label for the height slider
         self.label_slider_scaling_height=QtWidgets.QLabel(self.widget)
-        self.label_slider_scaling_height.setGeometry(QtCore.QRect(10,150,250,20))
+        self.label_slider_scaling_height.setGeometry(QtCore.QRect(10,115,250,20))
         # The GUI is labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
-        QtCore.QMetaObject.connectSlotsByName(Settings)
 
     def retranslateUi(self, language): # Labels the GUI according to the passed language
         if language == 'German':
@@ -1136,11 +1151,20 @@ class Settings(object): # Definition of the settings class
             self.checkBox_thickness_scaling.setText("Dicke für Skalierung verwenden")
             self.label_slider_scaling_width.setText("Skalierung Breite")
             self.label_slider_scaling_height.setText("Skalierung Höhe")
+            self.label_thickness_scaling.setText("Dickenskalierung funktioniert nur \n"
+            "wenn das Werkzeug in der Mitte der\n"  
+            "Platte aufgelegt ist. Die Funktion \n"
+            "wird nur für Objekte empfohlen\n"
+            "die höher sind als 5cm.")
         else:
             self.checkBox_height.setText("Save thickness in filename")
             self.checkBox_thickness_scaling.setText("Use thickness for scaling")
-            self.label_slider_scaling_width.setText("Scaling widht")
+            self.label_slider_scaling_width.setText("Scaling width")
             self.label_slider_scaling_height.setText("Scaling height")
+            self.label_thickness_scaling.setText("Thickness-scaling is only working \n"
+            "if the tool is placed in the middle of \n"
+            "the plate. It's recommended to only \n"
+            "use this for tools thicker than 5cm.")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 

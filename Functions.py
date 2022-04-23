@@ -293,17 +293,14 @@ def extraction_spline_tehChin(cropped_image,every_nth_point:int):
    else:
         return None,None
 
-def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheight,thickness:int,prefs): # Exports the contour points and scales it
+def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheight,scaling_thickness:int,scaling_width:int,scaling_height:int): # Exports the contour points and scales it
     # contour = array of contour points, path_and_name = the absolute path to the desired file, scaling_framewidth & scaling_frameheight = scaling factors
-    # for the global scaling in the two dimensions, thickness = thickness in mm, prefs = preferences dictionary that stores the metadata of the image and settings
+    # for the global scaling in the two dimensions,  scaling_thickness is the scaling factor that results from the thickness, scaling width and height are the global scaling factors from the settings
     
     # Calculate the scaling factor
-    if prefs['use_thickness_scaling']:
-        factor_width= 1+(prefs['scaling_width']/100)*(1-(thickness/10000)) #100mm = 1% smaller scaling
-        factor_height= 1+(prefs['scaling_height']/100)*(1-(thickness/10000))
-    else:
-        factor_width= 1+(prefs['scaling_width']/100)
-        factor_height= 1+(prefs['scaling_height']/100)
+    factor_width= (1+(scaling_width/100))*scaling_thickness 
+    factor_height= (1+(scaling_height/100))*scaling_thickness
+    
     # Create the file for ezdxf
     file=dxf.new('R2000')
     msp=file.modelspace()
@@ -364,4 +361,4 @@ def toolthickness(img_left,img_right,threshold:int): # This function calculates 
         height_tool=0
     if height_tool>600:
         height_tool=0
-    return height_tool,depth_frame
+    return height_tool
