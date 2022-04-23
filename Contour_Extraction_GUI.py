@@ -747,9 +747,7 @@ class MainWindow():
         # The factor is 0.001431% per mm thickness + 2% Offset
         # The factor is only applied if the tool is in the middle of the plate.
         if self.prefs['use_thickness_scaling'] is True and self.toolCentered is True: 
-            self.scaling_thickness=(1/(1+(self.thickness*0.001431)))+0.02
-            if self.scaling_thickness > 1:
-                self.scaling_thickness=1.0 
+            self.scaling_thickness=(1/(1+(self.thickness*0.001431)))+0.01  
         else:
             self.scaling_thickness=1.0     
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
