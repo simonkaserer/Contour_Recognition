@@ -253,6 +253,7 @@ def extraction_spline(cropped_image,every_nth_point:int):
         return None,None
 
 def extraction_spline_tehChin(cropped_image,every_nth_point:int):
+   '@brief: This function extracts ... \n @param: cropped_image = binarized, cropped image that only contains the toolitself'
    # Extracts the contour with the Teh Chin approximation and then approximates it with a spline
    # cropped_image = image containing only the tool, every_nth_point = 1: every point, 2: every second point, 3: every 3rd point...
    # connectpoints = draw the contour as closed line or only the points, toolwidth & toolheight = size of the tool
