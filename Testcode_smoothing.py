@@ -43,7 +43,7 @@ def smooth_contour(contour,every_nth_point=1,printflag=False):
    for i in range(10):
       cont.append(cont[i])
    tool_contour=np.array(cont)
-
+   
 
    nth_point=round(len(cnt)*3/cv2.arcLength(cnt,True),0)
 
