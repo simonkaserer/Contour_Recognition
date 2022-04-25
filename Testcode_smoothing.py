@@ -11,6 +11,19 @@ def calc_angle_deg(x1,y1,x2,y2):
 
    return np.arctan2(diff_x,diff_y)*180/np.pi
 
+def angle( ax,ay,bx,by,cx,cy):
+
+    ab=cv2.Point2d { bx - ax, by - ay };
+    cb=cv2.Point2d { bx - cx, by - cy };
+
+    dot = (ab.x * cb.x + ab.y * cb.y); // dot product
+    cross = (ab.x * cb.y - ab.y * cb.x); // cross product
+
+    alpha = atan2(cross, dot);
+
+    return abs(round((alpha * 180. / cv2.PI + 0.5),0));
+
+
 def smooth_contour(contour,every_nth_point=1,printflag=False):
 
    # img=cv2.imread('/home/pi/Desktop/Screenshots/CuttingPliersPolyCropped.jpg')
