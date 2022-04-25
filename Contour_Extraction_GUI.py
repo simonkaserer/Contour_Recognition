@@ -753,7 +753,7 @@ class MainWindow():
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
         if self.lineEdit_Path.text() != '' and self.filename !='':
             if self.prefs['save_thickness'] is True:
-                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'{self.thickness}mm.dxf'
+                path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'_{self.thickness}mm.dxf'
             else:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+'.dxf'
             # Remove eventual whitespaces in the filename:
