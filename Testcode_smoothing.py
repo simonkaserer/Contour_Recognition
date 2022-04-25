@@ -7,9 +7,9 @@ def calc_angle_deg(x1,y1,x2,y2):
    diff_x=x2-x1
    diff_y=y2-y1
    
-   if diff_y==0: diff_y=0.0000001
+   #if diff_y==0: diff_y=0.0000001
 
-   return np.arctan(diff_x/diff_y)*180/np.pi
+   return np.arctan2(diff_x,diff_y)*180/np.pi
 
 def smooth_contour(contour,every_nth_point=1,printflag=False):
 
