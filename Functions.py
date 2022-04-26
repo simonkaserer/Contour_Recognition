@@ -4,7 +4,10 @@ import ezdxf as dxf
 from scipy.interpolate import interp1d
 
 def warp_img(img,threshold_value:int,border_offset_px:int,show_outer_edge:bool): 
-    '@brief: This function finds the corners of the lamp perimeter and warps it to a straight image\n@params: img = captured image as numpy array, threshold_value = value for threshold from 0 to 255\nborder_offset_px = amount of pixel that are cropped from the border\nshow_outer_edge = for debugging (shows the whole picture with the found shading board highlighted)'
+    '''@brief: This function finds the corners of the lamp perimeter and warps it to a straight image
+       @params: img = captured image as numpy array, threshold_value = value for threshold from 0 to 255
+       border_offset_px = amount of pixel that are cropped from the border
+       show_outer_edge = for debugging (shows the whole picture with the found shading board highlighted)'''
     
     # Threshold the image to binarize it
     _,thresh=cv2.threshold(img,threshold_value,255,0)
