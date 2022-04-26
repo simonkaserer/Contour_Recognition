@@ -13,15 +13,13 @@ def calc_angle_deg(x1,y1,x2,y2):
 
 def angle( ax,ay,bx,by,cx,cy):
 
-    ab=cv2.Point2d { bx - ax, by - ay };
-    cb=cv2.Point2d { bx - cx, by - cy };
 
-    dot = (ab.x * cb.x + ab.y * cb.y); // dot product
-    cross = (ab.x * cb.y - ab.y * cb.x); // cross product
+    dot = (bx - ax * bx - cx + by - ay * by - cy); # dot product
+    cross = (bx - ax * by - cy  - by - ay  * bx - cx); # cross product
 
-    alpha = atan2(cross, dot);
+    alpha = np.arctan2(cross, dot)
 
-    return abs(round((alpha * 180. / cv2.PI + 0.5),0));
+    return abs(round((alpha * 180. / np.pi + 0.5),0));
 
 
 def smooth_contour(contour,every_nth_point=1,printflag=False):
@@ -62,10 +60,23 @@ def smooth_contour(contour,every_nth_point=1,printflag=False):
      
    for i in range(number_of_points):
    
+      # x=tool_contour[i][0][0]
+      # y=tool_contour[i][0][1]
+      # x2=tool_contour[i+2][0][0]
+      # y2=tool_contour[i+2][0][1]
+      # x3=tool_contour[i+5][0][0]
+      # y3=tool_contour[i+5][0][1]
+      # x4=tool_contour[i+10][0][0]
+      # y4=tool_contour[i+10][0][1]
+      # direction[i][0]=x
+      # direction[i][1]=y
+      # #direction[i][2]=np.arctan((x)/(y))*180/np.pi
+      # direction[i][2]=calc_angle_deg(x,y,x2,y2)
+      # direction[i][3]=calc_angle_deg(x,y,x3,y3)
+      # direction[i][4]=calc_angle_deg(x,y,x4,y4)
+
       x=tool_contour[i][0][0]
       y=tool_contour[i][0][1]
-      
-
       x2=tool_contour[i+2][0][0]
       y2=tool_contour[i+2][0][1]
       x3=tool_contour[i+5][0][0]
@@ -74,10 +85,10 @@ def smooth_contour(contour,every_nth_point=1,printflag=False):
       y4=tool_contour[i+10][0][1]
       direction[i][0]=x
       direction[i][1]=y
-      direction[i][2]=np.arctan((x)/(y))*180/np.pi
-      direction[i][3]=calc_angle_deg(x,y,x2,y2)
-      direction[i][4]=calc_angle_deg(x,y,x3,y3)
-      direction[i][5]=calc_angle_deg(x,y,x4,y4)
+      #direction[i][2]=np.arctan((x)/(y))*180/np.pi
+      direction[i][2]=angle(x,y,x2,y2,x3,y3)
+      direction[i][3]=calc_angle_deg(x,y,x3,y3)
+      direction[i][4]=angle(x,y,x3,y3,x4,y4)
       
    print(direction)
    # if printflag:
