@@ -1017,7 +1017,6 @@ class MainWindow():
         self.worker.stop()
         self.save_prefs()
         self.save_items_boxes()
-
 class combo(QtWidgets.QComboBox): # Class definition of the combobox dialog for saving new filename pieces
    def __init__(self, parent): # the initialization is inherited and the AcceptDrops-flag is activated
       super(combo, self).__init__( parent)
