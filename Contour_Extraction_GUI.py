@@ -878,6 +878,10 @@ class MainWindow():
         self.label_height_value.setText(f'{self.thickness}mm') 
         # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
         self.cropped_image=None
+        self.toolwidth=0
+        self.toolheight=0
+        self.tool_pos_x=0
+        self.tool_pos_y=0
         self.extraction_image=self.warped_image
         counter=1
         while self.cropped_image is None:
@@ -885,8 +889,14 @@ class MainWindow():
                 self.cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.extraction_image)
             counter+=1
             if counter > 20:  break
-        # Check if a cropped image could be found
-        if self.cropped_image is not None:
+        # Check if the width or height is -1 and give a message:
+        if self.toolwidth ==-1 or self.toolheight==-1:
+            dlg=QtWidgets.QMessageBox(self.centralwidget)
+            dlg.setWindowTitle(' ')
+            dlg.setText('Tool is too small!')
+            dlg.exec()
+        # Check if the tool is bigger than 10x10 pixels
+        if self.toolwidth>10 and self.toolheight>10:
             self.process()    
     def process(self): # This method chooses the called extraction function according to the selected method.
         # The needed parameters are provided to the function
@@ -905,7 +915,8 @@ class MainWindow():
             elif self.comboBox_method.currentText() == 'Spline TehChin':
                 self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'])
         # If a contour is found, it is showed on the big contour view panel
-        if contour_image is not None: 
+        if contour_image is not None:
+            
             # Enable the save dxf-button:
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
                 self.button_savedxf.setEnabled(True)
@@ -922,6 +933,8 @@ class MainWindow():
             self.check_tool_centered()
             # Run the thickness-scaling factor calcutation method:
             self.calc_thickness_scaling()
+        else:   
+            self.ContourView.clear()
     def check_tool_centered(self):
         # Check if the tool is near the middle of the board and
             # give an information that the tool center is not in the middle:
@@ -1197,7 +1210,7 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
             
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
             # Warp the image and emit the values and the image to be processed in the GUI class
-            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,1,False)
+            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,2,False)
             if warped_image is not None:
                 self.widthUpdate.emit(framewidth)
                 self.heightUpdate.emit(frameheigth)

@@ -62,22 +62,30 @@ def crop_image(warped_image):
     @params: warped_image = image as npy array that is already warped and cropped to the inside of the shading board.'''
     
     # Look for the contour of the tool:
-    cnts,hierarchy=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    cnts,_=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
+        print(cv2.contourArea(cnt))
+        pic=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
+        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
+        cv2.imshow("outer edge",cv2.resize(edge_out,(500,500)))
         # Find the minimum enclosing rectangle
         x,y,w,h=cv2.boundingRect(cnt)
+        #Check if the found rectangle is 0 in widht or height
+        if w==0 or h==0: return None,0,0,0,0
+        # Check if the found rectangle is bigger than 1900 in one direction -> indication of a wrong found bounding rectangle if the contour is too small
+        if w>1900 or h>1900: return None,-1,-1,0,0
         # Crop the tool
         cropped_image=warped_image[int((y)-2):int((y+h)+2),int((x)-2):int((x+w)+2)]
         #Calculate the tool center point:
-        toolx=x+w/2
-        tooly=y+h/2
+        toolx=int(x+w/2)
+        tooly=int(y+h/2)
         # Flip the cropped image to save the dxf in the right orientation
         cropped_image=cv2.flip(cropped_image,0)
         # Return the cropped image along with the size and the position
         return cropped_image,w+4,h+4,toolx,tooly
     else:
-        return None,None,None,None,None
+        return None,0,0,0,0
 
 def extraction_polyDP(cropped_image,factor_epsilon:float,every_nth_point:int,connectpoints:bool):
     '''@brief: This function extracts the contour with the Douglas Peucker Algorithm
@@ -205,9 +213,9 @@ def extraction_None(cropped_image,every_nth_point:int,connectpoints:bool):
             img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) #only points
         # Scale the image to the width or height of the Contour View window
         if width > height:
-            scale=500/width
+            scale=500.0/width
         else:
-            scale=500/height
+            scale=500.0/height
         img_cont_scaled=cv2.resize(img_cont,(int(width*scale),int(height*scale)))
         # Return the contour points and the image
         return tool_contour,img_cont_scaled
@@ -346,6 +354,8 @@ def toolthickness(img_left,img_right,threshold:int):
     # Choose the tool contour - the biggest two contours are the illuminated frames inside and outside contour
     toolL=cntsL[-3]
     toolR=cntsR[-3]
+    # Check if the tools are found
+    if cv2.contourArea(toolL)<1 or cv2.contourArea(toolR)<1: return 0
     # Calculate the moments for the tool contours
     ML=cv2.moments(toolL)
     MR=cv2.moments(toolR)
