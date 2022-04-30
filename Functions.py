@@ -65,10 +65,6 @@ def crop_image(warped_image):
     cnts,_=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
-        print(cv2.contourArea(cnt))
-        pic=cv2.cvtColor(warped_image,cv2.COLOR_GRAY2BGR)
-        edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
-        cv2.imshow("outer edge",cv2.resize(edge_out,(500,500)))
         # Find the minimum enclosing rectangle
         x,y,w,h=cv2.boundingRect(cnt)
         #Check if the found rectangle is 0 in widht or height

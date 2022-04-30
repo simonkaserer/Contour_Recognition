@@ -916,7 +916,6 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'])
         # If a contour is found, it is showed on the big contour view panel
         if contour_image is not None:
-            
             # Enable the save dxf-button:
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
                 self.button_savedxf.setEnabled(True)
