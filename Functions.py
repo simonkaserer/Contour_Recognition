@@ -62,7 +62,7 @@ def crop_image(warped_image):
     @params: warped_image = image as npy array that is already warped and cropped to the inside of the shading board.'''
     
     # Look for the contour of the tool:
-    cnts,_=cv2.findContours(warped_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    cnts,_=cv2.findContours(warped_image,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
     if len(cnts)>0:
         cnt=max(cnts,key=cv2.contourArea)
         # Find the minimum enclosing rectangle
