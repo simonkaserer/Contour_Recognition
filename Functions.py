@@ -63,8 +63,6 @@ def crop_image(contour_image,contour):
     x,y,w,h=cv2.boundingRect(contour)
     #Check if the found rectangle is 0 in widht or height
     if w==0 or h==0: return None,0,0,0,0
-    # Check if the found rectangle is bigger than 1900 in one direction -> indication of a wrong found bounding rectangle if the contour is too small
-    if w>1900 or h>1900: return None,-1,-1,0,0
     # Crop the tool
     cropped_image=contour_image[int((y)-2):int((y+h)+2),int((x)-2):int((x+w)+2)]
     #Calculate the tool center point:
@@ -72,6 +70,8 @@ def crop_image(contour_image,contour):
     tooly=int(y+h/2)
     # Flip the cropped image to save the dxf in the right orientation
     cropped_image=cv2.flip(cropped_image,0)
+    # Check if the flipped image is Nonetype
+    if cropped_image is None: return None,0,0,0,0
     height,width,_=cropped_image.shape
     # Scale the image to the width or height of the Contour View window
     if width > height:

@@ -879,6 +879,7 @@ class MainWindow():
     def process(self): # This method chooses the called extraction function according to the selected method.
         # The needed parameters are provided to the function
         contour_image=None
+        cropped_image=None
         if self.warped_image is not None:
             if self.comboBox_method.currentText() == 'PolyDP':
                 self.contour,contour_image=Functions.extraction_polyDP(self.warped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
@@ -892,8 +893,9 @@ class MainWindow():
                 self.contour,contour_image=Functions.extraction_spline(self.warped_image,self.prefs['nth_point'])
             elif self.comboBox_method.currentText() == 'Spline TehChin':
                 self.contour,contour_image=Functions.extraction_spline_tehChin(self.warped_image,self.prefs['nth_point'])
-         # crop the image
-        cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(contour_image,self.contour)
+        if contour_image is not None: 
+            # crop the image
+            cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(contour_image,self.contour)
             
         # If a contour is found, it is showed on the big contour view panel
         if cropped_image is not None:
