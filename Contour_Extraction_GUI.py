@@ -465,13 +465,11 @@ class MainWindow():
     def save_img(self): # This method saves the images of the left and right mono camera. They can be used for further computings 
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
             pathcnt=self.lineEdit_Path.text()+'/'+self.filename+'Cnt.jpg'
-            pathcropped=self.lineEdit_Path.text()+'/'+self.filename+'Cropped.jpg'
             pathwarped=self.lineEdit_Path.text()+'/'+self.filename+'Warped.jpg'
             pathleft=self.lineEdit_Path.text()+'/'+self.filename+'Left.jpg'
             pathright=self.lineEdit_Path.text()+'/'+self.filename+'Right.jpg'
             pathrgb=self.lineEdit_Path.text()+'/'+self.filename+'Rgb.jpg'
             cv2.imwrite(pathcnt,self.contour_image)
-            cv2.imwrite(pathcropped,self.cropped_image)
             cv2.imwrite(pathwarped,self.warped_image)
             edgeLeft = edgeLeftQueue.get()
             image=edgeLeft.getFrame()
@@ -861,7 +859,7 @@ class MainWindow():
             self.button_getContour.setEnabled(True)
         else:
             self.button_getContour.setEnabled(False)
-    def get_contour(self): # This method extracts the contour out of the warped image
+    def get_contour(self): # This method gets the thickness of the tool and starts the extraction process
         # To get the images for the height-function the frames of the left and right camera queue are loaded
         edgeLeft=edgeLeftQueue.get()
         edgeRight=edgeRightQueue.get()
@@ -876,56 +874,37 @@ class MainWindow():
         self.prefs['thickness']=self.thickness
         # Set the text of the label to the toolheight
         self.label_height_value.setText(f'{self.thickness}mm') 
-        # The cropping function is called until a tool is found and then cropped. With this cropped image the process is started
-        self.cropped_image=None
-        self.toolwidth=0
-        self.toolheight=0
-        self.tool_pos_x=0
-        self.tool_pos_y=0
-        self.extraction_image=self.warped_image
-        counter=1
-        while self.cropped_image is None:
-            if self.extraction_image is not None:
-                self.cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(self.extraction_image)
-            counter+=1
-            if counter > 20:  break
-        # Check if the width or height is -1 and give a message:
-        if self.toolwidth ==-1 or self.toolheight==-1:
-            dlg=QtWidgets.QMessageBox(self.centralwidget)
-            dlg.setWindowTitle(' ')
-            dlg.setText('Tool is too small!')
-            dlg.exec()
-        # Check if the tool is bigger than 10x10 pixels
-        if self.toolwidth>10 and self.toolheight>10:
-            self.process()    
+        # Start the extraction process
+        self.process()    
     def process(self): # This method chooses the called extraction function according to the selected method.
         # The needed parameters are provided to the function
         contour_image=None
-        if self.cropped_image is not None:
+        if self.warped_image is not None:
             if self.comboBox_method.currentText() == 'PolyDP':
-                self.contour,contour_image=Functions.extraction_polyDP(self.cropped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
+                self.contour,contour_image=Functions.extraction_polyDP(self.warped_image,self.prefs['factor'],self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'NoApprox':
-                self.contour,contour_image=Functions.extraction_None(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
+                self.contour,contour_image=Functions.extraction_None(self.warped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'Hull':
-                self.contour,contour_image=Functions.extraction_convexHull(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
+                self.contour,contour_image=Functions.extraction_convexHull(self.warped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'TehChin':
-                self.contour,contour_image=Functions.extraction_TehChin(self.cropped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
+                self.contour,contour_image=Functions.extraction_TehChin(self.warped_image,self.prefs['nth_point'],self.checkBox_connectpoints.isChecked())
             elif self.comboBox_method.currentText() == 'Spline':
-                self.contour,contour_image=Functions.extraction_spline(self.cropped_image,self.prefs['nth_point'])
+                self.contour,contour_image=Functions.extraction_spline(self.warped_image,self.prefs['nth_point'])
             elif self.comboBox_method.currentText() == 'Spline TehChin':
-                self.contour,contour_image=Functions.extraction_spline_tehChin(self.cropped_image,self.prefs['nth_point'])
+                self.contour,contour_image=Functions.extraction_spline_tehChin(self.warped_image,self.prefs['nth_point'])
+         # crop the image
+        cropped_image,self.toolwidth,self.toolheight,self.tool_pos_x,self.tool_pos_y=Functions.crop_image(contour_image,self.contour)
+            
         # If a contour is found, it is showed on the big contour view panel
-        if contour_image is not None:
+        if cropped_image is not None:
             # Enable the save dxf-button:
             if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
                 self.button_savedxf.setEnabled(True)
             else:
                 self.button_savedxf.setEnabled(False)
-            # Flip the image back
-            contour_image=cv2.flip(contour_image,0)
             # Update the contour view
-            self.contour_image=contour_image
-            frame=cv2.cvtColor(contour_image,cv2.COLOR_BGR2RGB)
+            self.contour_image=cropped_image
+            frame=cv2.cvtColor(cropped_image,cv2.COLOR_BGR2RGB)
             img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
             self.ContourView.setPixmap(QtGui.QPixmap.fromImage(img))
             # Chack if the tool is in the center
@@ -1209,7 +1188,7 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
             
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
             # Warp the image and emit the values and the image to be processed in the GUI class
-            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,2,False)
+            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,False)
             if warped_image is not None:
                 self.widthUpdate.emit(framewidth)
                 self.heightUpdate.emit(frameheigth)
