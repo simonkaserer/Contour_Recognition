@@ -95,7 +95,7 @@ def extraction_polyDP(warped_image,factor_epsilon:float,every_nth_point:int,conn
     # Return None if no contour was found
     if len(cnts)==0: return None,None
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     # Set the epsilon for the DP approximation - the lower the epsilon, the more accurate the contour is
@@ -134,7 +134,7 @@ def extraction_TehChin(warped_image,every_nth_point:int,connectpoints:bool):
     if len(cnts)==0: return None,None
     # Find the maximum area contour
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     # Convert the points to a list to decimate it
@@ -165,7 +165,7 @@ def extraction_convexHull(warped_image,every_nth_point:int,connectpoints:bool):
     # Return None if no contour was found
     if len(cnts)==0: return None,None
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     # Decimate the points according to the slider
@@ -196,7 +196,7 @@ def extraction_None(warped_image,every_nth_point:int,connectpoints:bool):
     # Return None if no contour was found
     if len(cnts)==0: return None,None
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     cont=cnt.tolist()
@@ -226,7 +226,7 @@ def extraction_spline(warped_image,every_nth_point:int):
     # Return None if no contour was found
     if len(cnts)==0: return None,None
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     cont=cnt.tolist()
@@ -268,7 +268,7 @@ def extraction_spline_tehChin(warped_image,every_nth_point:int):
     # Return None if no contour was found:
     if len(cnts)==0: return None,None
     cnts=sorted(cnts,key=cv2.contourArea)
-    if cnts[-3] is None: return None,None
+    if len(cnts)<3: return None,None
     # Choose the tool
     cnt=cnts[-3]
     cont=cnt.tolist()
