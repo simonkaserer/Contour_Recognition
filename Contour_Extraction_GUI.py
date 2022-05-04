@@ -306,6 +306,7 @@ class MainWindow():
         self.actionSettings= QtWidgets.QAction(ContourExtraction)
         self.actionMethods = QtWidgets.QAction(ContourExtraction)
         self.actionGeneral = QtWidgets.QAction(ContourExtraction)
+        self.actionAbout = QtWidgets.QAction(ContourExtraction)
         ContourExtraction.setMenuBar(self.menuBar)
         self.menuLanguage.addAction(self.actionEnglish)
         self.menuLanguage.addAction(self.actionGerman)
@@ -317,6 +318,7 @@ class MainWindow():
         self.menuBar.addAction(self.menuInfo.menuAction())
         self.menuInfo.addAction(self.actionMethods)
         self.menuInfo.addAction(self.actionGeneral)
+        self.menuInfo.addAction(self.actionAbout)
         self.actionEnglish.triggered.connect(self.lang_english)
         self.actionGerman.triggered.connect(self.lang_german)
         self.actionSave_Contour_Image.triggered.connect(self.save_img)
@@ -324,6 +326,7 @@ class MainWindow():
         self.actionSettings.triggered.connect(self.open_settings)
         self.actionMethods.triggered.connect(self.info_methos)
         self.actionGeneral.triggered.connect(self.info_general)
+        self.actionAbout.triggered.connect(self.info_about)
         #################################################################################
        
         ContourExtraction.setCentralWidget(self.centralwidget)
@@ -407,6 +410,7 @@ class MainWindow():
             self.actionGeneral.setText("Allgemein")
             self.actionSettings.setText("Einstellungen")
             self.label_height.setText("Dicke:")
+            self.actionAbout.setText("Lizenz")
         else:
             self.Button_Path.setText( "...")
             self.ContourView.setToolTip( "Contour view")
@@ -437,6 +441,7 @@ class MainWindow():
             self.actionGeneral.setText("General")
             self.label_height.setText("Thickness:")
             self.actionSettings.setText("Settings")
+            self.actionAbout.setText("About")
         # These texts are not affected by the language change:
         self.menuLanguage.setTitle( "Language")
         self.actionEnglish.setText( "English")
@@ -445,7 +450,17 @@ class MainWindow():
         self.actionSave_Metadata.setText("Save Metadata")
         self.actionSave_Contour_Image.setText("Save Contour Image")
         self.menuInfo.setTitle("Info")
-        
+    def info_about(self):
+        dlg=QtWidgets.QMessageBox(self.centralwidget)
+        dlg.setWindowTitle(' ')
+        dlg.setText(''' Copyright (C) 2022  Simon Kaserer
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not, see https://google.com/ ''')
+        dlg.exec()
     def save_meta(self): # This is a method for testing purposes where the current settings and some other informations are saved under the 
         # selected path and filename but in a .yaml format
         if self.lineEdit_Path.text() != '' and self.filename !='' and self.contour is not None:
