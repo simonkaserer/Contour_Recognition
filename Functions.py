@@ -78,9 +78,9 @@ def crop_image(contour_image,contour):
         scale=500/width
     else:
         scale=500/height
-    icropped_image_scaled=cv2.resize(cropped_image,(int(width*scale),int(height*scale)))
+    cropped_image_scaled=cv2.resize(cropped_image,(int(width*scale),int(height*scale)))
     # Return the cropped image along with the size and the position
-    return icropped_image_scaled,w+4,h+4,toolx,tooly
+    return cropped_image_scaled,w+4,h+4,toolx,tooly
     
 def extraction_polyDP(warped_image,factor_epsilon:float,every_nth_point:int,connectpoints:bool):
     '''@brief: This function extracts the contour with the Douglas Peucker Algorithm
