@@ -259,8 +259,8 @@ def extraction_spline(warped_image,every_nth_point:int):
     # Creates a evenly spaced vector with 2 points in between each given point
     interp_i=np.linspace(0,i.max(),2*i.max())
     # Interpolate the contour points
-    x_new=interp1d(i,x,kind='slinear')(interp_i)
-    y_new=interp1d(i,y,kind='slinear')(interp_i)
+    x_new=interp1d(i,x,kind='quadratic')(interp_i)
+    y_new=interp1d(i,y,kind='quadratic')(interp_i)
     # Rearrange the points to fit the np.array format
     cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
     # create a black background
@@ -300,8 +300,8 @@ def extraction_spline_tehChin(warped_image,every_nth_point:int):
     # Create a evenly spreaded vector with 2 points per step
     interp_i=np.linspace(0,i.max(),2*i.max())
     # Interpolate the points
-    x_new=interp1d(i,x,kind='slinear')(interp_i)
-    y_new=interp1d(i,y,kind='slinear')(interp_i)
+    x_new=interp1d(i,x,kind='quadratic')(interp_i)
+    y_new=interp1d(i,y,kind='quadratic')(interp_i)
     # Rearrange the points in np.array format
     cnt=np.array([[[int(x_new[i]),int(y_new[i])]for i in range(len(x_new))]])
     # create a black background
