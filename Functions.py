@@ -59,7 +59,7 @@ def crop_image(contour_image,contour):
     '''@brief: Search a tool contour and crop the image by using the boundingRect function of OpenCV
     @params: contour_image = image as npy array that contains the wanted contour.'''
     
-    # Find the minimum enclosing rectangle
+    # Find the bounding rectangle
     x,y,w,h=cv2.boundingRect(contour)
     #Check if the found rectangle is 0 in widht or height
     if w==0 or h==0: return None,0,0,0,0
