@@ -14,7 +14,7 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 * Make a new folder: ```mkdir ./Contour_Extraction```
 * Change the directory: ```cd ./Contour_Extraction```
 * Clone this repository: ```git clone https://github.com/simonkaserer/Contour_Recognition.git```
-* Install the requirements with: ```pip3 install requirements.txt```
+* Install the requirements with: ```pip3 install -r requirements.txt```
 * Make *Contour_Extraction_GUI.py* executable with: ```chmod +x Contour_Extraction_GUI.py```
 * create a link to *Contour_Extraction_GUI.py*
 
