@@ -18,6 +18,18 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 * Make *Contour_Extraction_GUI.py* executable with: ```chmod +x Contour_Extraction_GUI.py```
 * create a link to *Contour_Extraction_GUI.py*
 
+## Dependencies
+### [Raspberry Pi OS](https://www.raspberrypi.com/software/)
+### [depthai-python 2.14.1.0](https://github.com/luxonis/depthai-python/tree/v2.14.1.0)
+### [OpenCV 4.4.0 ](https://github.com/opencv/opencv/tree/4.4.0)
+### [NumPy 1.22.1](https://github.com/numpy/numpy/tree/v1.22.1)
+### [SciPy 1.6.0 ](https://github.com/scipy/scipy/tree/v1.6.0)
+### [ezdxf 0.17.2](https://github.com/mozman/ezdxf/tree/v0.17.2)
+### [PyYAML 6.0](https://github.com/yaml/pyyaml/tree/8cdff2c80573b8be8e8ad28929264a913a63aa33)
+### [PyQt5 5.15.6](https://pypi.org/project/PyQt5/5.15.6/)
+
+
+<!--
 ## References
 ### depthai-python 2.14.1.0
 MIT License
@@ -190,6 +202,7 @@ copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -197,3 +210,4 @@ SOFTWARE.
 
 ### PyQt5
 GPL v3
+-->
