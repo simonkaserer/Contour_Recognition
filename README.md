@@ -19,7 +19,6 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 * create a link to *Contour_Extraction_GUI.py*
 
 ## Dependencies
-### [Raspberry Pi OS](https://www.raspberrypi.com/software/)
 ### [depthai-python 2.14.1.0](https://github.com/luxonis/depthai-python/tree/v2.14.1.0)
 ### [OpenCV 4.4.0 ](https://github.com/opencv/opencv/tree/4.4.0)
 ### [NumPy 1.22.1](https://github.com/numpy/numpy/tree/v1.22.1)
