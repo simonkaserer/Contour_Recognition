@@ -325,11 +325,11 @@ def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheigh
     points=[]
     #convert the contour to a list:
     cnt=contour.tolist()
-    #add the first entry of the contour to the end for a closed contour in dxf
+    #add the first entry of the contour to the end for a closed contour
     cnt.append(cnt[0])
     for point in cnt:
         points.append((point[0][0]/scaling_framewidth*factor_width,point[0][1]/scaling_frameheight*factor_height))
-    # Add the points to the dxf geometry section
+    # Add the points to the modelspace
     msp.add_lwpolyline(points)
     # Save the file under the filename with absolute path
     file.saveas(path_and_name)
