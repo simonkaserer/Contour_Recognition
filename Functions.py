@@ -28,7 +28,6 @@ def warp_img(img,threshold_value:int,show_outer_edge:bool):
     _,thresh=cv2.threshold(img,threshold_value,255,0)
     # Find the contours in the image to select the biggest one
     contours,_ = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
     # Find the max-area contour of the outer line:
     if len(contours) > 0:
         cnt=max(contours,key=cv2.contourArea)
@@ -122,7 +121,6 @@ def extraction_polyDP(warped_image,factor_epsilon:float,every_nth_point:int,conn
     cont=cont.tolist()
     cont=cont[::every_nth_point]
     tool_contour=np.array(cont)
-    
     # create a black background
     height,width=flipped_image.shape
     inv=np.zeros((int(height),int(width),3),dtype='uint8')
@@ -130,8 +128,7 @@ def extraction_polyDP(warped_image,factor_epsilon:float,every_nth_point:int,conn
     if connectpoints:
         img_cont=cv2.drawContours(inv,[tool_contour],-1,(0,255,0),2)
     else:
-        img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) #only points
-    
+        img_cont=cv2.drawContours(inv,tool_contour,-1,(0,255,0),2) #only points 
     # Return the found contour points and image
     return tool_contour,img_cont
 
@@ -322,7 +319,6 @@ def dxf_exporter(contour,path_and_name:str,scaling_framewidth,scaling_frameheigh
     # Calculate the scaling factor
     factor_width= (1+(scaling_width/100))*scaling_thickness 
     factor_height= (1+(scaling_height/100))*scaling_thickness
-    
     # Create the file for ezdxf
     file=dxf.new('R2000')
     msp=file.modelspace()
@@ -349,7 +345,6 @@ def toolthickness(img_left,img_right,threshold:int):
     # The contours are captured 
     cnts_left,_=cv2.findContours(img_left,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
     cnts_right,_=cv2.findContours(img_right,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
-    
     # Sort the contours by area
     cntsL=sorted(cnts_left,key=cv2.contourArea)
     cntsR=sorted(cnts_right,key=cv2.contourArea)
