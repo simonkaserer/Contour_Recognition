@@ -9,14 +9,27 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 ![Construction](/Construction.png)
 
 
-## Installation
+## Installation on a Raspberry Pi
 * Follow the [installation guideline](https://docs.luxonis.com/projects/api/en/v2.11.0/install/) from Luxonis for the OAK-D [depthai-python](https://github.com/luxonis/depthai-python/tree/v2.14.1.0) package.
-* Make a new folder: ```mkdir ./Contour_Extraction```
-* Change the directory: ```cd ./Contour_Extraction```
+* If your Pi is not named "pi" then just replace it with your Pi's name.
+* Make a new folder: ```mkdir /home/pi/Contour_Extraction```
+* Change the directory: ```cd /home/pi/Contour_Extraction```
 * Clone this repository: ```git clone https://github.com/simonkaserer/Contour_Recognition.git```
 * Install the requirements with: ```pip3 install -r requirements.txt```
 * Make *Contour_Extraction_GUI.py* executable with: ```chmod +x Contour_Extraction_GUI.py```
-* create a link to *Contour_Extraction_GUI.py*
+* Create a link to *Contour_Extraction_GUI.py* by creating a new file named ```Contour_Extraction.desktop```
+* Copy the following text: 
+ ``` 
+ [Desktop Entry]
+ Name=Contour Extraction
+ Comment=Contour Extraction Program
+ Icon=/usr/share/pixmaps/irgendeinedatei.xpm
+ Exec=/home/pi/Contour_Extraction/Contour_Extraction_GUI.py
+ Type=Application
+ Encoding=UTF-8
+ Terminal=false
+ Categories=None;
+ ```
 
 ## Dependencies
 ### [depthai-python 2.14.1.0](https://github.com/luxonis/depthai-python/tree/v2.14.1.0)
