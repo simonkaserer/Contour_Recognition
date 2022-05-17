@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Contour_Extraction_GUI is a tool that extracts contours from ojects on an illuminated plate with the OAK-D Camera.
 # Copyright (C) 2022  Simon Kaserer
 
