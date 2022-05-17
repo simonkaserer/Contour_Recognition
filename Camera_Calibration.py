@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Camera_Calibration.py calibrates the three cameras with OpenCV and a 8x6 chessboard pattern and 
 # saves the camera parameters into configuration files
 # Copyright (C) 2022  Simon Kaserer
