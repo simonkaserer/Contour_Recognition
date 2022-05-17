@@ -30,6 +30,8 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
  Terminal=false
  Categories=None;
  ```
+ * Start the calibration by executing the file "Camera_Calibration.py" with ```python3 /home/pi/Contour_Recognition/Camera_Calibration.py```
+ 
 
 ## Dependencies
 ### [depthai-python 2.14.1.0](https://github.com/luxonis/depthai-python/tree/v2.14.1.0)
