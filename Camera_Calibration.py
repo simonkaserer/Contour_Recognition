@@ -73,10 +73,10 @@ def main():
         qRight=device.getOutputQueue(RightStr,4,False)
         qRgb=device.getOutputQueue(RgbStr,4,False)
 
-        path_left='./CalPicsLeft/'
-        path_right='./CalPicsRight/'
-        path_Rgb='./CalPicsRGB/'
-        path_data='./CalData/'
+        path_left='./Contour_Recognition/CalPicsLeft/'
+        path_right='./Contour_Recognition/CalPicsRight/'
+        path_Rgb='./Contour_Recognition/CalPicsRGB/'
+        path_data='./Contour_Recognition/CalData/'
 
         # Check if the directories exist, if not create them:
         paths=[path_left,path_right,path_Rgb,path_data]
@@ -147,9 +147,9 @@ def main():
         objpoints_Rgb = []
         imgpoints_Rgb = []
 
-        images_left = glob.glob('./CalPicsLeft/*.jpg')
-        images_right = glob.glob('./CalPicsRight/*.jpg')
-        images_Rgb = glob.glob('./CalPicsRGB/*.jpg')
+        images_left = glob.glob('./Contour_Recognition/CalPicsLeft/*.jpg')
+        images_right = glob.glob('./Contour_Recognition/CalPicsRight/*.jpg')
+        images_Rgb = glob.glob('./Contour_Recognition/CalPicsRGB/*.jpg')
         images_left.sort()
         images_right.sort()
         images_Rgb.sort()
@@ -191,20 +191,20 @@ def main():
         # Get the new camera matrix
         newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
         # save the matrices to .npy files
-        np.save('./CalData/mtx_left.npy',mtx_left)
-        np.save('./CalData/dist_left.npy',dist_left)
-        np.save('./CalData/newcameramtx_left.npy',newcameramtx_left)
+        np.save('./Contour_Recognition/CalData/mtx_left.npy',mtx_left)
+        np.save('./Contour_Recognition/CalData/dist_left.npy',dist_left)
+        np.save('./Contour_Recognition/CalData/newcameramtx_left.npy',newcameramtx_left)
         print('Left camera calibrated!')
         # Calibrate the right camera
         ret_right, mtx_right, dist_right, rvecs_right, tvecs_right = cv2.calibrateCamera(objpoints, imgpoints_right, grayR.shape[::-1], None, None)
         #Take an unused picture for the optimal camera matrix
-        img=cv2.imread('./CalPicsRight/CalRight9.jpg')
+        img=cv2.imread('./Contour_Recognition/CalPicsRight/CalRight9.jpg')
         h,w=img.shape[:2]
         newcameramtx_right,roi_right=cv2.getOptimalNewCameraMatrix(mtx_right,dist_right,(w,h),1,(w,h))
         # save the matrices to .npy files
-        np.save('./CalData/mtx_right.npy',mtx_right)
-        np.save('./CalData/dist_right.npy',dist_right)
-        np.save('./CalData/newcameramtx_right.npy',newcameramtx_right)
+        np.save('./Contour_Recognition/CalData/mtx_right.npy',mtx_right)
+        np.save('./Contour_Recognition/CalData/dist_right.npy',dist_right)
+        np.save('./Contour_Recognition/CalData/newcameramtx_right.npy',newcameramtx_right)
         print('Right camera calibrated!')
 
         # Stereo Calibration
@@ -218,10 +218,10 @@ def main():
         stereoMapL=cv2.initUndistortRectifyMap(newCameraMtxL,distL,rectL,projMtxL,grayL.shape[::-1],cv2.CV_16SC2)
         stereoMapR=cv2.initUndistortRectifyMap(newCameraMtxR,distR,rectR,projMtxR,grayR.shape[::-1],cv2.CV_16SC2)
         #Saving Parameters
-        np.save('./CalData/stereoMapL_x.npy',stereoMapL[0])
-        np.save('./CalData/stereoMapL_y.npy',stereoMapL[1])
-        np.save('./CalData/stereoMapR_x.npy',stereoMapR[0])
-        np.save('./CalData/stereoMapR_y.npy',stereoMapR[1])
+        np.save('./Contour_Recognition/CalData/stereoMapL_x.npy',stereoMapL[0])
+        np.save('./Contour_Recognition/CalData/stereoMapL_y.npy',stereoMapL[1])
+        np.save('./Contour_Recognition/CalData/stereoMapR_x.npy',stereoMapR[0])
+        np.save('./Contour_Recognition/CalData/stereoMapR_y.npy',stereoMapR[1])
         print("Stereo Camera calibrated!")
         # Calibrate the Rgb camera
         for fname in images_Rgb[:11:]:
@@ -237,13 +237,13 @@ def main():
             print(f'{fname} processed!')
         ret_Rgb, mtx_Rgb, dist_Rgb, rvecs_Rgb, tvecs_Rgb = cv2.calibrateCamera(objpoints_Rgb, imgpoints_Rgb, gray.shape[::-1], None, None)
         #Take an unused picture for the optimal camera matrix
-        img=cv2.imread('./CalPicsRGB/CalRgb9.jpg')
+        img=cv2.imread('./Contour_Recognition/CalPicsRGB/CalRgb9.jpg')
         h,w=img.shape[:2]
         newcameramtx_Rgb,roi_Rgb=cv2.getOptimalNewCameraMatrix(mtx_Rgb,dist_Rgb,(w,h),1,(w,h))
         # save the matrices to .npy files
-        np.save('./CalData/mtx_Rgb.npy',mtx_Rgb)
-        np.save('./CalData/dist_Rgb.npy',dist_Rgb)
-        np.save('./CalData/newcameramtx_Rgb.npy',newcameramtx_Rgb)
+        np.save('./Contour_Recognition/CalData/mtx_Rgb.npy',mtx_Rgb)
+        np.save('./Contour_Recognition/CalData/dist_Rgb.npy',dist_Rgb)
+        np.save('./Contour_Recognition/CalData/newcameramtx_Rgb.npy',newcameramtx_Rgb)
 
         print('Calibration process finished!')
 
