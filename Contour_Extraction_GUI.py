@@ -570,19 +570,19 @@ You should have received a copy of the GNU General Public License along with thi
             box.setCurrentText('')
     def load_cal_data(self): # This method tries to load the numpy arrays from the Camera_Calibration.py output in the CalData folder
         try:
-            self.mtx_Rgb=np.load('./CalData/mtx_Rgb.npy')
-            self.dist_Rgb=np.load('./CalData/dist_Rgb.npy')
-            self.newcameramtx_Rgb=np.load('./CalData/newcameramtx_Rgb.npy')
-            self.mtx_right=np.load('./CalData/mtx_right.npy')
-            self.dist_right=np.load('./CalData/dist_right.npy')
-            self.newcameramtx_right=np.load('./CalData/newcameramtx_right.npy')
-            self.mtx_left=np.load('./CalData/mtx_left.npy')
-            self.dist_left=np.load('./CalData/dist_left.npy')
-            self.newcameramtx_left=np.load('./CalData/newcameramtx_left.npy')
-            self.stereoMapL_x=np.load('./CalData/stereoMapL_x.npy')
-            self.stereoMapL_y=np.load('./CalData/stereoMapL_y.npy')
-            self.stereoMapR_x=np.load('./CalData/stereoMapR_x.npy')
-            self.stereoMapR_y=np.load('./CalData/stereoMapR_y.npy')
+            self.mtx_Rgb=np.load('./Contour_Recognition/CalData/mtx_Rgb.npy')
+            self.dist_Rgb=np.load('./Contour_Recognition/CalData/dist_Rgb.npy')
+            self.newcameramtx_Rgb=np.load('./Contour_Recognition/CalData/newcameramtx_Rgb.npy')
+            self.mtx_right=np.load('./Contour_Recognition/CalData/mtx_right.npy')
+            self.dist_right=np.load('./Contour_Recognition/CalData/dist_right.npy')
+            self.newcameramtx_right=np.load('./Contour_Recognition/CalData/newcameramtx_right.npy')
+            self.mtx_left=np.load('./Contour_Recognition/CalData/mtx_left.npy')
+            self.dist_left=np.load('./Contour_Recognition/CalData/dist_left.npy')
+            self.newcameramtx_left=np.load('./Contour_Recognition/CalData/newcameramtx_left.npy')
+            self.stereoMapL_x=np.load('./Contour_Recognition/CalData/stereoMapL_x.npy')
+            self.stereoMapL_y=np.load('./Contour_Recognition/CalData/stereoMapL_y.npy')
+            self.stereoMapR_x=np.load('./Contour_Recognition/CalData/stereoMapR_x.npy')
+            self.stereoMapR_y=np.load('./Contour_Recognition/CalData/stereoMapR_y.npy')
         except FileNotFoundError as exc: # If the data can't be loaded a Message Box appears and tells the user to 
             # run the Camera_Calibration.py program in order to calibrate the cameras. This prevents the main program from starting
             msg=QtWidgets.QMessageBox()
@@ -594,7 +594,7 @@ You should have received a copy of the GNU General Public License along with thi
     def load_items_boxes(self): # Tries to load the filename pieces from the items_language.yaml files
         # both language items get loaded. If they are not found a default set of items is loaded.
         try:
-            with open('items_german.yaml','r') as f:
+            with open('./Contour_Recognition/items_german.yaml','r') as f:
                 self.items_german=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.items_german={
@@ -608,7 +608,7 @@ You should have received a copy of the GNU General Public License along with thi
             'Nummern':['','1','2','3','4','5','6','7','8','9','10','15','20','25','30','35','40','45','50']}  
     
         try:
-            with open('items_english.yaml','r') as f:
+            with open('./Contour_Recognition/items_english.yaml','r') as f:
                 self.items_english=yaml.safe_load(f)
         except FileNotFoundError as exc:
             self.items_english={
@@ -656,7 +656,7 @@ You should have received a copy of the GNU General Public License along with thi
             self.items_german['Groessen']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
             self.items_german['Nummern']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
        
-            with open('items_german.yaml','w') as f:
+            with open('./Contour_Recognition/items_german.yaml','w') as f:
                 yaml.safe_dump(self.items_german,f)
         else:
             self.items_english['pliers']=[self.comboBox_pliers.itemText(i) for i in range(self.comboBox_pliers.count())]
@@ -668,7 +668,7 @@ You should have received a copy of the GNU General Public License along with thi
             self.items_english['sizes']=[self.comboBox_sizes.itemText(i) for i in range(self.comboBox_sizes.count())]
             self.items_english['numbers']=[self.comboBox_numbers.itemText(i) for i in range(self.comboBox_numbers.count())]   
         
-            with open('items_english.yaml','w') as f:
+            with open('./Contour_Recognition/items_english.yaml','w') as f:
                 yaml.safe_dump(self.items_english,f)
     def fill_comboBoxes(self): # First clear all the current items of the comboboxes, adds the loaded filename pieces into each combobox and sets the text as an empty string.
         # The instances are written in an array to index them in the for loop:
@@ -815,7 +815,7 @@ You should have received a copy of the GNU General Public License along with thi
             dlg.exec()
     def load_prefs(self): # This function loads the preferences, if the file can't be found a set of default values are loaded.
         try:
-            with open('prefs.yaml','r') as f:
+            with open('./Contour_Recognition/prefs.yaml','r') as f:
                 self.prefs=yaml.safe_load(f)
                 # Check if all needed keys exist and are in the right range:
                 if not 'threshold' in self.prefs or self.prefs['threshold']<10 or self.prefs['threshold']>254:  self.prefs['threshold']=150
@@ -838,7 +838,7 @@ You should have received a copy of the GNU General Public License along with thi
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
         # the with statement prevents the file from staying opened if a exception occurs during the saving process
-        with open('prefs.yaml','w') as f:
+        with open('./Contour_Recognition/prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
     def threshold_changed(self): # writes the new value to the preferences and starts the process again
         self.prefs['threshold']=self.slider_thresh.value()
