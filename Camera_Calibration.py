@@ -186,7 +186,7 @@ def main():
         # Calibrate the left camera
         ret_left, mtx_left, dist_left, rvecs_left, tvecs_left = cv2.calibrateCamera(objpoints, imgpoints_left, grayL.shape[::-1], None, None)
         #Take an unused picture for the optimal camera matrix
-        imgL=cv2.imread('./CalPicsLeft/CalLeft9.jpg')
+        imgL=cv2.imread('./Contour_Recognition/CalPicsLeft/CalLeft9.jpg')
         h,w=imgL.shape[:2]
         # Get the new camera matrix
         newcameramtx_left,roi_left=cv2.getOptimalNewCameraMatrix(mtx_left,dist_left,(w,h),1,(w,h))
