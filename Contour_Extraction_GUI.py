@@ -51,7 +51,6 @@ class MainWindow():
         self.thickness=0
         self.scaling_thickness=0
         self.toolCentered=False
-        self.rotate_preview=1
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
@@ -354,7 +353,7 @@ class MainWindow():
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
         #Start an instance of the worker object to update the preview
-        self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'],self.rotate_preview)
+        self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'],self.prefs['rotation'])
         self.worker.imageUpdate.connect(self.update_preview)
         self.worker.widthUpdate.connect(self.update_framewidth)
         self.worker.heightUpdate.connect(self.update_frameheight)
@@ -539,9 +538,9 @@ You should have received a copy of the GNU General Public License along with thi
     def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
         self.prefs['save_thickness']=self.settings_ui.checkBox_height.isChecked()
     def rotate_preview_pressed(self):
-        self.rotate_preview+=1
-        if self.rotate_preview>4: self.rotate_preview=1
-        self.worker.update_rotation(self.rotate_preview)
+        self.prefs['rotation']+=1
+        if self.prefs['rotation']>4: self.prefs['rotation']=1
+        self.worker.update_rotation(self.prefs['rotation'])
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
@@ -844,7 +843,6 @@ You should have received a copy of the GNU General Public License along with thi
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
-        self.prefs['rotation']=self.rotate_preview
         # the with statement prevents the file from staying opened if a exception occurs during the saving process
         with open('./Contour_Recognition/prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
