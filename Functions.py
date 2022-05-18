@@ -19,7 +19,7 @@ import numpy as np
 import ezdxf as dxf
 from scipy.interpolate import interp1d
 
-def warp_img(img,threshold_value:int,show_outer_edge:bool): 
+def warp_img(img,threshold_value:int,rotation:int): 
     '''@brief: This function finds the corners of the lamp perimeter and warps it to a straight image
        @params: img = captured image as numpy array; threshold_value = value for threshold from 0 to 255;
        show_outer_edge = for debugging (shows the whole picture with the found shading board highlighted)'''
@@ -31,11 +31,6 @@ def warp_img(img,threshold_value:int,show_outer_edge:bool):
     # Find the max-area contour of the outer line:
     if len(contours) > 0:
         cnt=max(contours,key=cv2.contourArea)
-        #Show the found contour if the parameter is True. This is implemented for test puroses
-        if show_outer_edge:
-            pic=cv2.cvtColor(thresh,cv2.COLOR_GRAY2BGR)
-            edge_out=cv2.drawContours(pic,[cnt],-1,(255,0,0),2)
-            cv2.imshow("outer edge",cv2.resize(edge_out,(720,500)))
         # warp the contour into a straight rectangle:
             # find the cornerpoints of the square by setting the epsilon to a relatively high value to only get the cornerpoints
         epsilon=0.01*cv2.arcLength(cnt,True)
@@ -43,10 +38,26 @@ def warp_img(img,threshold_value:int,show_outer_edge:bool):
         outer_square=cv2.approxPolyDP(cnt,epsilon,True)
             # save the points in seperate variables
         if len(outer_square) ==4:
-            pt_A=outer_square[0]
-            pt_B=outer_square[1]
-            pt_C=outer_square[2]
-            pt_D=outer_square[3]
+            if rotation ==1:
+                pt_A=outer_square[0]
+                pt_B=outer_square[1]
+                pt_C=outer_square[2]
+                pt_D=outer_square[3]
+            elif rotation == 2:
+                pt_A=outer_square[1]
+                pt_B=outer_square[2]
+                pt_C=outer_square[3]
+                pt_D=outer_square[0]
+            elif rotation == 3:
+                pt_A=outer_square[2]
+                pt_B=outer_square[3]
+                pt_C=outer_square[0]
+                pt_D=outer_square[1]
+            else:
+                pt_A=outer_square[3]
+                pt_B=outer_square[0]
+                pt_C=outer_square[1]
+                pt_D=outer_square[2]
             #calculate the lengt and the width of the square
             width1=int(np.sqrt(((pt_A[0][0]-pt_D[0][0])**2)+(pt_A[0][1]-pt_D[0][1])**2))
             height1=int(np.sqrt(((pt_A[0][0]-pt_B[0][0])**2)+(pt_A[0][1]-pt_B[0][1])**2))

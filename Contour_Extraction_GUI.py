@@ -51,6 +51,7 @@ class MainWindow():
         self.thickness=0
         self.scaling_thickness=0
         self.toolCentered=False
+        self.rotate_preview=1
 
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
@@ -353,7 +354,7 @@ class MainWindow():
         self.button_savedxf.setEnabled(False)
         self.button_getContour.setEnabled(False)        
         #Start an instance of the worker object to update the preview
-        self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'])
+        self.worker=UpdatePreview_worker(self.mtx_Rgb,self.dist_Rgb,self.newcameramtx_Rgb,self.prefs['threshold'],self.rotate_preview)
         self.worker.imageUpdate.connect(self.update_preview)
         self.worker.widthUpdate.connect(self.update_framewidth)
         self.worker.heightUpdate.connect(self.update_frameheight)
@@ -524,6 +525,7 @@ You should have received a copy of the GNU General Public License along with thi
         self.settings_ui.checkBox_thickness_scaling.stateChanged.connect(self.checkbox_heightscaling_changed)
         self.settings_ui.slider_scaling_width.valueChanged.connect(self.slider_scaling_width_changed)
         self.settings_ui.slider_scaling_height.valueChanged.connect(self.slider_scaling_height_changed)
+        self.settings_ui.button_rotate_preview.clicked.connect(self.rotate_preview_pressed)
     def slider_scaling_width_changed(self): # Changes the value in the preferences according to the current value
         self.prefs['scaling_width']=(self.settings_ui.slider_scaling_width.value()-50)*0.2
         self.settings_ui.label_value_slider_width.setText(str(round(self.prefs['scaling_width'],1))+'%')
@@ -536,6 +538,10 @@ You should have received a copy of the GNU General Public License along with thi
         self.calc_thickness_scaling()
     def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
         self.prefs['save_thickness']=self.settings_ui.checkBox_height.isChecked()
+    def rotate_preview_pressed(self):
+        self.rotate_preview+=1
+        if self.rotate_preview>4: self.rotate_preview=1
+        self.worker.update_rotation(self.rotate_preview)
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
         subprocess.call('./open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
@@ -828,8 +834,9 @@ You should have received a copy of the GNU General Public License along with thi
                 if not 'scaling_width' in self.prefs or self.prefs['scaling_width']<-10 or self.prefs['scaling_width']>10:  self.prefs['scaling_width']=0
                 if not 'scaling_height' in self.prefs or self.prefs['scaling_height']<-10 or self.prefs['scaling_height']>10:  self.prefs['scaling_height']=0
                 if not 'use_thickness_scaling' in self.prefs or (self.prefs['use_thickness_scaling'] is not False and self.prefs['use_thickness_scaling'] is not True):  self.prefs['use_thickness_scaling']=False
+                if not 'rotation' in self.prefs or self.prefs['rotation']<1 or self.prefs['rotation']>4:  self.prefs['rotation']=1
         except FileNotFoundError as exc:
-            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_thickness':True,'use_thickness_scaling':False,'scaling_width':0,'scaling_height':0}  
+            self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_thickness':True,'use_thickness_scaling':False,'scaling_width':0,'scaling_height':0,'rotation':1}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
         self.prefs['threshold']=self.slider_thresh.value()
         self.prefs['factor']=self.slider_factor.value()/10000
@@ -837,6 +844,7 @@ You should have received a copy of the GNU General Public License along with thi
         self.prefs['connectpoints']=self.checkBox_connectpoints.isChecked()
         self.prefs['language']=self.language
         self.prefs['method']=self.comboBox_method.currentText()
+        self.prefs['rotation']=self.rotate_preview
         # the with statement prevents the file from staying opened if a exception occurs during the saving process
         with open('./Contour_Recognition/prefs.yaml','w') as f:
             yaml.safe_dump(self.prefs,f)
@@ -1137,9 +1145,6 @@ class Settings(object): # Definition of the settings class
         self.checkBox_thickness_scaling=QtWidgets.QCheckBox(self.widget)
         self.checkBox_thickness_scaling.setGeometry(QtCore.QRect(10,175,250,28))
         self.checkBox_thickness_scaling.setChecked(prefs['use_thickness_scaling'])
-        # Add a description label for the checkbox of thickness-scalling:
-        self.label_thickness_scaling=QtWidgets.QLabel(self.widget)
-        self.label_thickness_scaling.setGeometry(QtCore.QRect(10,200,250,120))
         # Add a slider for the width scaling
         self.slider_scaling_width=QtWidgets.QSlider(self.widget)
         self.slider_scaling_width.setGeometry(QtCore.QRect(10,75,200,40))
@@ -1168,6 +1173,9 @@ class Settings(object): # Definition of the settings class
         # Add a label for the height slider
         self.label_slider_scaling_height=QtWidgets.QLabel(self.widget)
         self.label_slider_scaling_height.setGeometry(QtCore.QRect(10,115,250,20))
+        # Add a button for the rotation of the preview
+        self.button_rotate_preview=QtWidgets.QPushButton(self.widget)
+        self.button_rotate_preview.setGeometry(QtCore.QRect(10,200,250,30))
         # The GUI is labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
 
@@ -1177,31 +1185,25 @@ class Settings(object): # Definition of the settings class
             self.checkBox_thickness_scaling.setText("Dicke für Skalierung verwenden")
             self.label_slider_scaling_width.setText("Skalierung Breite")
             self.label_slider_scaling_height.setText("Skalierung Höhe")
-            self.label_thickness_scaling.setText("Dickenskalierung funktioniert nur \n"
-            "wenn das Werkzeug in der Mitte der\n"  
-            "Platte aufgelegt ist. Die Funktion \n"
-            "wird nur für Objekte empfohlen\n"
-            "die höher sind als 5cm.")
+            self.button_rotate_preview.setText("Vorschau rotieren")
         else:
             self.checkBox_height.setText("Save thickness in filename")
             self.checkBox_thickness_scaling.setText("Use thickness for scaling")
             self.label_slider_scaling_width.setText("Scaling width")
             self.label_slider_scaling_height.setText("Scaling height")
-            self.label_thickness_scaling.setText("Thickness-scaling is only working \n"
-            "if the tool is placed in the middle of \n"
-            "the plate. It's recommended to only \n"
-            "use this for tools thicker than 5cm.")
+            self.button_rotate_preview.setText("Rotate preview")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 
     widthUpdate=QtCore.pyqtSignal(int)
     heightUpdate=QtCore.pyqtSignal(int)
-    def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold): # Saves the passed values into variables during the initialization
+    def __init__(self,mtx_Rgb,dist_Rgb,newcameramtx_Rgb,threshold,rotation): # Saves the passed values into variables during the initialization
         super().__init__()
         self.mtx=mtx_Rgb
         self.dist=dist_Rgb
         self.newmtx=newcameramtx_Rgb
         self.threshold=threshold
+        self.rotation=rotation
     
     def stop(self): # Stops the while loop and quits the worker thread
         self.ThreadActive=False
@@ -1209,6 +1211,9 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
     
     def update_threshold(self,threshold): # Updates the threshold value in the worker thread
         self.threshold=threshold
+    
+    def update_rotation(self,rotation): # Updates the rotation integer while running
+        self.rotation=rotation
 
     def run(self): # This sets up a while loop that runs until the ThreadActive boolean is disabled
         self.ThreadActive=True
@@ -1222,7 +1227,7 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
             
             image_undistorted=cv2.undistort(image,self.mtx,self.dist,None,self.newmtx)
             # Warp the image and emit the values and the image to be processed in the GUI class
-            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,False)
+            warped_image,framewidth,frameheigth,_=Functions.warp_img(image_undistorted,self.threshold,self.rotation)
             if warped_image is not None:
                 self.widthUpdate.emit(framewidth)
                 self.heightUpdate.emit(frameheigth)
