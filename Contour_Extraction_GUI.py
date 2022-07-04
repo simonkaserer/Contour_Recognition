@@ -542,9 +542,9 @@ You should have received a copy of the GNU General Public License along with thi
         if self.prefs['rotation']>4: self.prefs['rotation']=1
         self.worker.update_rotation(self.prefs['rotation'])
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
-        subprocess.call('./open_keyboard.sh')
+        subprocess.call('./Contour_Recognition/open_keyboard.sh')
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
-        subprocess.call('./close_keyboard.sh')
+        subprocess.call('./Contour_Recognition/close_keyboard.sh')
     def filename_manual(self): # Checks if a path is selected and a contour is detected when a 
         # filename is typed in the line edit directly and enables the button for saving the contour
         self.filename=self.lineEdit_filename.text()
