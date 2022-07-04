@@ -22,8 +22,7 @@ cycler==0.11.0
 dbus-python==1.2.16
 decorator==4.4.2
 Deprecated==1.2.13
-depthai==2.14.1.0.dev0+27fa4519f289498e84768ab5229a1a45efb7e4df
--e git+https://github.com/luxonis/depthai.git@a8b8c71267a832b5e0bed787265390533cbf3b4d#egg=depthai_sdk&subdirectory=depthai_sdk
+depthai==2.14.1.0
 distro==1.5.0
 docutils==0.16
 drumhat==0.1.0
