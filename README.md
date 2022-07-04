@@ -18,7 +18,7 @@ A program for finding the contour of tools to cut drawer inserts with a lasercut
 * Follow the [installation guideline](https://docs.luxonis.com/projects/api/en/v2.11.0/install/) from Luxonis for the OAK-D [depthai-python](https://github.com/luxonis/depthai-python/tree/v2.14.1.0) package.
 * If your Pi is not named "pi" then just replace it with your Pi's name.
 * Clone this repository: ```git clone https://github.com/simonkaserer/Contour_Recognition.git```
-* Install the requirements with: ```pip3 install -r /home/pi/Contour_Recognition/requirements.tx```
+* Install the requirements with: ```pip3 install -r /home/pi/Contour_Recognition/requirements.txt```
 * Change the directory: ```cd /home/pi/Contour_Recognition```
 * Make *Contour_Extraction_GUI.py* executable with: ```chmod +x Contour_Extraction_GUI.py```
 * Make *Camera_Calibration.py* executable with: ```chmod +x Camera_Calibration.py``` 
