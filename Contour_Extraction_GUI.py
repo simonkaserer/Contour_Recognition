@@ -548,9 +548,11 @@ You should have received a copy of the GNU General Public License along with thi
         if self.prefs['rotation']>4: self.prefs['rotation']=1
         self.worker.update_rotation(self.prefs['rotation'])
     def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
-        subprocess.call('./Contour_Recognition/open_keyboard.sh')
+        #subprocess.call('./Contour_Recognition/open_keyboard.sh')
+        pass
     def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
-        subprocess.call('./Contour_Recognition/close_keyboard.sh')
+        #subprocess.call('./Contour_Recognition/close_keyboard.sh')
+        pass
     def filename_manual(self): # Checks if a path is selected and a contour is detected when a 
         # filename is typed in the line edit directly and enables the button for saving the contour
         self.filename=self.lineEdit_filename.text()
@@ -792,7 +794,11 @@ You should have received a copy of the GNU General Public License along with thi
         else:
             self.scaling_thickness=1.0     
     def save_dxf_button(self): # This function cumulates the filename with the absolute path and adds the height information if the checkbox is checked.
-        if self.lineEdit_Path.text() != '' and self.filename !='':
+        # get the device name
+        dev_name=os.environ['USER']
+        str_error='/media/'+dev_name
+        
+        if self.lineEdit_Path.text() != '' and self.lineEdit_Path.text()!=str_error  and self.filename !='':
             if self.prefs['save_thickness'] is True:
                 path_and_filename=self.lineEdit_Path.text()+'/'+self.filename+f'_{self.thickness}mm.dxf'
             else:
@@ -822,7 +828,7 @@ You should have received a copy of the GNU General Public License along with thi
         else:
             dlg=QtWidgets.QMessageBox(self.centralwidget)
             dlg.setWindowTitle(' ')
-            dlg.setText('No path or filename selected!')
+            dlg.setText('Possible error:\n* No or wrong path selected. \n* No filename selected!')
             dlg.exec()
     def load_prefs(self): # This function loads the preferences, if the file can't be found a set of default values are loaded.
         try:
