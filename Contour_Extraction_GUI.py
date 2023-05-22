@@ -526,8 +526,9 @@ You should have received a copy of the GNU General Public License along with thi
         self.settings_ui.slider_scaling_width.valueChanged.connect(self.slider_scaling_width_changed)
         self.settings_ui.slider_scaling_height.valueChanged.connect(self.slider_scaling_height_changed)
         self.settings_ui.button_rotate_preview.clicked.connect(self.rotate_preview_pressed)
-        self.settings_ui.plate_size_btn.clicked.connect(self.platesize_changed)
-        
+        self.settings_ui.plate_size_btn.clicked.connect(self.platesize_changed)  
+        self.settings_ui.checkBox_inv_updown.stateChanged.connect(self.checkbox_inv_updown_changed) 
+        self.settings_ui.checkBox_inv_leftright.stateChanged.connect(self.checkbox_inv_leftricht_changed)
     def platesize_changed(self):
         self.prefs['platesize']=int(self.settings_ui.plate_size.text())
         self.platesize=self.prefs['platesize']
@@ -543,6 +544,10 @@ You should have received a copy of the GNU General Public License along with thi
         self.calc_thickness_scaling()
     def checkbox_height_changed(self): # Sets the preference for saving the height data into the filename to the chosen value
         self.prefs['save_thickness']=self.settings_ui.checkBox_height.isChecked()
+    def checkbox_inv_updown_changed(self): 
+        self.prefs['inv_updown']=self.settings_ui.checkBox_inv_updown.isChecked()
+    def checkbox_inv_leftricht_changed(self): 
+        self.prefs['inv_leftright']=self.settings_ui.checkBox_inv_leftright.isChecked()
     def rotate_preview_pressed(self):
         self.prefs['rotation']+=1
         if self.prefs['rotation']>4: self.prefs['rotation']=1
@@ -847,6 +852,8 @@ You should have received a copy of the GNU General Public License along with thi
                 if not 'use_thickness_scaling' in self.prefs or (self.prefs['use_thickness_scaling'] is not False and self.prefs['use_thickness_scaling'] is not True):  self.prefs['use_thickness_scaling']=False
                 if not 'rotation' in self.prefs or self.prefs['rotation']<1 or self.prefs['rotation']>4:  self.prefs['rotation']=1
                 if not 'platesize' in self.prefs or self.prefs['platesize']<100 or self.prefs['platesize']>10000:  self.prefs['platesize']=550
+                if not 'inv_updown' in self.prefs or (self.prefs['inv_updown'] is not False and self.prefs['inv_updown'] is not True):  self.prefs['inv_updown']=False
+                if not 'inv_leftright' in self.prefs or (self.prefs['inv_leftright'] is not False and self.prefs['inv_leftright'] is not True):  self.prefs['inv_leftright']=False
         except FileNotFoundError as exc:
             self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_thickness':True,'use_thickness_scaling':False,'scaling_width':0,'scaling_height':0,'rotation':1}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
@@ -978,30 +985,54 @@ You should have received a copy of the GNU General Public License along with thi
             if pos_x < self.framewidth/2-30:
                 centered_hor=False
                 if self.language=='German':
-                    move_str+="Nach rechts verschieben. "
+                    if self.prefs['inv_leftright']:
+                        move_str+="Nach links verschieben. "
+                    else:
+                        move_str+="Nach rechts verschieben. "
                 else:
-                    move_str+="Move towards the right. "
+                    if self.prefs['inv_leftright']:
+                        move_str+="Move towards the left. "
+                    else:
+                        move_str+="Move towards the right."
             elif pos_x > self.framewidth/2+30:
                 centered_hor=False
                 if self.language=='German':
-                    move_str+="Nach links verschieben. "
+                    if self.prefs['inv_leftright']:
+                        move_str+="Nach rechts verschieben. "
+                    else:
+                        move_str+="Nach links verschieben. "
                 else:
-                    move_str+="Move towards the left. "
+                    if self.prefs['inv_leftright']:
+                        move_str+="Move towards the right. "
+                    else:
+                        move_str+="Move towards the left. "
             else:
                 centered_hor=True
             # Check in the vertical direction:
             if pos_y < self.frameheight/2-30:
                 centered_ver=False
                 if self.language=='German':
-                    move_str+="Nach unten verschieben."
+                    if self.prefs['inv_updown']:
+                        move_str+="Nach oben verschieben."
+                    else:
+                        move_str+="Nach unten verschieben."
                 else:
-                    move_str+="Move towards the bottom."
+                    if self.prefs['inv_updown']:
+                        move_str+="Move towards the bottom."
+                    else:
+                        move_str+="NMove towards the top."
             elif pos_y > self.frameheight/2+30:
                 centered_ver=False
                 if self.language=='German':
-                    move_str+="Nach oben verschieben."
+                    if self.prefs['inv_updown']:
+                        move_str+="Nach unten verschieben."
+                    else:
+                        move_str+="Nach oben verschieben."
                 else:
-                    move_str+="Move towards the top."
+                    if self.prefs['inv_updown']:
+                        move_str+="Move towards the top."
+                    else:
+                        move_str+="Move towards the bottom."
             else:
                 centered_ver=True
             # If both bools are true the tool is in the middle
@@ -1140,14 +1171,14 @@ class Settings(object): # Definition of the settings class
     def setupUi(self, Settings,language,prefs): # Here the appearance of the dialog is created
         self.language=language
         Settings.setWindowModality(QtCore.Qt.NonModal)
-        Settings.resize(300, 400)
+        Settings.resize(300, 480)
         # The title is named according to the language chosen
         if self.language =='German':
             Settings.setWindowTitle("Einstellungen")
         else:
             Settings.setWindowTitle("Settings")
         self.widget = QtWidgets.QWidget(Settings)
-        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 400))
+        self.widget.setGeometry(QtCore.QRect(10, 20, 271, 450))
         # Add the widgets to the page:
         self.checkBox_height = QtWidgets.QCheckBox(self.widget)
         self.checkBox_height.setGeometry(QtCore.QRect(10, 15, 250, 28))
@@ -1195,7 +1226,14 @@ class Settings(object): # Definition of the settings class
         self.label_plate_size.setGeometry(QtCore.QRect(10,260,250,20))
         # Add a button to save the new plate size
         self.plate_size_btn=QtWidgets.QPushButton(self.widget)
-        self.plate_size_btn.setGeometry(QtCore.QRect(10,330,250,40))
+        self.plate_size_btn.setGeometry(QtCore.QRect(10,330,250,30))
+        # Add two checkboxes for inverting the direction of the centered-message
+        self.checkBox_inv_leftright = QtWidgets.QCheckBox(self.widget)
+        self.checkBox_inv_leftright.setGeometry(QtCore.QRect(10, 380, 250, 28))
+        self.checkBox_inv_leftright.setChecked(prefs['inv_leftright'])
+        self.checkBox_inv_updown = QtWidgets.QCheckBox(self.widget)
+        self.checkBox_inv_updown.setGeometry(QtCore.QRect(10, 415, 250, 28))
+        self.checkBox_inv_updown.setChecked(prefs['inv_updown'])
         # The GUI is labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
 
@@ -1208,6 +1246,8 @@ class Settings(object): # Definition of the settings class
             self.button_rotate_preview.setText("Vorschau rotieren")
             self.label_plate_size.setText("Plattengröße in mm ")
             self.plate_size_btn.setText("Größe speichern")
+            self.checkBox_inv_leftright.setText("L/R tauschen (zentrierung)")
+            self.checkBox_inv_updown.setText("O/U tauschen (zentrierung)")
         else:
             self.checkBox_height.setText("Save thickness in filename")
             self.checkBox_thickness_scaling.setText("Use thickness for scaling")
@@ -1216,6 +1256,8 @@ class Settings(object): # Definition of the settings class
             self.button_rotate_preview.setText("Rotate preview")
             self.label_plate_size.setText("Plate size in mm")
             self.plate_size_btn.setText("Save platesize")
+            self.checkBox_inv_leftright.setText('Inv L/R (centering)')
+            self.checkBox_inv_updown.setText('Inv U/D (centering)')
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 
