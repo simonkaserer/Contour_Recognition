@@ -102,10 +102,14 @@ class MainWindow():
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_openKeypad.setGeometry(QtCore.QRect(40, 20, 150, 30))
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
+        # ------------------------------------------------------------------------------ hide the keypad features
+        self.Button_openKeypad.hide()
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_closeKeypad.setGeometry(QtCore.QRect(190, 20, 150, 30))
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
+        # ------------------------------------------------------------------------------ hide the keypad features
+        self.Button_closeKeypad.hide()
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
         self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 80, 180, 30))
