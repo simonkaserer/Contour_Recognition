@@ -55,6 +55,7 @@ class MainWindow():
         # Load the preferences that are saved with every exit of the program and set the language to the last used one
         self.load_prefs()
         self.language=self.prefs['language']
+        self.platesize=self.prefs['platesize']
         # Load the filename parts, sort them and then fill the comboboxes
         self.load_items_boxes()
         self.sort_items_boxes()
@@ -525,6 +526,11 @@ You should have received a copy of the GNU General Public License along with thi
         self.settings_ui.slider_scaling_width.valueChanged.connect(self.slider_scaling_width_changed)
         self.settings_ui.slider_scaling_height.valueChanged.connect(self.slider_scaling_height_changed)
         self.settings_ui.button_rotate_preview.clicked.connect(self.rotate_preview_pressed)
+        self.settings_ui.plate_size_btn.clicked.connect(self.platesize_changed)
+        
+    def platesize_changed(self):
+        self.prefs['platesize']=int(self.settings_ui.plate_size.text())
+        self.platesize=self.prefs['platesize']
     def slider_scaling_width_changed(self): # Changes the value in the preferences according to the current value
         self.prefs['scaling_width']=(self.settings_ui.slider_scaling_width.value()-50)*0.2
         self.settings_ui.label_value_slider_width.setText(str(round(self.prefs['scaling_width'],1))+'%')
@@ -834,6 +840,7 @@ You should have received a copy of the GNU General Public License along with thi
                 if not 'scaling_height' in self.prefs or self.prefs['scaling_height']<-10 or self.prefs['scaling_height']>10:  self.prefs['scaling_height']=0
                 if not 'use_thickness_scaling' in self.prefs or (self.prefs['use_thickness_scaling'] is not False and self.prefs['use_thickness_scaling'] is not True):  self.prefs['use_thickness_scaling']=False
                 if not 'rotation' in self.prefs or self.prefs['rotation']<1 or self.prefs['rotation']>4:  self.prefs['rotation']=1
+                if not 'platesize' in self.prefs or self.prefs['platesize']<100 or self.prefs['platesize']>10000:  self.prefs['platesize']=550
         except FileNotFoundError as exc:
             self.prefs={'threshold':150,'factor':0.0005,'nth_point':1,'connectpoints':True,'language':'English','method':'Spline','save_thickness':True,'use_thickness_scaling':False,'scaling_width':0,'scaling_height':0,'rotation':1}  
     def save_prefs(self): # The values of the preferences to be stored are loaded into the prefs-variable and then are saved as .yaml file
@@ -890,8 +897,8 @@ You should have received a copy of the GNU General Public License along with thi
                 frame=cv2.cvtColor(warped_image,cv2.COLOR_BGR2RGB)
                 img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
                 self.Preview.setPixmap(QtGui.QPixmap.fromImage(img)) 
-                self.scaling_frameheight=float(self.frameheight/550)
-                self.scaling_framewidth=float(self.framewidth/550)
+                self.scaling_frameheight=float(self.frameheight/self.platesize)
+                self.scaling_framewidth=float(self.framewidth/self.platesize)
         # Activate the button if a processable image was warped
         if self.warped_image is not None:      
             self.button_getContour.setEnabled(True)
@@ -1127,7 +1134,7 @@ class Settings(object): # Definition of the settings class
     def setupUi(self, Settings,language,prefs): # Here the appearance of the dialog is created
         self.language=language
         Settings.setWindowModality(QtCore.Qt.NonModal)
-        Settings.resize(300, 360)
+        Settings.resize(300, 400)
         # The title is named according to the language chosen
         if self.language =='German':
             Settings.setWindowTitle("Einstellungen")
@@ -1174,6 +1181,15 @@ class Settings(object): # Definition of the settings class
         # Add a button for the rotation of the preview
         self.button_rotate_preview=QtWidgets.QPushButton(self.widget)
         self.button_rotate_preview.setGeometry(QtCore.QRect(10,200,250,30))
+        # Add a text field for the size definitions
+        self.plate_size=QtWidgets.QLineEdit(self.widget)
+        self.plate_size.setGeometry(QtCore.QRect(10,290,250,30))
+        self.plate_size.setText(str(prefs['platesize']))
+        self.label_plate_size=QtWidgets.QLabel(self.widget)
+        self.label_plate_size.setGeometry(QtCore.QRect(10,260,250,20))
+        # Add a button to save the new plate size
+        self.plate_size_btn=QtWidgets.QPushButton(self.widget)
+        self.plate_size_btn.setGeometry(QtCore.QRect(10,330,250,40))
         # The GUI is labelled in the chosen language in this seperate function
         self.retranslateUi(self.language)
 
@@ -1184,12 +1200,16 @@ class Settings(object): # Definition of the settings class
             self.label_slider_scaling_width.setText("Skalierung Breite")
             self.label_slider_scaling_height.setText("Skalierung Höhe")
             self.button_rotate_preview.setText("Vorschau rotieren")
+            self.label_plate_size.setText("Plattengröße in mm ")
+            self.plate_size_btn.setText("Größe speichern")
         else:
             self.checkBox_height.setText("Save thickness in filename")
             self.checkBox_thickness_scaling.setText("Use thickness for scaling")
             self.label_slider_scaling_width.setText("Scaling width")
             self.label_slider_scaling_height.setText("Scaling height")
             self.button_rotate_preview.setText("Rotate preview")
+            self.label_plate_size.setText("Plate size in mm")
+            self.plate_size_btn.setText("Save platesize")
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 
