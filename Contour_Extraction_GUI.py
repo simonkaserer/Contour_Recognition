@@ -22,7 +22,6 @@
 
 # Import the needed libraries 
 from genericpath import exists
-import subprocess
 import sys
 import cv2
 import depthai as dai
@@ -102,14 +101,10 @@ class MainWindow():
         self.Button_openKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_openKeypad.setGeometry(QtCore.QRect(40, 20, 150, 30))
         self.Button_openKeypad.clicked.connect(self.open_keyboard)
-        # ------------------------------------------------------------------------------ hide the keypad features
-        self.Button_openKeypad.hide()
 
         self.Button_closeKeypad = QtWidgets.QPushButton(self.centralwidget)
         self.Button_closeKeypad.setGeometry(QtCore.QRect(190, 20, 150, 30))
         self.Button_closeKeypad.clicked.connect(self.close_keyboard)
-        # ------------------------------------------------------------------------------ hide the keypad features
-        self.Button_closeKeypad.hide()
 
         self.Button_resetFilename = QtWidgets.QPushButton(self.centralwidget)
         self.Button_resetFilename.setGeometry(QtCore.QRect(1040, 80, 180, 30))
@@ -556,12 +551,136 @@ You should have received a copy of the GNU General Public License along with thi
         self.prefs['rotation']+=1
         if self.prefs['rotation']>4: self.prefs['rotation']=1
         self.worker.update_rotation(self.prefs['rotation'])
-    def open_keyboard(self): # Opens the display keyboard through a bash script that stores the PID into a file
-        #subprocess.call('./Contour_Recognition/open_keyboard.sh')
-        pass
-    def close_keyboard(self): # Closes the display keyboard if a instance of it runs 
-        #subprocess.call('./Contour_Recognition/close_keyboard.sh')
-        pass
+    def open_keyboard(self): 
+        self.Keyboard = QtWidgets.QDialog()
+        self.uiKeyboard = Keyboard()
+        self.uiKeyboard.setupUi(self.Keyboard,self.language)
+        self.Keyboard.show()
+        self.filename=''
+        self.lineEdit_newItem.setText(self.filename)
+        self.uiKeyboard.Button_1_1.clicked.connect(self.onKeyboard_1_1)
+        self.uiKeyboard.Button_1_2.clicked.connect(self.onKeyboard_1_2)
+        self.uiKeyboard.Button_1_3.clicked.connect(self.onKeyboard_1_3)
+        self.uiKeyboard.Button_1_4.clicked.connect(self.onKeyboard_1_4)
+        self.uiKeyboard.Button_1_5.clicked.connect(self.onKeyboard_1_5)
+        self.uiKeyboard.Button_1_6.clicked.connect(self.onKeyboard_1_6)
+        self.uiKeyboard.Button_1_7.clicked.connect(self.onKeyboard_1_7)
+        self.uiKeyboard.Button_1_8.clicked.connect(self.onKeyboard_1_8)
+        self.uiKeyboard.Button_1_9.clicked.connect(self.onKeyboard_1_9)
+        self.uiKeyboard.Button_1_10.clicked.connect(self.onKeyboard_1_10)
+        self.uiKeyboard.Button_1_11.clicked.connect(self.onKeyboard_1_11)
+        self.uiKeyboard.Button_2_1.clicked.connect(self.onKeyboard_2_1)
+        self.uiKeyboard.Button_2_2.clicked.connect(self.onKeyboard_2_2)
+        self.uiKeyboard.Button_2_3.clicked.connect(self.onKeyboard_2_3)
+        self.uiKeyboard.Button_2_4.clicked.connect(self.onKeyboard_2_4)
+        self.uiKeyboard.Button_2_5.clicked.connect(self.onKeyboard_2_5)
+        self.uiKeyboard.Button_2_6.clicked.connect(self.onKeyboard_2_6)
+        self.uiKeyboard.Button_2_7.clicked.connect(self.onKeyboard_2_7)
+        self.uiKeyboard.Button_2_8.clicked.connect(self.onKeyboard_2_8)
+        self.uiKeyboard.Button_2_9.clicked.connect(self.onKeyboard_2_9)
+        self.uiKeyboard.Button_2_10.clicked.connect(self.onKeyboard_2_10)
+        self.uiKeyboard.Button_2_11.clicked.connect(self.onKeyboard_2_11)
+        self.uiKeyboard.Button_3_2.clicked.connect(self.onKeyboard_3_2)
+        self.uiKeyboard.Button_3_3.clicked.connect(self.onKeyboard_3_3)
+        self.uiKeyboard.Button_3_4.clicked.connect(self.onKeyboard_3_4)
+        self.uiKeyboard.Button_3_5.clicked.connect(self.onKeyboard_3_5)
+        self.uiKeyboard.Button_3_6.clicked.connect(self.onKeyboard_3_6)
+        self.uiKeyboard.Button_3_7.clicked.connect(self.onKeyboard_3_7)
+        self.uiKeyboard.Button_3_8.clicked.connect(self.onKeyboard_3_8)
+        self.uiKeyboard.Button_3_9.clicked.connect(self.onKeyboard_3_9)
+    def close_keyboard(self): 
+        if self.Keyboard!=None:
+            self.Keyboard.close()
+    def onKeyboard_1_1(self):
+        self.filename+=self.uiKeyboard.Button_1_1.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_2(self):
+        self.filename+=self.uiKeyboard.Button_1_2.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_3(self):
+        self.filename+=self.uiKeyboard.Button_1_3.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_4(self):
+        self.filename+=self.uiKeyboard.Button_1_4.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_5(self):
+        self.filename+=self.uiKeyboard.Button_1_5.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_6(self):
+        self.filename+=self.uiKeyboard.Button_1_6.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_7(self):
+        self.filename+=self.uiKeyboard.Button_1_7.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_8(self):
+        self.filename+=self.uiKeyboard.Button_1_8.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_9(self):
+        self.filename+=self.uiKeyboard.Button_1_9.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_10(self):
+        self.filename+=self.uiKeyboard.Button_1_10.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_1_11(self):
+        self.filename+=self.uiKeyboard.Button_1_11.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_1(self):
+        self.filename+=self.uiKeyboard.Button_2_1.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_2(self):
+        self.filename+=self.uiKeyboard.Button_2_2.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_3(self):
+        self.filename+=self.uiKeyboard.Button_2_3.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_4(self):
+        self.filename+=self.uiKeyboard.Button_2_4.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_5(self):
+        self.filename+=self.uiKeyboard.Button_2_5.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_6(self):
+        self.filename+=self.uiKeyboard.Button_2_6.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_7(self):
+        self.filename+=self.uiKeyboard.Button_2_7.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_8(self):
+        self.filename+=self.uiKeyboard.Button_2_8.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_9(self):
+        self.filename+=self.uiKeyboard.Button_2_9.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_10(self):
+        self.filename+=self.uiKeyboard.Button_2_10.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_2_11(self):
+        self.filename+=self.uiKeyboard.Button_2_11.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_2(self):
+        self.filename+=self.uiKeyboard.Button_3_2.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_3(self):
+        self.filename+=self.uiKeyboard.Button_3_3.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_4(self):
+        self.filename+=self.uiKeyboard.Button_3_4.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_5(self):
+        self.filename+=self.uiKeyboard.Button_3_5.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_6(self):
+        self.filename+=self.uiKeyboard.Button_3_6.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_7(self):
+        self.filename+=self.uiKeyboard.Button_3_7.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_8(self):
+        self.filename+=self.uiKeyboard.Button_3_8.text()
+        self.lineEdit_newItem.setText(self.filename)
+    def onKeyboard_3_9(self):
+        self.filename=self.filename[:-1]
+        self.lineEdit_newItem.setText(self.filename)
     def filename_manual(self): # Checks if a path is selected and a contour is detected when a 
         # filename is typed in the line edit directly and enables the button for saving the contour
         self.filename=self.lineEdit_filename.text()
@@ -1303,8 +1422,230 @@ class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded w
                 self.heightUpdate.emit(frameheigth)
                 self.imageUpdate.emit(warped_image)
             time.sleep(0.5)
+class Keyboard(object): # Definition of the keyboard class for the filename
+    def __init__(self):
+        super(Keyboard,self).__init__()
         
-  
+    def setupUi(self, Keyboard,language): # Here the appearance of the keyboard is created
+        self.language=language
+        self.shift=True
+        Keyboard.setObjectName("Keyboard")
+        Keyboard.setWindowModality(QtCore.Qt.NonModal)
+        Keyboard.setGeometry(0,510,1280,300)
+        # The title is named according to the language chosen
+        if self.language =='German':
+            Keyboard.setWindowTitle("Tastatur")
+        else:
+            Keyboard.setWindowTitle("Keyboard")
+        self.widget = QtWidgets.QWidget(Keyboard)
+        self.widget.setGeometry(QtCore.QRect(0, 10, 1260, 290))
+        self.widget.setObjectName("widget")
+        # The buttons are added to a grid layout to ensure a tidy appearance
+        self.gridLayout = QtWidgets.QGridLayout(self.widget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.Button_1_1 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_1, 0, 0, 1, 1)
+        self.Button_1_2 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_2, 0, 1, 1, 1)
+        self.Button_1_3 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_3, 0, 2, 1, 1)
+        self.Button_1_4 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_4, 0, 3, 1, 1)
+        self.Button_1_5 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_5, 0, 4, 1, 1)
+        self.Button_1_6 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_6, 0, 5, 1, 1)
+        self.Button_1_7 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_7, 0, 6, 1, 1)
+        self.Button_1_8 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_8, 0, 7, 1, 1)
+        self.Button_1_9 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_9, 0, 8, 1, 1)
+        self.Button_1_10 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_10, 0, 9, 1, 1)
+        self.Button_1_11 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_1_11, 0, 10, 1, 1)
+        self.Button_2_1 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_1, 1, 0, 1, 1)
+        self.Button_2_2 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_2, 1, 1, 1, 1)
+        self.Button_2_3 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_3, 1, 2, 1, 1)
+        self.Button_2_4 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_4, 1, 3, 1, 1)
+        self.Button_2_5 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_5, 1, 4, 1, 1)
+        self.Button_2_6 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_6, 1, 5, 1, 1)
+        self.Button_2_7 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_7, 1, 6, 1, 1)
+        self.Button_2_8 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_8, 1, 7, 1, 1)
+        self.Button_2_9 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_9, 1, 8, 1, 1)
+        self.Button_2_10 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_10, 1, 9, 1, 1)
+        self.Button_2_11 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_2_11, 1, 10, 1, 1)
+        self.Button_3_1 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_1, 2, 0, 1, 1)
+        self.Button_3_2 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_2, 2, 1, 1, 1)
+        self.Button_3_3 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_3, 2, 2, 1, 1)
+        self.Button_3_4 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_4, 2, 3, 1, 1)
+        self.Button_3_5 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_5, 2, 4, 1, 1)
+        self.Button_3_6 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_6, 2, 5, 1, 1)
+        self.Button_3_7 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_7, 2, 6, 1, 1)
+        self.Button_3_8 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_8, 2, 7, 1, 1)
+        self.Button_3_9 = QtWidgets.QPushButton(self.widget)
+        self.gridLayout.addWidget(self.Button_3_9, 2, 8, 1, 1)
+        self.Button_3_1.clicked.connect(self.onButton_3_1)
+        # The buttons are labelled in the chosen language in this seperate function
+        self.retranslateUi(self.language)
+        QtCore.QMetaObject.connectSlotsByName(Keyboard)
+
+    def retranslateUi(self, language): # Labels the button according to the passed language
+        if language == 'German':
+            if self.shift==True:
+                self.Button_1_1.setText("Q")
+                self.Button_1_2.setText("W")
+                self.Button_1_3.setText("E")
+                self.Button_1_4.setText("R")
+                self.Button_1_5.setText("T")
+                self.Button_1_6.setText("Z")
+                self.Button_1_7.setText("U")
+                self.Button_1_8.setText("I")
+                self.Button_1_9.setText("O")
+                self.Button_1_10.setText("P")
+                self.Button_1_11.setText("Ü")
+                self.Button_2_1.setText("A")
+                self.Button_2_2.setText("S")
+                self.Button_2_3.setText("D")
+                self.Button_2_4.setText("F")
+                self.Button_2_5.setText("G")
+                self.Button_2_6.setText("H")
+                self.Button_2_7.setText("J")
+                self.Button_2_8.setText("K")
+                self.Button_2_9.setText("L")
+                self.Button_2_10.setText("Ö")
+                self.Button_2_11.setText("Ä")
+                self.Button_3_1.setText("Shift")
+                self.Button_3_2.setText("Y")
+                self.Button_3_3.setText("X")
+                self.Button_3_4.setText("C")
+                self.Button_3_5.setText("V")
+                self.Button_3_6.setText("B")
+                self.Button_3_7.setText("N")
+                self.Button_3_8.setText("M")
+                self.Button_3_9.setText("Löschen")
+            else:
+                self.Button_1_1.setText("q")
+                self.Button_1_2.setText("w")
+                self.Button_1_3.setText("e")
+                self.Button_1_4.setText("r")
+                self.Button_1_5.setText("t")
+                self.Button_1_6.setText("z")
+                self.Button_1_7.setText("u")
+                self.Button_1_8.setText("i")
+                self.Button_1_9.setText("o")
+                self.Button_1_10.setText("p")
+                self.Button_1_11.setText("ü")
+                self.Button_2_1.setText("a")
+                self.Button_2_2.setText("s")
+                self.Button_2_3.setText("d")
+                self.Button_2_4.setText("f")
+                self.Button_2_5.setText("g")
+                self.Button_2_6.setText("h")
+                self.Button_2_7.setText("j")
+                self.Button_2_8.setText("k")
+                self.Button_2_9.setText("l")
+                self.Button_2_10.setText("ö")
+                self.Button_2_11.setText("ä")
+                self.Button_3_1.setText("Shift")
+                self.Button_3_2.setText("y")
+                self.Button_3_3.setText("x")
+                self.Button_3_4.setText("c")
+                self.Button_3_5.setText("v")
+                self.Button_3_6.setText("b")
+                self.Button_3_7.setText("n")
+                self.Button_3_8.setText("m")
+                self.Button_3_9.setText("Löschen")
+           
+        else:
+            if self.shift==True:
+                self.Button_1_1.setText("Q")
+                self.Button_1_2.setText("W")
+                self.Button_1_3.setText("E")
+                self.Button_1_4.setText("R")
+                self.Button_1_5.setText("T")
+                self.Button_1_6.setText("Y")
+                self.Button_1_7.setText("U")
+                self.Button_1_8.setText("I")
+                self.Button_1_9.setText("O")
+                self.Button_1_10.setText("P")
+                self.Button_1_11.setText("")
+                self.Button_2_1.setText("A")
+                self.Button_2_2.setText("S")
+                self.Button_2_3.setText("D")
+                self.Button_2_4.setText("F")
+                self.Button_2_5.setText("G")
+                self.Button_2_6.setText("H")
+                self.Button_2_7.setText("J")
+                self.Button_2_8.setText("K")
+                self.Button_2_9.setText("L")
+                self.Button_2_10.setText("")
+                self.Button_2_11.setText("")
+                self.Button_3_1.setText("Shift")
+                self.Button_3_2.setText("Z")
+                self.Button_3_3.setText("X")
+                self.Button_3_4.setText("C")
+                self.Button_3_5.setText("V")
+                self.Button_3_6.setText("B")
+                self.Button_3_7.setText("N")
+                self.Button_3_8.setText("M")
+                self.Button_3_9.setText("Delete")
+            else:
+                self.Button_1_1.setText("q")
+                self.Button_1_2.setText("w")
+                self.Button_1_3.setText("e")
+                self.Button_1_4.setText("r")
+                self.Button_1_5.setText("t")
+                self.Button_1_6.setText("y")
+                self.Button_1_7.setText("u")
+                self.Button_1_8.setText("i")
+                self.Button_1_9.setText("o")
+                self.Button_1_10.setText("p")
+                self.Button_1_11.setText("")
+                self.Button_2_1.setText("a")
+                self.Button_2_2.setText("s")
+                self.Button_2_3.setText("d")
+                self.Button_2_4.setText("f")
+                self.Button_2_5.setText("g")
+                self.Button_2_6.setText("h")
+                self.Button_2_7.setText("j")
+                self.Button_2_8.setText("k")
+                self.Button_2_9.setText("l")
+                self.Button_2_10.setText("")
+                self.Button_2_11.setText("")
+                self.Button_3_1.setText("Shift")
+                self.Button_3_2.setText("z")
+                self.Button_3_3.setText("x")
+                self.Button_3_4.setText("c")
+                self.Button_3_5.setText("v")
+                self.Button_3_6.setText("b")
+                self.Button_3_7.setText("n")
+                self.Button_3_8.setText("m")
+                self.Button_3_9.setText("Delete")
+    def onButton_3_1(self): # Shift-taste
+        self.shift= not self.shift
+        self.retranslateUi(self.language)
+    
 
 if __name__ == '__main__': # Main program
     sys._excepthook=sys.excepthook

@@ -45,6 +45,7 @@ jedi==0.18.0
 Jinja2==2.11.3
 jmespath==0.10.0
 jwcrypto==1.0
+keyboard==0.13.5
 kiwisolver==1.4.0
 lazy-object-proxy==0.0.0
 logilab-common==1.8.1
