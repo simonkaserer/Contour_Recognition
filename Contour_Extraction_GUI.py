@@ -1196,8 +1196,8 @@ You should have received a copy of the GNU General Public License along with thi
                         'Mit der Punkteverringerung kann die Anzahl der verwendeten Punkte verringert werden. Dadurch verringert sich aber auch die Genauigkeit.\n'
                         '\nWird nun ein Speicherpfad ausgewählt und ein Dateiname vergeben, kann die Kontur im .dxf-Format gespeichert werden. '
                         'Die Auswahlboxen beinhalten Vorschläge für die Namensgebung und damit kann ein Dateiname zusammengesetzt werden. Zum Beispiel: KombizangeKlein3 durch auswählen der jeweiligen Bausteine.'
-                        'Auch kann der Dateiname direkt mit der Tastatur/Bildschirmtastatur eingegeben werden. Sollte ein neuer Textbaustein gespeichert werden, kann dieser in die dafür vorgesehene Zeile geschrieben werden und per Drag-and-Drop in die jeweilige Box'
-                        'hinzugefügt werden. Auch durch das betätigen des + Knopfes kann der Textbaustein zur gewünschten Gruppe hinzugefügt werden.\n'
+                        'Auch kann der Dateiname direkt mit der Tastatur eingegeben werden. Sollte ein neuer Textbaustein gespeichert werden, kann dieser in die dafür vorgesehene Zeile geschrieben werden und per Drag-and-Drop in die jeweilige Box'
+                        'hinzugefügt werden. Auch durch das betätigen des + Knopfes kann der Textbaustein zur gewünschten Gruppe hinzugefügt werden. Die Bildschirmtastatur ist für das Hinzufügen eines neuen Textbausteins, es kann nur hier geschrieben werden.\n'
                         'Sollten Einträge gelöscht werden, kann dies nur über die \'items_german.yaml\'-Datei erfolgen.')
         else:
             dlg.setText('This program uses the images from the OAK-D camera and extracts the contour of a tool. For best results, the tool should be positioned as close to the center as possible.'
@@ -1206,8 +1206,8 @@ You should have received a copy of the GNU General Public License along with thi
                         'With the \'nth point\' slider the number of used points can be reduced. However, this also reduces the accuracy.'
                         '\nWhen a save path is selected and a file name is assigned, the contour can be saved in .dxf format'
                         'The selection boxes contain suggestions for naming and thus a file name can be composed. For example: CombinationPlierSmall3 by selecting the respective blocks.'
-                        'Also, the file name can be entered directly with the keyboard/screen keypad. If a new text block should be saved, it can be written in the line provided and dragged and dropped into the respective box'
-                        'to be added. The text module can also be added to the desired group by pressing the + button.'
+                        'Also, the file name can be entered directly with the keyboard. If a new text block should be saved, it can be written in the line provided and dragged and dropped into the respective box'
+                        'to be added. The text module can also be added to the desired group by pressing the + button. The on-screen keyboard is for adding a new text block, it can only be written here.'
                         'Should entries be deleted, this can only be done via the \'items_english.yaml\' file.')
         # After setting the text the dialog window is executed
         dlg.exec()         
