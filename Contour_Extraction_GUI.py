@@ -305,6 +305,7 @@ class MainWindow():
         self.actionSave_Metadata = QtWidgets.QAction(ContourExtraction)
         self.actionSave_Contour_Image = QtWidgets.QAction(ContourExtraction)
         self.actionSettings= QtWidgets.QAction(ContourExtraction)
+        self.actionRawImage=QtWidgets.QAction(ContourExtraction)
         self.actionMethods = QtWidgets.QAction(ContourExtraction)
         self.actionGeneral = QtWidgets.QAction(ContourExtraction)
         self.actionAbout = QtWidgets.QAction(ContourExtraction)
@@ -325,6 +326,7 @@ class MainWindow():
         self.actionSave_Contour_Image.triggered.connect(self.save_img)
         self.actionSave_Metadata.triggered.connect(self.save_meta)
         self.actionSettings.triggered.connect(self.open_settings)
+        self.actionRawImage.triggered.connect(self.open_rawImage)
         self.actionMethods.triggered.connect(self.info_methos)
         self.actionGeneral.triggered.connect(self.info_general)
         self.actionAbout.triggered.connect(self.info_about)
@@ -408,6 +410,7 @@ class MainWindow():
             self.label_custom.setText( "Spezial") 
             self.label_hint.setText("Legen Sie das Werkzeug in die Mitte für die besten Ergebnisse")
             self.actionMethods.setText("Methoden")
+            self.actionRawImage.setText("Rohbild")
             self.actionGeneral.setText("Allgemein")
             self.actionSettings.setText("Einstellungen")
             self.label_height.setText("Dicke:")
@@ -440,6 +443,7 @@ class MainWindow():
             self.label_hint.setText("For best results place the tool in the middle of the plate")
             self.actionMethods.setText("Methods")
             self.actionGeneral.setText("General")
+            self.actionRawImage.setText("Raw image")
             self.label_height.setText("Thickness:")
             self.actionSettings.setText("Settings")
             self.actionAbout.setText("About")
@@ -551,6 +555,11 @@ You should have received a copy of the GNU General Public License along with thi
         self.prefs['rotation']+=1
         if self.prefs['rotation']>4: self.prefs['rotation']=1
         self.worker.update_rotation(self.prefs['rotation'])
+    def open_rawImage(self): # This method initiate the RawImage widget
+        self.rawImageViewer=QtWidgets.QDialog()
+        self.rawImageViewer_ui=RawImageViewer()
+        self.rawImageViewer_ui.setupUi(self.rawImageViewer, self.language)
+        self.rawImageViewer.show()
     def open_keyboard(self): 
         self.Keyboard = QtWidgets.QDialog()
         self.uiKeyboard = Keyboard()
@@ -1381,6 +1390,31 @@ class Settings(object): # Definition of the settings class
             self.plate_size_btn.setText("Save platesize")
             self.checkBox_inv_leftright.setText('Inv L/R (centering)')
             self.checkBox_inv_updown.setText('Inv U/D (centering)')
+class RawImageViewer(object): # Definition of the Raw image viewer class
+    def __init__(self):
+        super(RawImageViewer,self).__init__()
+        
+    def setupUi(self, RawImageViewer,language): # Here the appearance of the dialog is created
+        self.language=language
+        RawImageViewer.setWindowModality(QtCore.Qt.NonModal)
+        RawImageViewer.resize(720, 480)
+        self.RawImagePreview=QtWidgets.QLabel(RawImageViewer)
+        self.RawImagePreview.setGeometry(QtCore.QRect(10, 10, 700, 460))
+        self.RawImagePreview.setText("")
+        self.RawImagePreview.setScaledContents(True)
+        # The title is named according to the language chosen
+        if self.language =='German':
+            RawImageViewer.setWindowTitle("Rohbild")
+        else:
+            RawImageViewer.setWindowTitle("Raw image")
+
+        #while True:
+        # Get the latest data in the data queue of the OAK-D 
+        edgeRgb = edgeRgbQueue.get()
+        self.image=edgeRgb.getFrame()
+        frame=cv2.cvtColor(self.image,cv2.COLOR_BGR2RGB)
+        img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],frame.strides[0],QtGui.QImage.Format_RGB888)
+        self.RawImagePreview.setPixmap(QtGui.QPixmap.fromImage(img)) 
 class UpdatePreview_worker(QtCore.QThread): # Class definition of the threaded worker class
     # Define the signals that are emitted during the run of the worker thread
     imageUpdate=QtCore.pyqtSignal(np.ndarray) 
